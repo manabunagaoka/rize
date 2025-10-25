@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
   
   // Handle SSO callback (user just logged in and returned from Manaboodle)
   if (ssoToken) {
-    const response = NextResponse.redirect(new URL(request.nextUrl.pathname, request.url));
+    // Redirect to dashboard after successful login
+    const response = NextResponse.redirect(new URL('/dashboard', request.url));
     
     // Store tokens in cookies
     response.cookies.set('manaboodle_sso_token', ssoToken, {
