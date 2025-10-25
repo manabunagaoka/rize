@@ -4,9 +4,9 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const handleLogin = () => {
-    // Direct redirect to Manaboodle SSO (NOT academic-portal/login)
+    // Redirect to Manaboodle Academic Portal (NOT Harvard SSO)
     const returnUrl = window.location.origin + '/dashboard';
-    const loginUrl = `https://www.manaboodle.com/sso/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
+    const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
 

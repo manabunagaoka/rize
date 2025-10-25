@@ -9,7 +9,7 @@ import type { NextRequest } from 'next/server';
 // CONFIGURATION
 // ============================================
 const MANABOODLE_BASE_URL = 'https://www.manaboodle.com';
-const MANABOODLE_LOGIN_URL = 'https://www.manaboodle.com/sso/login';
+const MANABOODLE_LOGIN_URL = 'https://www.manaboodle.com/academic-portal/login';
 const APP_NAME = 'RIZE';
 
 // Paths that don't require authentication
