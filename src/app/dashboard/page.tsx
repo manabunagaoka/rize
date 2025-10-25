@@ -12,7 +12,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4">Welcome to RIZE, {user.name}!</h1>
-        <p className="text-gray-600 mb-8">You're logged in with: {user.email}</p>
+        <p className="text-gray-600 mb-8">You&apos;re logged in with: {user.email}</p>
         
         <div className="grid gap-4">
           <a 
@@ -20,7 +20,7 @@ export default async function DashboardPage() {
             className="bg-pink-500 text-white p-6 rounded-xl hover:bg-pink-600 transition"
           >
             <h2 className="text-2xl font-bold mb-2">Start Voting</h2>
-            <p>Vote on Harvard's legendary startups</p>
+            <p>Vote on Harvard&apos;s legendary startups</p>
           </a>
           
           <a 

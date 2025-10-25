@@ -28,7 +28,7 @@ export default function LoginPage() {
             <span className="text-lg text-gray-400 font-medium">by Manaboodle</span>
           </div>
           <p className="text-gray-400 text-lg mt-2">
-            Rank Harvard's legendary startups
+            Rank Harvard&apos;s legendary startups
           </p>
         </div>
 

@@ -38,7 +38,7 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-6xl font-bold text-gray-900 mb-6">
-            Rank Harvard's<br />
+            Rank Harvard&apos;s<br />
             <span className="text-crimson-700">Greatest Startups</span>
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
