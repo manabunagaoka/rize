@@ -25,9 +25,18 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('manaboodle_sso_token')?.value;
   const ssoToken = request.nextUrl.searchParams.get('sso_token');
   
+  console.log('[MIDDLEWARE]', {
+    pathname,
+    hasToken: !!token,
+    hasSsoTokenParam: !!ssoToken,
+    url: request.url,
+    cookies: request.cookies.getAll().map(c => c.name)
+  });
+  
   // Handle SSO callback FIRST (before checking public paths)
   // This is critical because /login is public but /login?sso_token=... needs processing
   if (ssoToken) {
+    console.log('[MIDDLEWARE] SSO callback detected, redirecting to /dashboard');
     // Redirect to dashboard after successful login
     const response = NextResponse.redirect(new URL('/dashboard', request.url));
     
@@ -54,11 +63,13 @@ export async function middleware(request: NextRequest) {
   
   // Skip authentication for public paths
   if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path))) {
+    console.log('[MIDDLEWARE] Public path, skipping auth:', pathname);
     return NextResponse.next();
   }
   
   // No token? Redirect to Manaboodle Academic Portal login
   if (!token) {
+    console.log('[MIDDLEWARE] No token, redirecting to Academic Portal');
     const loginUrl = new URL(MANABOODLE_LOGIN_URL);
     loginUrl.searchParams.set('return_url', request.url);
     loginUrl.searchParams.set('app_name', APP_NAME);
@@ -67,6 +78,7 @@ export async function middleware(request: NextRequest) {
   
   // Verify token with Manaboodle
   try {
+    console.log('[MIDDLEWARE] Verifying token with Manaboodle');
     const verifyResponse = await fetch(`${MANABOODLE_BASE_URL}/api/sso/verify`, {
       headers: { 
         'Authorization': `Bearer ${token}`,
@@ -76,6 +88,7 @@ export async function middleware(request: NextRequest) {
     });
     
     if (!verifyResponse.ok) {
+      console.log('[MIDDLEWARE] Token verification failed, clearing cookies');
       // Token invalid, clear cookies and redirect to RIZE login
       const loginUrl = new URL('/login', request.url);
       
@@ -87,6 +100,7 @@ export async function middleware(request: NextRequest) {
     
     // Token valid, attach user info to headers (accessible in your pages/API routes)
     const { user } = await verifyResponse.json();
+    console.log('[MIDDLEWARE] Token verified, user:', user.email);
     const response = NextResponse.next();
     
     response.headers.set('x-user-id', user.id);
