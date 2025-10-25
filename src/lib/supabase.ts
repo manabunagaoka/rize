@@ -24,8 +24,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export function createServiceClient() {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
   
-  if (!supabaseServiceKey) {
-    throw new Error('Missing SUPABASE_SERVICE_KEY environment variable');
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase environment variables for service client');
   }
   
   return createClient(supabaseUrl, supabaseServiceKey);
