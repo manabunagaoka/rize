@@ -22,16 +22,11 @@ const PUBLIC_PATHS = [
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  
-  // Skip authentication for public paths
-  if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path))) {
-    return NextResponse.next();
-  }
-  
   const token = request.cookies.get('manaboodle_sso_token')?.value;
   const ssoToken = request.nextUrl.searchParams.get('sso_token');
   
-  // Handle SSO callback (user just logged in and returned from Manaboodle)
+  // Handle SSO callback FIRST (before checking public paths)
+  // This is critical because /login is public but /login?sso_token=... needs processing
   if (ssoToken) {
     // Redirect to dashboard after successful login
     const response = NextResponse.redirect(new URL('/dashboard', request.url));
@@ -55,6 +50,11 @@ export async function middleware(request: NextRequest) {
     }
     
     return response;
+  }
+  
+  // Skip authentication for public paths
+  if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path))) {
+    return NextResponse.next();
   }
   
   // No token? Redirect to Manaboodle Academic Portal login
