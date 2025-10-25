@@ -11,7 +11,7 @@ export default async function HomePage() {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-crimson-700 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">R</span>
             </div>
             <div>
@@ -22,14 +22,20 @@ export default async function HomePage() {
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600">Welcome, {user.name || user.email}</span>
-              <button className="px-4 py-2 bg-crimson-700 text-white rounded-lg font-medium hover:bg-crimson-800 transition">
-                My Projects
-              </button>
+              <a 
+                href="/dashboard"
+                className="px-4 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition"
+              >
+                Dashboard
+              </a>
             </div>
           ) : (
-            <button className="px-4 py-2 bg-crimson-700 text-white rounded-lg font-medium hover:bg-crimson-800 transition">
+            <a 
+              href="/login"
+              className="px-4 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition"
+            >
               Sign In
-            </button>
+            </a>
           )}
         </div>
       </header>
@@ -39,7 +45,7 @@ export default async function HomePage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-6xl font-bold text-gray-900 mb-6">
             Rank Harvard&apos;s<br />
-            <span className="text-crimson-700">Greatest Startups</span>
+            <span className="text-pink-500">Greatest Startups</span>
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Vote on legendary companies. Submit your startup. Compete for the top 10.
@@ -47,7 +53,7 @@ export default async function HomePage() {
           <div className="flex gap-4 justify-center">
             <a 
               href="/login"
-              className="px-8 py-4 bg-crimson-700 text-white rounded-lg font-semibold text-lg hover:bg-crimson-800 transition shadow-lg"
+              className="px-8 py-4 bg-pink-500 text-white rounded-lg font-semibold text-lg hover:bg-pink-600 transition shadow-lg"
             >
               Start Ranking →
             </a>
@@ -171,9 +177,9 @@ export default async function HomePage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {startups.map((startup) => (
-                <div key={startup.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all border border-gray-200 hover:border-crimson-300">
+                <div key={startup.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all border border-gray-200 hover:border-pink-300">
                   <div className="flex items-start justify-between mb-3">
-                    <span className="text-4xl font-bold text-crimson-700">#{startup.rank}</span>
+                    <span className="text-4xl font-bold text-pink-500">#{startup.rank}</span>
                     <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
                       {startup.valuation}
                     </span>
@@ -186,9 +192,12 @@ export default async function HomePage() {
                       {startup.category}
                     </span>
                   )}
-                  <button className="w-full py-2 bg-crimson-700 text-white rounded-lg font-medium hover:bg-crimson-800 transition text-sm">
+                  <a 
+                    href="/login"
+                    className="block w-full py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition text-sm text-center"
+                  >
                     ⭐ Rate This Company
-                  </button>
+                  </a>
                 </div>
               ))}
             </div>
