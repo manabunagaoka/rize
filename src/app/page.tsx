@@ -1,6 +1,8 @@
 import { getUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { TrendingUp, Users, Package, Globe } from 'lucide-react';
+import StockPrice from '@/components/StockPrice';
 
 // Success stories - hardcoded legendary Harvard startups
 const SUCCESS_STORIES = [
@@ -9,21 +11,30 @@ const SUCCESS_STORIES = [
     founder: 'Mark Zuckerberg',
     year: '2004',
     valuation: '$1.2T',
-    logo: '👥'
+    ticker: 'META',
+    story: 'Started in a Harvard dorm room as "TheFacebook" to connect college students. Now connects 3 billion people worldwide.',
+    icon: Users,
+    color: 'from-blue-500 to-blue-600'
   },
   {
     name: 'Microsoft',
     founder: 'Bill Gates',
     year: '1975',
     valuation: '$3.1T',
-    logo: '💻'
+    ticker: 'MSFT',
+    story: 'Bill Gates dropped out of Harvard to start Microsoft. Built the software that runs most of the world\'s computers.',
+    icon: Globe,
+    color: 'from-green-500 to-green-600'
   },
   {
     name: 'Dropbox',
     founder: 'Drew Houston',
     year: '2007',
     valuation: '$10B',
-    logo: '📦'
+    ticker: 'DBX',
+    story: 'Drew Houston forgot his USB drive and created Dropbox. Now stores over 600 million users\' files in the cloud.',
+    icon: Package,
+    color: 'from-purple-500 to-purple-600'
   }
 ];
 
@@ -142,21 +153,64 @@ export default async function HomePage() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {SUCCESS_STORIES.map((story) => (
-              <div 
-                key={story.name}
-                className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 border border-gray-700 hover:border-pink-500/50 transition-all hover:scale-105"
-              >
-                <div className="text-6xl mb-4">{story.logo}</div>
-                <h4 className="text-2xl font-bold text-white mb-2">{story.name}</h4>
-                <p className="text-gray-400 text-sm mb-4">
-                  {story.founder} &apos;{story.year.slice(-2)}
-                </p>
-                <div className="text-3xl font-bold text-pink-400">
-                  {story.valuation}
+            {SUCCESS_STORIES.map((story) => {
+              const Icon = story.icon;
+              return (
+                <div 
+                  key={story.name}
+                  className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 border border-gray-700 hover:border-pink-500/50 transition-all hover:scale-105 cursor-pointer relative overflow-hidden"
+                >
+                  {/* Background gradient on hover */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${story.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                  
+                  {/* Content */}
+                  <div className="relative z-10">
+                    {/* Icon */}
+                    <div className={`w-16 h-16 bg-gradient-to-br ${story.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+                    
+                    {/* Company name */}
+                    <h4 className="text-2xl font-bold text-white mb-2">{story.name}</h4>
+                    
+                    {/* Founder */}
+                    <p className="text-gray-400 text-sm mb-4">
+                      {story.founder} &apos;{story.year.slice(-2)}
+                    </p>
+                    
+                    {/* Valuation */}
+                    <div className="text-3xl font-bold text-pink-400 mb-4">
+                      {story.valuation}
+                    </div>
+                    
+                    {/* Real-time stock price */}
+                    <div className="mb-4">
+                      <StockPrice ticker={story.ticker} />
+                    </div>
+                    
+                    {/* Story - shows on hover */}
+                    <div className="text-sm text-gray-300 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-h-0 group-hover:max-h-32 overflow-hidden">
+                      <p className="mb-3">{story.story}</p>
+                    </div>
+                    
+                    {/* Stock ticker badge */}
+                    <div className="flex items-center gap-2 mt-4">
+                      <span className="px-3 py-1 bg-gray-700/50 text-gray-300 rounded-full text-xs font-mono">
+                        {story.ticker}
+                      </span>
+                      <TrendingUp className="w-4 h-4 text-green-400" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+          
+          {/* Note about stock prices */}
+          <div className="text-center mt-8">
+            <p className="text-xs text-gray-500">
+              Market valuations as of October 2025
+            </p>
           </div>
         </div>
       </section>
