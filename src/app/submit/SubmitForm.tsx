@@ -35,7 +35,7 @@ interface SubmitFormProps {
     id: string;
     email: string;
     name: string;
-    class: string;
+    classCode: string;
   };
 }
 
@@ -71,7 +71,7 @@ export default function SubmitForm({ user }: SubmitFormProps) {
           user_id: user.id,
           user_email: user.email,
           user_name: user.name,
-          user_class: user.class
+          user_class: user.classCode
         })
       });
 
