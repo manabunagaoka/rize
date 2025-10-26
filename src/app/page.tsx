@@ -1,9 +1,17 @@
 import { getTopStartups } from '@/lib/db-helpers';
 import { getUser } from '@/lib/auth';
+import type { TopStartup } from '@/lib/supabase';
 
 export default async function HomePage() {
   // Fetch real data from Supabase
-  const startups = await getTopStartups();
+  let startups: TopStartup[] = [];
+  try {
+    startups = await getTopStartups();
+  } catch (error) {
+    console.error('Error loading startups for landing page:', error);
+    // Show empty array if database fails
+  }
+  
   const user = await getUser(); // SSO user (null if not logged in on landing page - it's public)
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

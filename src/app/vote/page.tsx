@@ -1,6 +1,7 @@
 import { getUser } from '@/lib/auth';
 import { getTopStartups } from '@/lib/db-helpers';
 import { redirect } from 'next/navigation';
+import type { TopStartup } from '@/lib/supabase';
 
 export default async function VotePage() {
   const user = await getUser();
@@ -9,7 +10,14 @@ export default async function VotePage() {
     redirect('/login');
   }
 
-  const startups = await getTopStartups();
+  // Try to get startups, but don't fail if database is not connected
+  let startups: TopStartup[] = [];
+  try {
+    startups = await getTopStartups();
+  } catch (error) {
+    console.error('Error loading startups for vote page:', error);
+    // Continue rendering page even if database fails
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
