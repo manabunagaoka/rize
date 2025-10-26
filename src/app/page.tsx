@@ -1,222 +1,313 @@
-import { getTopStartups } from '@/lib/db-helpers';
 import { getUser } from '@/lib/auth';
-import type { TopStartup } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
+
+// Success stories - hardcoded legendary Harvard startups
+const SUCCESS_STORIES = [
+  {
+    name: 'Facebook',
+    founder: 'Mark Zuckerberg',
+    year: '2004',
+    valuation: '$1.2T',
+    logo: '👥'
+  },
+  {
+    name: 'Microsoft',
+    founder: 'Bill Gates',
+    year: '1975',
+    valuation: '$3.1T',
+    logo: '💻'
+  },
+  {
+    name: 'Dropbox',
+    founder: 'Drew Houston',
+    year: '2007',
+    valuation: '$10B',
+    logo: '📦'
+  }
+];
+
+// Fetch student startups from project_rankings view
+async function getStudentStartups() {
+  try {
+    const { data, error } = await supabase
+      .from('project_rankings')
+      .select('*')
+      .limit(5);
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error loading student startups:', error);
+    return [];
+  }
+}
+
+// Get total vote count for social proof
+async function getTotalVotes() {
+  try {
+    const { count, error } = await supabase
+      .from('project_votes')
+      .select('*', { count: 'exact', head: true });
+    
+    if (error) throw error;
+    return count || 0;
+  } catch (error) {
+    console.error('Error loading vote count:', error);
+    return 0;
+  }
+}
 
 export default async function HomePage() {
-  // Fetch real data from Supabase
-  let startups: TopStartup[] = [];
-  try {
-    startups = await getTopStartups();
-  } catch (error) {
-    console.error('Error loading startups for landing page:', error);
-    // Show empty array if database fails
-  }
-  
-  const user = await getUser(); // SSO user (null if not logged in on landing page - it's public)
+  const user = await getUser();
+  const studentStartups = await getStudentStartups();
+  const totalVotes = await getTotalVotes();
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-gray-900/50 backdrop-blur-sm border-b border-gray-800">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center">
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-xl">R</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">RIZE</h1>
-              <p className="text-xs text-gray-500">by Manaboodle</p>
+              <h1 className="text-xl font-bold text-white">RIZE</h1>
+              <p className="text-xs text-gray-400">by Manaboodle</p>
             </div>
-          </div>
+          </Link>
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Welcome, {user.name || user.email}</span>
-              <a 
-                href="/dashboard"
+              <span className="text-sm text-gray-300">Hi, {user.name}</span>
+              <Link 
+                href="/vote"
                 className="px-4 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition"
               >
-                Dashboard
-              </a>
+                Vote Now
+              </Link>
             </div>
           ) : (
-            <a 
+            <Link 
               href="/login"
               className="px-4 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition"
             >
               Sign In
-            </a>
+            </Link>
           )}
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-6xl font-bold text-gray-900 mb-6">
-            Rank Harvard&apos;s<br />
-            <span className="text-pink-500">Greatest Startups</span>
+      <section className="container mx-auto px-4 py-20 text-center">
+        <div className="max-w-5xl mx-auto">
+          <div className="inline-block mb-6 px-4 py-2 bg-pink-500/10 border border-pink-500/30 rounded-full">
+            <p className="text-pink-400 text-sm font-semibold">
+              🔥 {totalVotes} votes cast this week
+            </p>
+          </div>
+          <h2 className="text-6xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            From Dorm Room<br />
+            to <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-pink-600">Billion-Dollar Company</span>
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Vote on legendary companies. Submit your startup. Compete for the top 10.
+          <p className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto">
+            Harvard&apos;s next unicorn is being built right now. Vote on the best student startups and discover the future before everyone else.
           </p>
-          <div className="flex gap-4 justify-center">
-            <a 
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
               href={user ? "/vote" : "/login"}
-              className="px-8 py-4 bg-pink-500 text-white rounded-lg font-semibold text-lg hover:bg-pink-600 transition shadow-lg"
+              className="px-8 py-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg font-semibold text-lg hover:from-pink-600 hover:to-pink-700 transition shadow-xl"
             >
               {user ? "Start Voting →" : "Sign In to Vote →"}
-            </a>
-            <a 
-              href="/leaderboard"
-              className="px-8 py-4 bg-white text-gray-700 rounded-lg font-semibold text-lg hover:bg-gray-50 transition border-2 border-gray-200"
+            </Link>
+            <Link 
+              href={user ? "/submit" : "/login"}
+              className="px-8 py-4 bg-gray-800 text-white rounded-lg font-semibold text-lg hover:bg-gray-700 transition border-2 border-gray-700"
             >
-              View Leaderboard
-            </a>
+              Submit Your Startup
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Status Section */}
-      <section className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-green-200">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">✅ Development Progress</h3>
-              <span className="px-4 py-2 bg-green-100 text-green-700 rounded-full font-semibold text-sm">
-                STEP 2 COMPLETE
-              </span>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* STEP 1 */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">✅</span>
-                  <h4 className="font-bold text-gray-900">STEP 1: Project Setup</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 ml-8">
-                  <li>✓ Next.js 14 + TypeScript</li>
-                  <li>✓ Tailwind CSS styling</li>
-                  <li>✓ SSO Authentication (RIZE)</li>
-                  <li>✓ Auth helpers & middleware</li>
-                </ul>
-              </div>
-
-              {/* STEP 2 */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">✅</span>
-                  <h4 className="font-bold text-gray-900">STEP 2: Database</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 ml-8">
-                  <li>✓ Supabase schema (4 tables)</li>
-                  <li>✓ Top 10 Harvard startups seeded</li>
-                  <li>✓ 20+ database helpers</li>
-                  <li>✓ Health check API ready</li>
-                </ul>
-              </div>
-
-              {/* STEP 3 */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⏳</span>
-                  <h4 className="font-bold text-gray-700">STEP 3: Components</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-500 ml-8">
-                  <li>○ VotingModal with stars</li>
-                  <li>○ TopStartupCard</li>
-                  <li>○ ProgressTracker</li>
-                  <li>○ LeaderboardTable</li>
-                </ul>
-              </div>
-
-              {/* STEP 4 */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⏳</span>
-                  <h4 className="font-bold text-gray-700">STEP 4: Pages & APIs</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-500 ml-8">
-                  <li>○ Landing page with Top 10</li>
-                  <li>○ Voting endpoints</li>
-                  <li>○ Submit project form</li>
-                  <li>○ Public leaderboard</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-900">
-                <strong>👉 Next:</strong> Run STEP 3 to build the voting interface! 
-                The database is ready with all 10 Harvard startups.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Real Data: Top 10 Startups from Supabase */}
-      <section className="container mx-auto px-4 py-12">
+      {/* Success Stories */}
+      <section className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
-          <h3 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-            Top 10 Harvard Startups
-          </h3>
-          <p className="text-center text-gray-600 mb-8">
-            Legendary companies founded by Harvard students
-          </p>
+          <div className="text-center mb-12">
+            <h3 className="text-4xl font-bold text-white mb-3">
+              🏆 Harvard Success Stories
+            </h3>
+            <p className="text-gray-400 text-lg">
+              All started in Harvard dorm rooms
+            </p>
+          </div>
           
-          {startups.length === 0 ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-              <p className="text-yellow-800 mb-4">
-                <strong>⚠️ Database not connected yet</strong>
+          <div className="grid md:grid-cols-3 gap-8">
+            {SUCCESS_STORIES.map((story) => (
+              <div 
+                key={story.name}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 border border-gray-700 hover:border-pink-500/50 transition-all hover:scale-105"
+              >
+                <div className="text-6xl mb-4">{story.logo}</div>
+                <h4 className="text-2xl font-bold text-white mb-2">{story.name}</h4>
+                <p className="text-gray-400 text-sm mb-4">
+                  {story.founder} &apos;{story.year.slice(-2)}
+                </p>
+                <div className="text-3xl font-bold text-pink-400">
+                  {story.valuation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Class of 2026 Rankings */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full">
+              <p className="text-green-400 text-sm font-semibold">
+                🔴 LIVE RANKINGS
               </p>
-              <p className="text-sm text-yellow-700 mb-4">
-                To see real data, you need to:
+            </div>
+            <h3 className="text-4xl font-bold text-white mb-3">
+              Class of 2026 Startups
+            </h3>
+            <p className="text-gray-400 text-lg mb-6">
+              Student startups competing for the top spot
+            </p>
+          </div>
+          
+          {studentStartups.length === 0 ? (
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
+              <div className="text-6xl mb-4">🚀</div>
+              <h4 className="text-2xl font-bold text-white mb-3">
+                Be the First to Submit
+              </h4>
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                No startups submitted yet. Be the first to showcase your project to the Harvard community!
               </p>
-              <ol className="text-left max-w-md mx-auto text-sm text-yellow-700 space-y-2">
-                <li>1. Create a Supabase project at <a href="https://supabase.com" className="underline">supabase.com</a></li>
-                <li>2. Run <code className="bg-yellow-100 px-2 py-1 rounded">supabase/schema.sql</code> in SQL Editor</li>
-                <li>3. Run <code className="bg-yellow-100 px-2 py-1 rounded">supabase/seed.sql</code> to load startups</li>
-                <li>4. Add credentials to <code className="bg-yellow-100 px-2 py-1 rounded">.env.local</code></li>
-              </ol>
-              <p className="text-xs text-yellow-600 mt-4">
-                See <code>supabase/README.md</code> for detailed instructions
-              </p>
+              <Link 
+                href={user ? "/submit" : "/login"}
+                className="inline-block px-6 py-3 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition"
+              >
+                {user ? "Submit Your Startup" : "Sign In to Submit"}
+              </Link>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {startups.map((startup) => (
-                <div key={startup.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all border border-gray-200 hover:border-pink-300">
-                  <div className="flex items-start justify-between mb-3">
-                    <span className="text-4xl font-bold text-pink-500">#{startup.rank}</span>
-                    <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                      {startup.valuation}
-                    </span>
+            <div className="space-y-4">
+              {studentStartups.map((startup: any, index: number) => (
+                <div 
+                  key={startup.id}
+                  className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 hover:border-pink-500/50 transition-all"
+                >
+                  <div className="flex items-start gap-6">
+                    {/* Rank Badge */}
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center">
+                        <span className="text-3xl font-bold text-white">#{index + 1}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Startup Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h4 className="text-2xl font-bold text-white mb-1">
+                            {startup.startup_name}
+                          </h4>
+                          <p className="text-gray-400 text-sm">
+                            {startup.founders} {startup.user_class && `• ${startup.user_class}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 bg-pink-500/20 px-3 py-1 rounded-full">
+                          <span className="text-2xl">⭐</span>
+                          <span className="text-xl font-bold text-pink-400">
+                            {startup.overall_score > 0 ? startup.overall_score.toFixed(1) : 'New'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-300 mb-3">
+                        {startup.elevator_pitch}
+                      </p>
+                      
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">
+                          {startup.category}
+                        </span>
+                        <span className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">
+                          {startup.stage}
+                        </span>
+                        {startup.traction_value && (
+                          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold">
+                            {startup.traction_value}
+                          </span>
+                        )}
+                        <span className="text-gray-400 text-sm">
+                          {startup.vote_count} {startup.vote_count === 1 ? 'vote' : 'votes'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Vote Button */}
+                    <Link 
+                      href={user ? "/vote" : "/login"}
+                      className="flex-shrink-0 px-6 py-3 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition"
+                    >
+                      Vote
+                    </Link>
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-1">{startup.name}</h4>
-                  <p className="text-sm text-gray-500 mb-3">Founded by {startup.founder} ({startup.founded_year})</p>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{startup.description}</p>
-                  {startup.category && (
-                    <span className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded mb-3">
-                      {startup.category}
-                    </span>
-                  )}
-                  <a 
-                    href={user ? `/vote?startup=${startup.id}` : "/login"}
-                    className="block w-full py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition text-sm text-center"
-                  >
-                    ⭐ {user ? "Rate This Company" : "Sign In to Rate"}
-                  </a>
                 </div>
               ))}
+              
+              <div className="text-center pt-8">
+                <Link 
+                  href="/leaderboard"
+                  className="inline-block px-6 py-3 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-700 transition border-2 border-gray-700"
+                >
+                  View Full Leaderboard →
+                </Link>
+              </div>
             </div>
           )}
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-2xl p-12 text-center">
+          <h3 className="text-3xl font-bold text-white mb-4">
+            Ready to join the competition?
+          </h3>
+          <p className="text-gray-300 text-lg mb-8">
+            {user 
+              ? "Start voting on startups to unlock submission."
+              : "Sign in with your Harvard account to vote and submit."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href={user ? "/vote" : "/login"}
+              className="px-8 py-4 bg-pink-500 text-white rounded-lg font-semibold text-lg hover:bg-pink-600 transition"
+            >
+              {user ? "Start Voting" : "Sign In"}
+            </Link>
+            {user && (
+              <Link 
+                href="/submit"
+                className="px-8 py-4 bg-gray-800 text-white rounded-lg font-semibold text-lg hover:bg-gray-700 transition border-2 border-gray-700"
+              >
+                Submit Startup
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="container mx-auto px-4 py-8 text-center text-gray-600 text-sm">
-          <p>© 2025 RIZE by Manaboodle - Harvard Edition</p>
+      <footer className="bg-gray-900/50 border-t border-gray-800 mt-16">
+        <div className="container mx-auto px-4 py-8 text-center text-gray-400 text-sm">
+          <p>© 2025 RIZE by Manaboodle • Harvard Edition • Class of 2026</p>
         </div>
       </footer>
     </main>

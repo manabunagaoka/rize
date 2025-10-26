@@ -62,7 +62,7 @@ comment on column startup_votes.social_impact is 'Does it make the world better 
 -- ============================================
 -- TABLE 3: STUDENT_PROJECTS
 -- Student startup submissions
--- Status workflow: submitted -> approved/rejected -> featured
+-- Status workflow: pending -> approved/rejected
 -- ============================================
 
 create table student_projects (
@@ -75,28 +75,35 @@ create table student_projects (
   user_class text,
   
   -- Project details
-  project_name text not null,
-  tagline text not null check (length(tagline) <= 200),
-  description text not null check (length(description) >= 100),
-  industry text not null,
-  stage text not null check (stage in ('Idea', 'Prototype', 'MVP', 'Early Revenue', 'Growth', 'Scale')),
-  team_size integer check (team_size > 0 and team_size <= 100),
+  startup_name text not null,
+  one_liner text not null check (length(one_liner) <= 50),
+  elevator_pitch text not null check (length(elevator_pitch) <= 200),
+  category text not null check (category in ('EdTech', 'HealthTech', 'FinTech', 'Social Impact', 'Consumer', 'Enterprise/B2B', 'Climate/Sustainability', 'Other')),
+  founders text not null,
+  stage text not null check (stage in ('Idea', 'Prototype', 'Beta/Testing', 'Launched', 'Revenue')),
   
-  -- Optional links
+  -- Optional "brag" traction
+  traction_type text check (traction_type in ('users', 'revenue', 'funding', 'featured', 'award')),
+  traction_value text,
+  
+  -- Optional links and media
   website_url text,
-  demo_url text,
-  pitch_deck_url text,
+  logo_url text,
+  problem_statement text check (length(problem_statement) <= 100),
   
   -- Status and timestamps
-  status text default 'submitted' check (status in ('submitted', 'approved', 'featured', 'rejected')),
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
 
-comment on table student_projects is 'Student startup submissions - awaiting approval and voting';
-comment on column student_projects.status is 'submitted: pending review | approved: visible on leaderboard | featured: promoted | rejected: hidden';
-comment on column student_projects.tagline is 'One-line pitch (max 200 chars)';
-comment on column student_projects.description is 'Detailed project description (min 100 chars)';
+comment on table student_projects is 'Class of 2026 student startup submissions - awaiting approval and voting';
+comment on column student_projects.status is 'pending: awaiting admin review | approved: visible and votable | rejected: hidden';
+comment on column student_projects.one_liner is 'Short description for card view (max 50 chars)';
+comment on column student_projects.elevator_pitch is 'Longer pitch explanation (max 200 chars)';
+comment on column student_projects.category is 'Startup sector/industry';
+comment on column student_projects.traction_type is 'Type of achievement to brag about';
+comment on column student_projects.traction_value is 'Specific traction metric (e.g., "200 users", "$5K", "TechCrunch")';
 
 -- ============================================
 -- TABLE 4: PROJECT_VOTES
@@ -187,12 +194,18 @@ create trigger update_student_projects_updated_at
 create or replace view project_rankings as
 select 
   p.id,
-  p.project_name,
-  p.tagline,
+  p.startup_name,
+  p.one_liner,
+  p.elevator_pitch,
   p.user_name,
   p.user_class,
-  p.industry,
+  p.category,
+  p.founders,
   p.stage,
+  p.traction_type,
+  p.traction_value,
+  p.website_url,
+  p.logo_url,
   p.status,
   p.created_at,
   count(v.id) as vote_count,
@@ -204,11 +217,11 @@ select
   coalesce(avg((v.market_opportunity + v.innovation + v.execution_difficulty + v.scalability + v.social_impact) / 5.0), 0) as overall_score
 from student_projects p
 left join project_votes v on p.id = v.project_id
-where p.status in ('approved', 'featured')
+where p.status = 'approved'
 group by p.id
 order by overall_score desc, vote_count desc;
 
-comment on view project_rankings is 'Leaderboard view with calculated scores and rankings';
+comment on view project_rankings is 'Leaderboard view with calculated scores and rankings for approved student startups';
 
 -- View: User voting progress (how many startups they voted on)
 create or replace view user_voting_progress as
