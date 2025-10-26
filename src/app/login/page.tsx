@@ -5,8 +5,8 @@ import Link from 'next/link';
 export default function LoginPage() {
   const handleLogin = () => {
     // Redirect to Manaboodle Academic Portal (NOT Harvard SSO)
-    // Always use production URL to avoid preview deployment URL issues
-    const returnUrl = 'https://rize.vercel.app';
+    // Use the actual RIZE deployment URL
+    const returnUrl = 'https://rize-git-main-manabunagaokas-projects.vercel.app';
     const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
