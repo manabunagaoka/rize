@@ -5,8 +5,9 @@ import Link from 'next/link';
 export default function LoginPage() {
   const handleLogin = () => {
     // Redirect to Manaboodle Academic Portal (NOT Harvard SSO)
-    // Return to /login with tokens, middleware will handle redirect to /dashboard
-    const returnUrl = window.location.origin + '/login';
+    // Return to origin (without /login path) - Manaboodle will append tokens as query params
+    // Then middleware will catch the sso_token and redirect to /dashboard
+    const returnUrl = window.location.origin;
     const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
