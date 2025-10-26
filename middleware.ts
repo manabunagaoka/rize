@@ -36,9 +36,9 @@ export async function middleware(request: NextRequest) {
   // Handle SSO callback FIRST (before checking public paths)
   // This is critical because /login is public but /login?sso_token=... needs processing
   if (ssoToken) {
-    console.log('[MIDDLEWARE] SSO callback detected, redirecting to /dashboard');
-    // Redirect to dashboard after successful login
-    const response = NextResponse.redirect(new URL('/dashboard', request.url));
+    console.log('[MIDDLEWARE] SSO callback detected, redirecting to /vote');
+    // Redirect to vote page after successful login
+    const response = NextResponse.redirect(new URL('/vote', request.url));
     
     // Store tokens in cookies
     response.cookies.set('manaboodle_sso_token', ssoToken, {
