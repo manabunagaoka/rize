@@ -52,10 +52,10 @@ export default async function HomePage() {
           </p>
           <div className="flex gap-4 justify-center">
             <a 
-              href="/login"
+              href={user ? "/vote" : "/login"}
               className="px-8 py-4 bg-pink-500 text-white rounded-lg font-semibold text-lg hover:bg-pink-600 transition shadow-lg"
             >
-              Start Ranking →
+              {user ? "Start Voting →" : "Sign In to Vote →"}
             </a>
             <a 
               href="/leaderboard"
@@ -193,10 +193,10 @@ export default async function HomePage() {
                     </span>
                   )}
                   <a 
-                    href="/login"
+                    href={user ? `/vote?startup=${startup.id}` : "/login"}
                     className="block w-full py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition text-sm text-center"
                   >
-                    ⭐ Rate This Company
+                    ⭐ {user ? "Rate This Company" : "Sign In to Rate"}
                   </a>
                 </div>
               ))}
