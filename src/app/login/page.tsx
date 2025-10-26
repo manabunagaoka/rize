@@ -5,9 +5,8 @@ import Link from 'next/link';
 export default function LoginPage() {
   const handleLogin = () => {
     // Redirect to Manaboodle Academic Portal (NOT Harvard SSO)
-    // Return to origin (without /login path) - Manaboodle will append tokens as query params
-    // Then middleware will catch the sso_token and redirect to /dashboard
-    const returnUrl = window.location.origin;
+    // Always use production URL to avoid preview deployment URL issues
+    const returnUrl = 'https://rize.vercel.app';
     const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
