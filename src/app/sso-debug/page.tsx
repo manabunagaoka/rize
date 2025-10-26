@@ -1,9 +1,9 @@
 "use client";
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function SSODebug() {
+function SSODebugContent() {
   const searchParams = useSearchParams();
   const [cookies, setCookies] = useState<string>('');
   
@@ -108,5 +108,17 @@ export default function SSODebug() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SSODebug() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 text-white p-8 flex items-center justify-center">
+        <div className="text-xl">Loading SSO debug info...</div>
+      </div>
+    }>
+      <SSODebugContent />
+    </Suspense>
   );
 }
