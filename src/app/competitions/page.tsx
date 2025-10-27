@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CompetitionSidebar from '@/components/CompetitionSidebar';
@@ -50,7 +50,7 @@ const SUCCESS_STORIES = [
     color: 'from-blue-400 to-blue-500' }
 ];
 
-export default function CompetitionsPage() {
+function CompetitionsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeCompetitionId, setActiveCompetitionId] = useState<string>('legendary');
@@ -232,5 +232,20 @@ export default function CompetitionsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CompetitionsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading competitions...</p>
+        </div>
+      </div>
+    }>
+      <CompetitionsPageContent />
+    </Suspense>
   );
 }

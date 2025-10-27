@@ -182,6 +182,7 @@ SELECT
   c.name,
   c.status,
   c.icon,
+  c.created_at,
   COALESCE(pitch_stats.vote_count, 0) + COALESCE(project_stats.vote_count, 0) as total_votes,
   COALESCE(pitch_stats.entry_count, 0) + COALESCE(project_stats.entry_count, 0) as total_entries,
   COALESCE(pitch_stats.voter_count, 0) + COALESCE(project_stats.voter_count, 0) as unique_voters,
