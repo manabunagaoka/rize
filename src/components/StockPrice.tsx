@@ -18,24 +18,26 @@ export default function StockPrice({ ticker }: StockPriceProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Using Alpha Vantage free API (requires API key)
-    // Alternative: Finnhub.io, IEX Cloud, or Yahoo Finance API
-    // For now, we'll use mock data to avoid API key requirements
-    
-    // TODO: Replace with real API call when you have an API key
-    // Example: https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=YOUR_KEY
-    
-    const mockData: { [key: string]: StockData } = {
-      'META': { price: 497.43, change: 5.23, changePercent: 1.06 },
-      'MSFT': { price: 415.89, change: -2.15, changePercent: -0.51 },
-      'DBX': { price: 24.67, change: 0.43, changePercent: 1.77 }
-    };
+    async function fetchPrice() {
+      try {
+        const response = await fetch(`/api/stock/${ticker}`);
+        const apiData = await response.json();
+        
+        // Transform Finnhub response to our format
+        setData({
+          price: apiData.c,
+          change: apiData.d,
+          changePercent: apiData.dp
+        });
+      } catch (error) {
+        console.error('Error fetching stock price:', error);
+        // Keep loading state on error
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    // Simulate API delay
-    setTimeout(() => {
-      setData(mockData[ticker] || null);
-      setLoading(false);
-    }, 500);
+    fetchPrice();
   }, [ticker]);
 
   if (loading) {

@@ -1,7 +1,6 @@
 import { getUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { TrendingUp, Users, Package, Globe } from 'lucide-react';
 import StockPrice from '@/components/StockPrice';
 
 // Success stories - hardcoded legendary Harvard startups
@@ -12,8 +11,7 @@ const SUCCESS_STORIES = [
     year: '2004',
     valuation: '$1.2T',
     ticker: 'META',
-    story: 'Started in a Harvard dorm room as "TheFacebook" to connect college students. Now connects 3 billion people worldwide.',
-    icon: Users,
+    story: 'Built "TheFacebook" to connect Harvard students. Scaled to 3 billion users worldwide. Revenue: $134B/year.',
     color: 'from-blue-500 to-blue-600'
   },
   {
@@ -22,8 +20,7 @@ const SUCCESS_STORIES = [
     year: '1975',
     valuation: '$3.1T',
     ticker: 'MSFT',
-    story: 'Bill Gates dropped out of Harvard to start Microsoft. Built the software that runs most of the world\'s computers.',
-    icon: Globe,
+    story: 'Created BASIC interpreter for Altair 8800 while at Harvard. Built the operating system that powered the PC revolution.',
     color: 'from-green-500 to-green-600'
   },
   {
@@ -33,7 +30,6 @@ const SUCCESS_STORIES = [
     valuation: '$10B',
     ticker: 'DBX',
     story: 'Drew Houston forgot his USB drive and created Dropbox. Now stores over 600 million users\' files in the cloud.',
-    icon: Package,
     color: 'from-purple-500 to-purple-600'
   }
 ];
@@ -111,11 +107,6 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-5xl mx-auto">
-          <div className="inline-block mb-6 px-4 py-2 bg-pink-500/10 border border-pink-500/30 rounded-full">
-            <p className="text-pink-400 text-sm font-semibold">
-              🔥 {totalVotes} votes cast this week
-            </p>
-          </div>
           <h2 className="text-6xl md:text-7xl font-bold text-white mb-6 leading-tight">
             From Dorm Room<br />
             to <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-pink-600">Billion-Dollar Company</span>
@@ -145,7 +136,7 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-4xl font-bold text-white mb-3">
-              🏆 Harvard Success Stories
+              Harvard Success Stories
             </h3>
             <p className="text-gray-400 text-lg">
               All started in Harvard dorm rooms
@@ -154,7 +145,6 @@ export default async function HomePage() {
           
           <div className="grid md:grid-cols-3 gap-8">
             {SUCCESS_STORIES.map((story) => {
-              const Icon = story.icon;
               return (
                 <div 
                   key={story.name}
@@ -165,17 +155,12 @@ export default async function HomePage() {
                   
                   {/* Content */}
                   <div className="relative z-10">
-                    {/* Icon */}
-                    <div className={`w-16 h-16 bg-gradient-to-br ${story.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                    
                     {/* Company name */}
-                    <h4 className="text-2xl font-bold text-white mb-2">{story.name}</h4>
+                    <h4 className="text-3xl font-bold text-white mb-3">{story.name}</h4>
                     
                     {/* Founder */}
                     <p className="text-gray-400 text-sm mb-4">
-                      {story.founder} &apos;{story.year.slice(-2)}
+                      {story.founder} • {story.year}
                     </p>
                     
                     {/* Valuation */}
@@ -184,13 +169,13 @@ export default async function HomePage() {
                     </div>
                     
                     {/* Real-time stock price */}
-                    <div className="mb-4">
+                    <div className="mb-6">
                       <StockPrice ticker={story.ticker} />
                     </div>
                     
-                    {/* Story - shows on hover */}
-                    <div className="text-sm text-gray-300 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-h-0 group-hover:max-h-32 overflow-hidden">
-                      <p className="mb-3">{story.story}</p>
+                    {/* Story - always visible */}
+                    <div className="text-sm text-gray-300 leading-relaxed border-t border-gray-700 pt-4">
+                      <p>{story.story}</p>
                     </div>
                     
                     {/* Stock ticker badge */}
@@ -198,7 +183,6 @@ export default async function HomePage() {
                       <span className="px-3 py-1 bg-gray-700/50 text-gray-300 rounded-full text-xs font-mono">
                         {story.ticker}
                       </span>
-                      <TrendingUp className="w-4 h-4 text-green-400" />
                     </div>
                   </div>
                 </div>
@@ -221,7 +205,7 @@ export default async function HomePage() {
           <div className="text-center mb-12">
             <div className="inline-block mb-4 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-full">
               <p className="text-green-400 text-sm font-semibold">
-                🔴 LIVE RANKINGS
+                LIVE RANKINGS
               </p>
             </div>
             <h3 className="text-4xl font-bold text-white mb-3">
@@ -234,7 +218,6 @@ export default async function HomePage() {
           
           {studentStartups.length === 0 ? (
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
-              <div className="text-6xl mb-4">🚀</div>
               <h4 className="text-2xl font-bold text-white mb-3">
                 Be the First to Submit
               </h4>
