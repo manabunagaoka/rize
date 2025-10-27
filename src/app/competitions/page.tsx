@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import CompetitionSidebar from '@/components/CompetitionSidebar';
 import Leaderboard from '@/components/Leaderboard';
 
@@ -63,12 +64,7 @@ export default function CompetitionsPage() {
     setActiveCompetitionId(comp);
   }, [searchParams]);
 
-  // Fetch leaderboard data when competition changes
-  useEffect(() => {
-    fetchLeaderboard();
-  }, [activeCompetitionId]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
       if (activeCompetitionId === 'legendary') {
@@ -103,7 +99,12 @@ export default function CompetitionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeCompetitionId, selectedEntryId]);
+
+  // Fetch leaderboard data when competition changes
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [activeCompetitionId, fetchLeaderboard]);
 
   const handleSelectCompetition = (id: string) => {
     router.push(`/?competition=${id}`);
