@@ -16,9 +16,10 @@ interface PitchCardProps {
     color: string;
   };
   isAuthenticated: boolean;
+  rank: number;
 }
 
-export default function PitchCard({ story, isAuthenticated }: PitchCardProps) {
+export default function PitchCard({ story, isAuthenticated, rank }: PitchCardProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [voteCount, setVoteCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -75,7 +76,17 @@ export default function PitchCard({ story, isAuthenticated }: PitchCardProps) {
   };
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-pink-500 transition-all duration-300">
+    <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-pink-500 transition-all duration-300 relative">
+      {/* Ranking Badge */}
+      <div className={`absolute -top-3 -left-3 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg ${
+        rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900' :
+        rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-gray-900' :
+        rank === 3 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-orange-900' :
+        'bg-gradient-to-br from-gray-600 to-gray-700 text-gray-200'
+      }`}>
+        #{rank}
+      </div>
+      
       {/* Header with Name and Valuation */}
       <div className="flex justify-between items-start mb-4">
         <div>

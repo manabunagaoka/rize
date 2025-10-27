@@ -153,6 +153,23 @@ export default async function HomePage() {
   const user = await getUser();
   const studentStartups = await getStudentStartups();
   const totalVotes = await getTotalVotes();
+  
+  // Get pitch rankings to sort SUCCESS_STORIES by vote count
+  const { data: rankings } = await supabase
+    .from('legendary_pitch_rankings')
+    .select('*');
+  
+  // Create a map of pitch_id -> vote_count and rank for display
+  const voteMap = new Map(rankings?.map(r => [r.pitch_id, r.vote_count]) || []);
+  
+  // Sort SUCCESS_STORIES by vote count (descending), then by id (ascending) for ties
+  const sortedStories = [...SUCCESS_STORIES].sort((a, b) => {
+    const votesA = voteMap.get(a.id) || 0;
+    const votesB = voteMap.get(b.id) || 0;
+    if (votesB !== votesA) return votesB - votesA; // Higher votes first
+    return a.id - b.id; // If tied, sort by id
+  });
+  
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
@@ -228,11 +245,12 @@ export default async function HomePage() {
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {SUCCESS_STORIES.map((story) => (
+            {sortedStories.map((story, index) => (
               <PitchCard 
                 key={story.id} 
                 story={story} 
                 isAuthenticated={!!user}
+                rank={index + 1}
               />
             ))}
           </div>
