@@ -2,35 +2,119 @@ import { getUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import StockPrice from '@/components/StockPrice';
+import PitchCard from '@/components/PitchCard';
 
-// Success stories - hardcoded legendary Harvard startups
+// Success stories - All 10 Harvard legendary startups for voting
 const SUCCESS_STORIES = [
   {
+    id: 1,
     name: 'Facebook',
     founder: 'Mark Zuckerberg',
     year: '2004',
+    pitch: 'An online directory that connects people through social networks at colleges.',
+    funFact: 'Started as "TheFacebook" - exclusive to Harvard students with a .edu email. Expanded to other Ivy League schools within months.',
     valuation: '$1.2T',
     ticker: 'META',
-    story: 'Built "TheFacebook" to connect Harvard students. Scaled to 3 billion users worldwide. Revenue: $134B/year.',
     color: 'from-blue-500 to-blue-600'
   },
   {
+    id: 2,
     name: 'Microsoft',
-    founder: 'Bill Gates',
+    founder: 'Bill Gates & Paul Allen',
     year: '1975',
+    pitch: 'A computer on every desk and in every home, running our software.',
+    funFact: 'Gates wrote a BASIC interpreter for the Altair 8800 in his dorm room. Sold it before even testing on real hardware - it worked.',
     valuation: '$3.1T',
     ticker: 'MSFT',
-    story: 'Created BASIC interpreter for Altair 8800 while at Harvard. Built the operating system that powered the PC revolution.',
     color: 'from-green-500 to-green-600'
   },
   {
+    id: 3,
     name: 'Dropbox',
     founder: 'Drew Houston',
     year: '2007',
+    pitch: 'Your files, anywhere. One folder that syncs across all your devices.',
+    funFact: 'Drew forgot his USB drive on a bus trip and coded the first prototype during the 4-hour ride. Launched at Y Combinator.',
     valuation: '$10B',
     ticker: 'DBX',
-    story: 'Drew Houston forgot his USB drive and created Dropbox. Now stores over 600 million users\' files in the cloud.',
     color: 'from-purple-500 to-purple-600'
+  },
+  {
+    id: 4,
+    name: 'Akamai',
+    founder: 'Tom Leighton & Danny Lewin',
+    year: '1998',
+    pitch: 'Make the internet faster by serving content from servers closer to users.',
+    funFact: 'Started as an MIT/Harvard math project. Now delivers 30% of all web traffic globally including Netflix and Spotify.',
+    valuation: '$15B',
+    ticker: 'AKAM',
+    color: 'from-cyan-500 to-cyan-600'
+  },
+  {
+    id: 5,
+    name: 'Reddit',
+    founder: 'Steve Huffman & Alexis Ohanian',
+    year: '2005',
+    pitch: 'The front page of the internet - where communities create and share content.',
+    funFact: 'Pitched as "Memepool meets Delicious" at Y Combinator. Built in 3 weeks using Python. Now 500M+ monthly users.',
+    valuation: '$10B',
+    ticker: 'RDDT',
+    color: 'from-orange-500 to-orange-600'
+  },
+  {
+    id: 6,
+    name: 'Priceonomics',
+    founder: 'Rohin Dhar',
+    year: '2010',
+    pitch: 'Data-driven storytelling that helps you make better buying decisions.',
+    funFact: 'Started by scraping Craigslist to find fair prices. Pivoted to become a content marketing agency acquired by Content Harmony.',
+    valuation: 'Acquired',
+    ticker: null,
+    color: 'from-yellow-500 to-yellow-600'
+  },
+  {
+    id: 7,
+    name: 'Quora',
+    founder: 'Adam D\'Angelo & Charlie Cheever',
+    year: '2009',
+    pitch: 'A place to share knowledge and better understand the world.',
+    funFact: 'Adam was Facebook\'s first CTO. Built Quora to create higher quality Q&A than Yahoo Answers. 400M+ monthly users.',
+    valuation: '$2B',
+    ticker: null,
+    color: 'from-red-500 to-red-600'
+  },
+  {
+    id: 8,
+    name: 'Warby Parker',
+    founder: 'Neil Blumenthal & team',
+    year: '2010',
+    pitch: 'Designer eyewear at a revolutionary price, while leading the way for socially conscious businesses.',
+    funFact: 'Started because founder lost his glasses and was shocked by the $500 price. Buy a pair, give a pair model. Now valued at $3B.',
+    valuation: '$3B',
+    ticker: 'WRBY',
+    color: 'from-indigo-500 to-indigo-600'
+  },
+  {
+    id: 9,
+    name: 'Typeform',
+    founder: 'Robert Muñoz',
+    year: '2012',
+    pitch: 'Forms and surveys that people actually want to fill out.',
+    funFact: 'Built because founders hated boring online forms. Made them conversational and beautiful. 150M+ responses collected yearly.',
+    valuation: '$935M',
+    ticker: null,
+    color: 'from-pink-500 to-pink-600'
+  },
+  {
+    id: 10,
+    name: 'Booking.com',
+    founder: 'Geert-Jan Bruinsma',
+    year: '1996',
+    pitch: 'Book accommodations anywhere in the world with instant confirmation.',
+    funFact: 'Started in Amsterdam, but expanded with Harvard MBA insights. Now books 1.5M room nights per day globally.',
+    valuation: '$100B',
+    ticker: 'BKNG',
+    color: 'from-blue-400 to-blue-500'
   }
 ];
 
@@ -131,70 +215,39 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Success Stories */}
+      {/* Legendary Pitches - Vote for Inspiration */}
       <section className="container mx-auto px-4 py-16">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-4xl font-bold text-white mb-3">
-              Harvard Success Stories
+              Vote on Legendary Pitches
             </h3>
-            <p className="text-gray-400 text-lg">
-              All started in Harvard dorm rooms
+            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+              Which elevator pitch inspires you most? Vote on pitches from Harvard founders who turned dorm room ideas into billion-dollar companies.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {SUCCESS_STORIES.map((story) => {
-              return (
-                <div 
-                  key={story.name}
-                  className="group bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 border border-gray-700 hover:border-pink-500/50 transition-all hover:scale-105 cursor-pointer relative overflow-hidden"
-                >
-                  {/* Background gradient on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${story.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
-                  
-                  {/* Content */}
-                  <div className="relative z-10">
-                    {/* Company name */}
-                    <h4 className="text-3xl font-bold text-white mb-3">{story.name}</h4>
-                    
-                    {/* Founder */}
-                    <p className="text-gray-400 text-sm mb-4">
-                      {story.founder} • {story.year}
-                    </p>
-                    
-                    {/* Valuation */}
-                    <div className="text-3xl font-bold text-pink-400 mb-4">
-                      {story.valuation}
-                    </div>
-                    
-                    {/* Real-time stock price */}
-                    <div className="mb-6">
-                      <StockPrice ticker={story.ticker} />
-                    </div>
-                    
-                    {/* Story - always visible */}
-                    <div className="text-sm text-gray-300 leading-relaxed border-t border-gray-700 pt-4">
-                      <p>{story.story}</p>
-                    </div>
-                    
-                    {/* Stock ticker badge */}
-                    <div className="flex items-center gap-2 mt-4">
-                      <span className="px-3 py-1 bg-gray-700/50 text-gray-300 rounded-full text-xs font-mono">
-                        {story.ticker}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid md:grid-cols-2 gap-6">
+            {SUCCESS_STORIES.map((story) => (
+              <PitchCard 
+                key={story.id} 
+                story={story} 
+                isAuthenticated={!!user}
+              />
+            ))}
           </div>
           
-          {/* Note about stock prices */}
-          <div className="text-center mt-8">
-            <p className="text-xs text-gray-500">
-              Market valuations as of October 2025
+          {/* CTA */}
+          <div className="mt-12 text-center">
+            <p className="text-gray-400 mb-4">
+              Inspired? Ready to craft your own legendary pitch?
             </p>
+            <Link
+              href="/submit"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all duration-300"
+            >
+              Submit Your Startup
+            </Link>
           </div>
         </div>
       </section>
