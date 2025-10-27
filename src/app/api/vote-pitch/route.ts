@@ -6,30 +6,52 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 );
 
+// Verify user from Manaboodle SSO token
+async function verifyUser(request: NextRequest) {
+  const token = request.cookies.get('manaboodle_sso_token')?.value;
+  
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const response = await fetch('https://www.manaboodle.com/sso/verify', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const user = await response.json();
+    return user;
+  } catch (error) {
+    console.error('[VOTE API] SSO verification failed:', error);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { pitchId } = body;
 
-    // Get user info from headers (injected by middleware from Manaboodle SSO)
-    const userId = request.headers.get('x-user-id');
-    const userEmail = request.headers.get('x-user-email');
-    const userName = request.headers.get('x-user-name');
-    const classCode = request.headers.get('x-user-class');
+    // Verify user directly from SSO token
+    const user = await verifyUser(request);
 
-    console.log('[VOTE API] Headers:', {
-      userId,
-      userEmail,
-      userName,
-      classCode,
-      pitchId,
-      allHeaders: Object.fromEntries(request.headers.entries())
+    console.log('[VOTE API] User verification:', {
+      hasUser: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      pitchId
     });
 
-    if (!userId || !userEmail) {
-      console.error('[VOTE API] Not authenticated - missing headers');
+    if (!user) {
+      console.error('[VOTE API] Not authenticated');
       return NextResponse.json(
-        { error: 'Not authenticated', debug: { userId, userEmail, headers: Object.fromEntries(request.headers.entries()) } },
+        { error: 'Not authenticated. Please log in.' },
         { status: 401 }
       );
     }
@@ -45,7 +67,7 @@ export async function POST(request: NextRequest) {
     const { data: existingVote } = await supabase
       .from('legendary_pitch_votes')
       .select('id')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .eq('pitch_id', pitchId)
       .single();
 
@@ -54,7 +76,7 @@ export async function POST(request: NextRequest) {
       await supabase
         .from('legendary_pitch_votes')
         .delete()
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('pitch_id', pitchId);
 
       return NextResponse.json({ 
@@ -69,10 +91,10 @@ export async function POST(request: NextRequest) {
       .from('legendary_pitch_votes')
       .insert({
         pitch_id: pitchId,
-        user_id: userId,
-        user_email: userEmail,
-        user_name: userName,
-        class_code: classCode || 'Unknown'
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.name || user.email,
+        class_code: user.classCode || 'Unknown'
       });
 
     if (error) {
@@ -101,7 +123,8 @@ export async function POST(request: NextRequest) {
 // GET endpoint to fetch user's votes and vote counts
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    // Verify user directly from SSO token
+    const user = await verifyUser(request);
 
     // Get all pitch vote counts
     const { data: rankings } = await supabase
@@ -110,11 +133,11 @@ export async function GET(request: NextRequest) {
 
     // Get user's votes if authenticated
     let userVotes: number[] = [];
-    if (userId) {
+    if (user) {
       const { data: votes } = await supabase
         .from('legendary_pitch_votes')
         .select('pitch_id')
-        .eq('user_id', userId);
+        .eq('user_id', user.id);
 
       userVotes = votes?.map(v => v.pitch_id) || [];
     }
