@@ -6,6 +6,38 @@ import Link from 'next/link';
 import CompetitionSidebar from '@/components/CompetitionSidebar';
 import Leaderboard from '@/components/Leaderboard';
 
+// Auth check hook
+function useAuth() {
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        // Try to fetch user data from vote API (which checks auth)
+        const response = await fetch('/api/vote-pitch');
+        const data = await response.json();
+        
+        if (data.error === 'Not authenticated') {
+          router.push('/login');
+          return;
+        }
+        
+        setIsAuthenticated(true);
+      } catch (error) {
+        router.push('/login');
+      } finally {
+        setIsChecking(false);
+      }
+    }
+    
+    checkAuth();
+  }, [router]);
+
+  return { isChecking, isAuthenticated };
+}
+
 // Legendary Harvard startups data
 const SUCCESS_STORIES = [
   { id: 1, name: 'Facebook', founder: 'Mark Zuckerberg', year: '2004', valuation: '$1.2T', ticker: 'META',
@@ -53,10 +85,23 @@ const SUCCESS_STORIES = [
 function CompetitionsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isChecking, isAuthenticated } = useAuth();
   const [activeCompetitionId, setActiveCompetitionId] = useState<string>('legendary');
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<number | undefined>();
   const [loading, setLoading] = useState(true);
+
+  // Show loading while checking auth
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Get competition from URL or default to legendary
   useEffect(() => {
