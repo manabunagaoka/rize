@@ -91,18 +91,6 @@ function CompetitionsPageContent() {
   const [selectedEntryId, setSelectedEntryId] = useState<number | undefined>();
   const [loading, setLoading] = useState(true);
 
-  // Show loading while checking auth
-  if (isChecking) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Get competition from URL or default to legendary
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
@@ -150,6 +138,18 @@ function CompetitionsPageContent() {
   useEffect(() => {
     fetchLeaderboard();
   }, [activeCompetitionId, fetchLeaderboard]);
+
+  // Show loading while checking auth
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSelectCompetition = (id: string) => {
     router.push(`/?competition=${id}`);
