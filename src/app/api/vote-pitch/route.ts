@@ -17,9 +17,19 @@ export async function POST(request: NextRequest) {
     const userName = request.headers.get('x-user-name');
     const classCode = request.headers.get('x-user-class');
 
+    console.log('[VOTE API] Headers:', {
+      userId,
+      userEmail,
+      userName,
+      classCode,
+      pitchId,
+      allHeaders: Object.fromEntries(request.headers.entries())
+    });
+
     if (!userId || !userEmail) {
+      console.error('[VOTE API] Not authenticated - missing headers');
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: 'Not authenticated', debug: { userId, userEmail, headers: Object.fromEntries(request.headers.entries()) } },
         { status: 401 }
       );
     }

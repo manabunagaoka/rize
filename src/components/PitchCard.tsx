@@ -44,10 +44,12 @@ export default function PitchCard({ story, isAuthenticated, rank }: PitchCardPro
 
   const handleVote = async () => {
     if (!isAuthenticated) {
+      console.log('[PITCH CARD] Not authenticated, redirecting to login');
       window.location.href = '/login';
       return;
     }
 
+    console.log('[PITCH CARD] Voting for pitch:', story.id);
     setLoading(true);
     try {
       const response = await fetch('/api/vote-pitch', {
@@ -57,6 +59,7 @@ export default function PitchCard({ story, isAuthenticated, rank }: PitchCardPro
       });
 
       const data = await response.json();
+      console.log('[PITCH CARD] Vote response:', data);
       
       if (data.success) {
         // Toggle vote state
@@ -67,9 +70,13 @@ export default function PitchCard({ story, isAuthenticated, rank }: PitchCardPro
           setHasVoted(false);
           setVoteCount(prev => Math.max(0, prev - 1));
         }
+      } else {
+        console.error('[PITCH CARD] Vote failed:', data);
+        alert(`Vote failed: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Vote failed:', error);
+      console.error('[PITCH CARD] Vote error:', error);
+      alert(`Vote error: ${error}`);
     } finally {
       setLoading(false);
     }
