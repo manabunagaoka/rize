@@ -1,171 +1,339 @@
-import { getUser } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
+import { getUser } from '@/lib/auth';import { getUser } from '@/lib/auth';
+
+import Link from 'next/link';import { supabase } from '@/lib/supabase';
+
 import Link from 'next/link';
-import StockPrice from '@/components/StockPrice';
-import PitchCard from '@/components/PitchCard';
 
-// Success stories - All 10 Harvard legendary startups for voting
-const SUCCESS_STORIES = [
-  {
-    id: 1,
-    name: 'Facebook',
-    founder: 'Mark Zuckerberg',
-    year: '2004',
-    pitch: 'An online directory that connects people through social networks at colleges.',
-    funFact: 'Started as "TheFacebook" - exclusive to Harvard students with a .edu email. Expanded to other Ivy League schools within months.',
-    valuation: '$1.2T',
-    ticker: 'META',
-    color: 'from-blue-500 to-blue-600'
-  },
-  {
-    id: 2,
-    name: 'Microsoft',
-    founder: 'Bill Gates & Paul Allen',
-    year: '1975',
-    pitch: 'A computer on every desk and in every home, running our software.',
-    funFact: 'Gates wrote a BASIC interpreter for the Altair 8800 in his dorm room. Sold it before even testing on real hardware - it worked.',
-    valuation: '$3.1T',
-    ticker: 'MSFT',
-    color: 'from-green-500 to-green-600'
-  },
-  {
-    id: 3,
-    name: 'Dropbox',
-    founder: 'Drew Houston',
-    year: '2007',
-    pitch: 'Your files, anywhere. One folder that syncs across all your devices.',
-    funFact: 'Drew forgot his USB drive on a bus trip and coded the first prototype during the 4-hour ride. Launched at Y Combinator.',
-    valuation: '$10B',
-    ticker: 'DBX',
-    color: 'from-purple-500 to-purple-600'
-  },
-  {
-    id: 4,
-    name: 'Akamai',
-    founder: 'Tom Leighton & Danny Lewin',
-    year: '1998',
-    pitch: 'Make the internet faster by serving content from servers closer to users.',
-    funFact: 'Started as an MIT/Harvard math project. Now delivers 30% of all web traffic globally including Netflix and Spotify.',
-    valuation: '$15B',
-    ticker: 'AKAM',
-    color: 'from-cyan-500 to-cyan-600'
-  },
-  {
-    id: 5,
-    name: 'Reddit',
-    founder: 'Steve Huffman & Alexis Ohanian',
-    year: '2005',
-    pitch: 'The front page of the internet - where communities create and share content.',
-    funFact: 'Pitched as "Memepool meets Delicious" at Y Combinator. Built in 3 weeks using Python. Now 500M+ monthly users.',
-    valuation: '$10B',
-    ticker: 'RDDT',
-    color: 'from-orange-500 to-orange-600'
-  },
-  {
-    id: 6,
-    name: 'Priceonomics',
-    founder: 'Rohin Dhar',
-    year: '2010',
-    pitch: 'Data-driven storytelling that helps you make better buying decisions.',
-    funFact: 'Started by scraping Craigslist to find fair prices. Pivoted to become a content marketing agency acquired by Content Harmony.',
+export default async function HomePage() {import StockPrice from '@/components/StockPrice';
+
+  const user = await getUser();import PitchCard from '@/components/PitchCard';
+
+
+
+  return (// Success stories - All 10 Harvard legendary startups for voting
+
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">const SUCCESS_STORIES = [
+
+      {/* Header */}  {
+
+      <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-50">    id: 1,
+
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">    name: 'Facebook',
+
+          <Link href="/" className="flex items-center gap-3">    founder: 'Mark Zuckerberg',
+
+            <div>    year: '2004',
+
+              <h1 className="text-2xl font-bold">RIZE</h1>    pitch: 'An online directory that connects people through social networks at colleges.',
+
+              <p className="text-xs text-gray-400">Harvard Edition</p>    funFact: 'Started as "TheFacebook" - exclusive to Harvard students with a .edu email. Expanded to other Ivy League schools within months.',
+
+            </div>    valuation: '$1.2T',
+
+          </Link>    ticker: 'META',
+
+              color: 'from-blue-500 to-blue-600'
+
+          {user ? (  },
+
+            // Hamburger menu when logged in  {
+
+            <div className="relative group">    id: 2,
+
+              <button className="p-2 hover:bg-gray-800 rounded-lg transition">    name: 'Microsoft',
+
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">    founder: 'Bill Gates & Paul Allen',
+
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />    year: '1975',
+
+                </svg>    pitch: 'A computer on every desk and in every home, running our software.',
+
+              </button>    funFact: 'Gates wrote a BASIC interpreter for the Altair 8800 in his dorm room. Sold it before even testing on real hardware - it worked.',
+
+                  valuation: '$3.1T',
+
+              {/* Dropdown menu */}    ticker: 'MSFT',
+
+              <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">    color: 'from-green-500 to-green-600'
+
+                <div className="py-2">  },
+
+                  <div className="px-4 py-2 border-b border-gray-700">  {
+
+                    <p className="text-sm text-gray-400">Signed in as</p>    id: 3,
+
+                    <p className="text-sm font-medium truncate">{user.email}</p>    name: 'Dropbox',
+
+                  </div>    founder: 'Drew Houston',
+
+                      year: '2007',
+
+                  <a    pitch: 'Your files, anywhere. One folder that syncs across all your devices.',
+
+                    href="https://www.manaboodle.com/academic-portal"    funFact: 'Drew forgot his USB drive on a bus trip and coded the first prototype during the 4-hour ride. Launched at Y Combinator.',
+
+                    target="_blank"    valuation: '$10B',
+
+                    rel="noopener noreferrer"    ticker: 'DBX',
+
+                    className="block px-4 py-2 text-sm hover:bg-gray-700 transition"    color: 'from-purple-500 to-purple-600'
+
+                  >  },
+
+                    Manaboodle Account  {
+
+                  </a>    id: 4,
+
+                      name: 'Akamai',
+
+                  <Link    founder: 'Tom Leighton & Danny Lewin',
+
+                    href="/submit"    year: '1998',
+
+                    className="block px-4 py-2 text-sm hover:bg-gray-700 transition"    pitch: 'Make the internet faster by serving content from servers closer to users.',
+
+                  >    funFact: 'Started as an MIT/Harvard math project. Now delivers 30% of all web traffic globally including Netflix and Spotify.',
+
+                    Submit Startup    valuation: '$15B',
+
+                  </Link>    ticker: 'AKAM',
+
+                      color: 'from-cyan-500 to-cyan-600'
+
+                  <Link  },
+
+                    href="/api/logout"  {
+
+                    className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400"    id: 5,
+
+                  >    name: 'Reddit',
+
+                    Log Out    founder: 'Steve Huffman & Alexis Ohanian',
+
+                  </Link>    year: '2005',
+
+                </div>    pitch: 'The front page of the internet - where communities create and share content.',
+
+              </div>    funFact: 'Pitched as "Memepool meets Delicious" at Y Combinator. Built in 3 weeks using Python. Now 500M+ monthly users.',
+
+            </div>    valuation: '$10B',
+
+          ) : (    ticker: 'RDDT',
+
+            <Link    color: 'from-orange-500 to-orange-600'
+
+              href="/login"  },
+
+              className="px-6 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition"  {
+
+            >    id: 6,
+
+              Sign In    name: 'Priceonomics',
+
+            </Link>    founder: 'Rohin Dhar',
+
+          )}    year: '2010',
+
+        </div>    pitch: 'Data-driven storytelling that helps you make better buying decisions.',
+
+      </header>    funFact: 'Started by scraping Craigslist to find fair prices. Pivoted to become a content marketing agency acquired by Content Harmony.',
+
     valuation: 'Acquired',
-    ticker: null,
-    color: 'from-yellow-500 to-yellow-600'
-  },
-  {
-    id: 7,
-    name: 'Quora',
-    founder: 'Adam D\'Angelo & Charlie Cheever',
-    year: '2009',
-    pitch: 'A place to share knowledge and better understand the world.',
-    funFact: 'Adam was Facebook\'s first CTO. Built Quora to create higher quality Q&A than Yahoo Answers. 400M+ monthly users.',
-    valuation: '$2B',
-    ticker: null,
+
+      {/* Hero Section */}    ticker: null,
+
+      <section className="container mx-auto px-4 py-20 text-center">    color: 'from-yellow-500 to-yellow-600'
+
+        <div className="max-w-5xl mx-auto">  },
+
+          <h2 className="text-6xl md:text-7xl font-bold text-white mb-6 leading-tight">  {
+
+            From Dorm Room<br />    id: 7,
+
+            to <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-pink-600">Billion-Dollar Company</span>    name: 'Quora',
+
+          </h2>    founder: 'Adam D\'Angelo & Charlie Cheever',
+
+          <p className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto">    year: '2009',
+
+            Harvard&apos;s next unicorn is being built right now. Vote on the best student startups and discover the future before everyone else.    pitch: 'A place to share knowledge and better understand the world.',
+
+          </p>    funFact: 'Adam was Facebook\'s first CTO. Built Quora to create higher quality Q&A than Yahoo Answers. 400M+ monthly users.',
+
+        </div>    valuation: '$2B',
+
+      </section>    ticker: null,
+
     color: 'from-red-500 to-red-600'
-  },
-  {
-    id: 8,
-    name: 'Warby Parker',
-    founder: 'Neil Blumenthal & team',
-    year: '2010',
-    pitch: 'Designer eyewear at a revolutionary price, while leading the way for socially conscious businesses.',
-    funFact: 'Started because founder lost his glasses and was shocked by the $500 price. Buy a pair, give a pair model. Now valued at $3B.',
-    valuation: '$3B',
-    ticker: 'WRBY',
-    color: 'from-indigo-500 to-indigo-600'
-  },
-  {
-    id: 9,
-    name: 'Typeform',
-    founder: 'Robert Muñoz',
-    year: '2012',
-    pitch: 'Forms and surveys that people actually want to fill out.',
-    funFact: 'Built because founders hated boring online forms. Made them conversational and beautiful. 150M+ responses collected yearly.',
-    valuation: '$935M',
-    ticker: null,
-    color: 'from-pink-500 to-pink-600'
-  },
-  {
-    id: 10,
-    name: 'Booking.com',
-    founder: 'Geert-Jan Bruinsma',
-    year: '1996',
-    pitch: 'Book accommodations anywhere in the world with instant confirmation.',
-    funFact: 'Started in Amsterdam, but expanded with Harvard MBA insights. Now books 1.5M room nights per day globally.',
-    valuation: '$100B',
-    ticker: 'BKNG',
-    color: 'from-blue-400 to-blue-500'
-  }
-];
 
-// Fetch student startups from project_rankings view
+      {/* Featured Competitions */}  },
+
+      <section className="container mx-auto px-4 pb-20">  {
+
+        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">    id: 8,
+
+              name: 'Warby Parker',
+
+          {/* Harvard Legends Competition */}    founder: 'Neil Blumenthal & team',
+
+          <Link     year: '2010',
+
+            href="/competitions?competition=legendary"    pitch: 'Designer eyewear at a revolutionary price, while leading the way for socially conscious businesses.',
+
+            className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105"    funFact: 'Started because founder lost his glasses and was shocked by the $500 price. Buy a pair, give a pair model. Now valued at $3B.',
+
+          >    valuation: '$3B',
+
+            <div className="absolute top-4 right-4 text-4xl">🏆</div>    ticker: 'WRBY',
+
+                color: 'from-indigo-500 to-indigo-600'
+
+            <h3 className="text-3xl font-bold text-white mb-3">  },
+
+              Harvard Legends  {
+
+            </h3>    id: 9,
+
+                name: 'Typeform',
+
+            <p className="text-gray-300 mb-6">    founder: 'Robert Muñoz',
+
+              Vote on the best pitches from Harvard founders who built billion-dollar companies    year: '2012',
+
+            </p>    pitch: 'Forms and surveys that people actually want to fill out.',
+
+                funFact: 'Built because founders hated boring online forms. Made them conversational and beautiful. 150M+ responses collected yearly.',
+
+            <div className="flex items-center justify-between">    valuation: '$935M',
+
+              <div>    ticker: null,
+
+                <p className="text-sm text-gray-400">Rule</p>    color: 'from-pink-500 to-pink-600'
+
+                <p className="text-white font-medium">Vote on the best pitch</p>  },
+
+              </div>  {
+
+                  id: 10,
+
+              <div className="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full text-sm font-semibold">    name: 'Booking.com',
+
+                Active Now    founder: 'Geert-Jan Bruinsma',
+
+              </div>    year: '1996',
+
+            </div>    pitch: 'Book accommodations anywhere in the world with instant confirmation.',
+
+                funFact: 'Started in Amsterdam, but expanded with Harvard MBA insights. Now books 1.5M room nights per day globally.',
+
+            <div className="mt-6 text-pink-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">    valuation: '$100B',
+
+              View Rankings    ticker: 'BKNG',
+
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">    color: 'from-blue-400 to-blue-500'
+
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />  }
+
+              </svg>];
+
+            </div>
+
+          </Link>// Fetch student startups from project_rankings view
+
 async function getStudentStartups() {
-  try {
-    const { data, error } = await supabase
-      .from('project_rankings')
-      .select('*')
-      .limit(5);
-    
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error loading student startups:', error);
-    return [];
-  }
-}
 
-// Get total vote count for social proof
-async function getTotalVotes() {
-  try {
-    const { count, error } = await supabase
-      .from('project_votes')
-      .select('*', { count: 'exact', head: true });
-    
-    if (error) throw error;
-    return count || 0;
-  } catch (error) {
-    console.error('Error loading vote count:', error);
-    return 0;
-  }
-}
+          {/* Harvard Class of 2026 Competition */}  try {
 
-export default async function HomePage() {
-  const user = await getUser();
-  const studentStartups = await getStudentStartups();
-  const totalVotes = await getTotalVotes();
+          <Link     const { data, error } = await supabase
+
+            href={user ? "/competitions?competition=harvard-2026-main" : "/login"}      .from('project_rankings')
+
+            className="group relative bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-2xl p-8 border-2 border-blue-600/30 hover:border-blue-500 transition-all duration-300 hover:scale-105"      .select('*')
+
+          >      .limit(5);
+
+            <div className="absolute top-4 right-4 text-4xl">🎓</div>    
+
+                if (error) throw error;
+
+            <h3 className="text-3xl font-bold text-white mb-3">    return data || [];
+
+              Harvard Class of 2026  } catch (error) {
+
+            </h3>    console.error('Error loading student startups:', error);
+
+                return [];
+
+            <p className="text-gray-300 mb-6">  }
+
+              Vote for your classmates&apos; startups. Best ideas get featured and investor introductions.}
+
+            </p>
+
+            // Get total vote count for social proof
+
+            <div className="flex items-center justify-between">async function getTotalVotes() {
+
+              <div>  try {
+
+                <p className="text-sm text-gray-400">Status</p>    const { count, error } = await supabase
+
+                <p className="text-white font-medium">Coming Soon</p>      .from('project_votes')
+
+              </div>      .select('*', { count: 'exact', head: true });
+
+                  
+
+              <div className="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full text-sm font-semibold">    if (error) throw error;
+
+                Opening Soon    return count || 0;
+
+              </div>  } catch (error) {
+
+            </div>    console.error('Error loading vote count:', error);
+
+                return 0;
+
+            <div className="mt-6 text-pink-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">  }
+
+              {user ? "View Competition" : "Sign Up to Enter"}}
+
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />export default async function HomePage() {
+
+              </svg>  const user = await getUser();
+
+            </div>  const studentStartups = await getStudentStartups();
+
+          </Link>  const totalVotes = await getTotalVotes();
+
   
-  // Get pitch rankings to sort SUCCESS_STORIES by vote count
-  const { data: rankings } = await supabase
+
+        </div>  // Get pitch rankings to sort SUCCESS_STORIES by vote count
+
+      </section>  const { data: rankings } = await supabase
+
     .from('legendary_pitch_rankings')
-    .select('*');
-  
-  // Create a map of pitch_id -> vote_count and rank for display
-  const voteMap = new Map(rankings?.map(r => [r.pitch_id, r.vote_count]) || []);
-  
-  // Sort SUCCESS_STORIES by vote count (descending), then by id (ascending) for ties
-  const sortedStories = [...SUCCESS_STORIES].sort((a, b) => {
-    const votesA = voteMap.get(a.id) || 0;
-    const votesB = voteMap.get(b.id) || 0;
+
+      {/* Footer */}    .select('*');
+
+      <footer className="border-t border-gray-800 py-8">  
+
+        <div className="container mx-auto px-4 text-center text-gray-500">  // Create a map of pitch_id -> vote_count and rank for display
+
+          <p>&copy; 2025 RIZE - Harvard Edition. Built with ❤️ at Harvard.</p>  const voteMap = new Map(rankings?.map(r => [r.pitch_id, r.vote_count]) || []);
+
+        </div>  
+
+      </footer>  // Sort SUCCESS_STORIES by vote count (descending), then by id (ascending) for ties
+
+    </div>  const sortedStories = [...SUCCESS_STORIES].sort((a, b) => {
+
+  );    const votesA = voteMap.get(a.id) || 0;
+
+}    const votesB = voteMap.get(b.id) || 0;
+
     if (votesB !== votesA) return votesB - votesA; // Higher votes first
     return a.id - b.id; // If tied, sort by id
   });
