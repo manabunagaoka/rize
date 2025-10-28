@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Leaderboard from '@/components/Leaderboard';
 import StockPrice from '@/components/StockPrice';
+import Header from '@/components/Header';
 
 const SUCCESS_STORIES = [
   { id: 1, name: 'Facebook', founder: 'Mark Zuckerberg', year: '2004', valuation: '$1.2T', ticker: 'META',
@@ -56,26 +57,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showMenu, setShowMenu] = useState(false);
   const [userVotes, setUserVotes] = useState<number[]>([]);
   const [isVoting, setIsVoting] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    }
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showMenu]);
 
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
@@ -174,96 +157,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            {/* Left: Back Button + Logo */}
-            <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white"
-                title="Back to Home"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </Link>
-              
-              <Link href="/" className="flex items-center gap-3">
-                <div>
-                  <h1 className="text-2xl font-bold">RIZE</h1>
-                  <p className="text-xs text-gray-400">by Manaboodle · Harvard Edition</p>
-                </div>
-              </Link>
-            </div>
-            
-            {/* Center: Page Title */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
-              <h2 className="text-xl font-bold">{competitionTitle}</h2>
-            </div>
-            
-            {/* Right: Hamburger Menu */}
-            <div className="relative" ref={menuRef}>
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 hover:bg-gray-800 rounded-lg transition"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              {/* Hamburger Menu */}
-              {showMenu && (
-                <div className="absolute right-0 mt-2 top-full w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
-                  <div className="py-2">
-                    {user && (
-                      <div className="px-4 py-2 border-b border-gray-700">
-                        <p className="text-sm text-gray-400">Signed in as</p>
-                        <p className="text-sm font-medium truncate">{user.email}</p>
-                      </div>
-                    )}
-                    
-                    <Link
-                      href="/"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Home
-                    </Link>
-                    <a
-                      href="https://www.manaboodle.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                    >
-                      Manaboodle
-                    </a>
-                    <Link
-                      href="/account"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Account
-                    </Link>
-                    
-                    {user && (
-                      <Link
-                        href="/api/logout"
-                        className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400"
-                        onClick={() => setShowMenu(false)}
-                      >
-                        Log Out
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header (shared) */}
+      <Header user={user} showBack />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">

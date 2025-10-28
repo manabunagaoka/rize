@@ -10,18 +10,24 @@ const supabase = createClient(
 async function verifyUser(request: NextRequest) {
   const token = request.cookies.get('manaboodle_sso_token')?.value;
   
+  console.log('[VOTE API] ========== AUTH CHECK START ==========');
   console.log('[VOTE API] Checking auth:', {
     hasToken: !!token,
-    tokenStart: token?.substring(0, 20) + '...',
-    allCookies: request.cookies.getAll().map(c => c.name)
+    tokenPreview: token ? `${token.substring(0, 30)}...` : 'NO TOKEN',
+    allCookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
+    headers: {
+      authorization: request.headers.get('authorization'),
+      cookie: request.headers.get('cookie') ? 'present' : 'missing'
+    }
   });
   
   if (!token) {
-    console.log('[VOTE API] No token found in cookies');
+    console.log('[VOTE API] ❌ No token found in cookies');
     return null;
   }
 
   try {
+    console.log('[VOTE API] Calling Manaboodle SSO verify...');
     const response = await fetch('https://www.manaboodle.com/api/sso/verify', {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -32,32 +38,38 @@ async function verifyUser(request: NextRequest) {
 
     console.log('[VOTE API] SSO verify response:', {
       status: response.status,
-      ok: response.ok
+      ok: response.ok,
+      statusText: response.statusText
     });
 
     if (!response.ok) {
-      console.error('[VOTE API] SSO verification failed:', response.status);
       const errorText = await response.text();
-      console.error('[VOTE API] Error response:', errorText);
+      console.error('[VOTE API] ❌ SSO verification failed');
+      console.error('[VOTE API] Error response body:', errorText);
       return null;
     }
 
     const data = await response.json();
-    console.log('[VOTE API] SSO response data:', {
+    console.log('[VOTE API] SSO response data structure:', {
       hasUser: !!data.user,
-      hasDirectData: !!(data.id && data.email),
-      dataKeys: Object.keys(data)
+      hasDirectId: !!data.id,
+      hasDirectEmail: !!data.email,
+      keys: Object.keys(data),
+      userKeys: data.user ? Object.keys(data.user) : null
     });
     
     const user = data.user || data;
-    console.log('[VOTE API] Extracted user:', {
+    console.log('[VOTE API] ✅ Extracted user:', {
       id: user?.id,
-      email: user?.email
+      email: user?.email,
+      name: user?.name
     });
+    console.log('[VOTE API] ========== AUTH CHECK END ==========');
     
     return user;
   } catch (error) {
-    console.error('[VOTE API] SSO verification exception:', error);
+    console.error('[VOTE API] ❌ SSO verification exception:', error);
+    console.error('[VOTE API] Error details:', error instanceof Error ? error.message : String(error));
     return null;
   }
 }

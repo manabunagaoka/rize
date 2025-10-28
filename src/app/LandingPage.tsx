@@ -1,140 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
+import Header from '@/components/Header';
 
 export default function LandingPage({ user }: { user: any }) {
-  const [showMenu, setShowMenu] = useState(false);
   const [showLegendsInfo, setShowLegendsInfo] = useState(false);
   const [show2026Info, setShow2026Info] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    }
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showMenu]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-3">
-            <div>
-              <h1 className="text-2xl font-bold">RIZE</h1>
-              <p className="text-xs text-gray-400">by Manaboodle · Harvard Edition</p>
-            </div>
-          </Link>
-          
-          {user ? (
-            <div className="relative flex items-center gap-3" ref={menuRef}>
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 hover:bg-gray-800 rounded-lg transition"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              {showMenu && (
-                <div className="absolute right-0 mt-2 top-full w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
-                  <div className="py-2">
-                    <div className="px-4 py-2 border-b border-gray-700">
-                      <p className="text-sm text-gray-400">Signed in as</p>
-                      <p className="text-sm font-medium truncate">{user.email}</p>
-                    </div>
-                    
-                    <a
-                      href="https://www.manaboodle.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                    >
-                      Manaboodle
-                    </a>
-                    
-                    <Link
-                      href="/account"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Account
-                    </Link>
-                    
-                    <Link
-                      href="/api/logout"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400"
-                    >
-                      Log Out
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="relative flex items-center gap-3" ref={menuRef}>
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 hover:bg-gray-800 rounded-lg transition"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              {showMenu && (
-                <div className="absolute right-0 mt-2 top-full w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
-                  <div className="py-2">
-                    <a
-                      href="https://www.manaboodle.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                    >
-                      Manaboodle
-                    </a>
-                    
-                    <Link
-                      href="/account"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Account
-                    </Link>
-                    
-                    <Link
-                      href="/login"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Sign In
-                    </Link>
-                  </div>
-                </div>
-              )}
-              
-              <Link
-                href="/login?action=signup"
-                className="px-6 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition whitespace-nowrap"
-              >
-                Sign Up
-              </Link>
-            </div>
-          )}
-        </div>
-      </header>
+      <Header user={user} />
+
+      {/* header is rendered by the shared <Header /> component above */}
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
