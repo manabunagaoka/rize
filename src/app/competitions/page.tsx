@@ -75,13 +75,14 @@ function CompetitionsPageContent() {
         
         // Check authentication and get user votes
         if (!authChecked) {
-          if (data.userVotes) {
+          // userVotes will be defined (array) if authenticated, even if empty
+          if (data.userVotes !== undefined) {
             setUser({ authenticated: true });
-            setUserVotes(data.userVotes || []);
+            setUserVotes(data.userVotes);
           }
           setAuthChecked(true);
-        } else if (data.userVotes) {
-          setUserVotes(data.userVotes || []);
+        } else if (data.userVotes !== undefined) {
+          setUserVotes(data.userVotes);
         }
         
         const entries = SUCCESS_STORIES.map(story => {
@@ -100,6 +101,7 @@ function CompetitionsPageContent() {
           setSelectedEntryId(sorted[0].id);
         }
       } else {
+        // For Class of 2026, show empty state
         setLeaderboardData([]);
       }
     } catch (error) {
@@ -208,21 +210,20 @@ function CompetitionsPageContent() {
       <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link 
-              href="/"
-              className="p-2 hover:bg-gray-800 rounded-lg transition"
-              title="Back to home"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+            {/* Left: Logo */}
+            <Link href="/" className="flex items-center gap-3">
+              <div>
+                <h1 className="text-xl font-bold">RIZE</h1>
+                <p className="text-xs text-gray-400">by Manaboodle</p>
+              </div>
             </Link>
             
-            <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-              <h1 className="text-xl font-bold">{competitionTitle}</h1>
-              <p className="text-xs text-gray-400">RIZE by Manaboodle · Harvard Edition</p>
+            {/* Center: Page Title */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <h2 className="text-xl font-bold">{competitionTitle}</h2>
             </div>
             
+            {/* Right: Hamburger Menu */}
             <button 
               onClick={() => setShowMenu(!showMenu)}
               className="p-2 hover:bg-gray-800 rounded-lg transition"
@@ -277,6 +278,21 @@ function CompetitionsPageContent() {
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
             <p className="text-gray-400 mt-4">Loading competition...</p>
+          </div>
+        ) : activeCompetitionId !== 'legendary' ? (
+          <div className="text-center py-20">
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-4xl font-bold text-white mb-4">Coming Soon</h3>
+              <p className="text-xl text-gray-300 mb-8">
+                The Harvard Class of 2026 competition will open soon. Submit your startup and compete for investor introductions!
+              </p>
+              <Link 
+                href="/submit"
+                className="inline-block bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-8 rounded-xl transition"
+              >
+                Submit Your Startup
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 gap-8">

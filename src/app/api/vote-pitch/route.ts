@@ -159,20 +159,24 @@ export async function GET(request: NextRequest) {
       .from('legendary_pitch_rankings')
       .select('*');
 
-    // Get user's votes if authenticated
-    let userVotes: number[] = [];
+    // Only include userVotes if authenticated
     if (user) {
       const { data: votes } = await supabase
         .from('legendary_pitch_votes')
         .select('pitch_id')
         .eq('user_id', user.id);
 
-      userVotes = votes?.map(v => v.pitch_id) || [];
+      const userVotes = votes?.map(v => v.pitch_id) || [];
+      
+      return NextResponse.json({
+        rankings: rankings || [],
+        userVotes
+      });
     }
 
+    // Not authenticated - return only rankings
     return NextResponse.json({
-      rankings: rankings || [],
-      userVotes
+      rankings: rankings || []
     });
 
   } catch (error) {
