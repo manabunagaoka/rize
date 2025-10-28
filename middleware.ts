@@ -18,25 +18,35 @@ const PUBLIC_PATHS = [
   '/leaderboard',   // Public leaderboard
   '/api/health',    // Health check endpoint
   '/login',         // RIZE login page
+  '/debug-auth',    // Debug authentication page
+  '/api/debug-auth', // Debug API endpoint
 ];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get('manaboodle_sso_token')?.value;
   const ssoToken = request.nextUrl.searchParams.get('sso_token');
+  const fullUrl = request.url;
   
-  console.log('[MIDDLEWARE]', {
+  console.log('[MIDDLEWARE] ========================================');
+  console.log('[MIDDLEWARE] Request:', {
     pathname,
+    fullUrl,
     hasToken: !!token,
     hasSsoTokenParam: !!ssoToken,
-    url: request.url,
-    cookies: request.cookies.getAll().map(c => c.name)
+    ssoTokenPreview: ssoToken ? ssoToken.substring(0, 20) + '...' : 'none',
+    allParams: Array.from(request.nextUrl.searchParams.entries()),
+    cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
+    origin: request.nextUrl.origin,
+    host: request.headers.get('host')
   });
+  console.log('[MIDDLEWARE] ========================================');
   
   // Handle SSO callback FIRST (before checking public paths)
   // This is critical because /login is public but /login?sso_token=... needs processing
   if (ssoToken) {
-    console.log('[MIDDLEWARE] SSO callback detected');
+    console.log('[MIDDLEWARE] ========== SSO CALLBACK DETECTED ==========');
+    console.log('[MIDDLEWARE] SSO Token received:', ssoToken.substring(0, 30) + '...');
     
     // Try to get the intended destination from return_url or default to landing page
     const returnUrl = request.nextUrl.searchParams.get('return_url');
@@ -46,21 +56,27 @@ export async function middleware(request: NextRequest) {
       try {
         const returnUrlObj = new URL(returnUrl);
         redirectPath = returnUrlObj.pathname + returnUrlObj.search;
-      } catch {
+        console.log('[MIDDLEWARE] Parsed return_url to:', redirectPath);
+      } catch (e) {
         // If return_url is invalid, use default
+        console.log('[MIDDLEWARE] Invalid return_url, using default:', e);
       }
     }
     
-    console.log('[MIDDLEWARE] Redirecting to:', redirectPath);
+    console.log('[MIDDLEWARE] Will redirect to:', redirectPath);
+    console.log('[MIDDLEWARE] Setting cookies...');
     const response = NextResponse.redirect(new URL(redirectPath, request.url));
     
-    // Store tokens in cookies
+    // Store tokens in cookies with explicit path and domain
     response.cookies.set('manaboodle_sso_token', ssoToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
       maxAge: 60 * 60 * 24 * 7 // 7 days
     });
+    
+    console.log('[MIDDLEWARE] SSO token cookie set');
     
     const refreshToken = request.nextUrl.searchParams.get('sso_refresh');
     if (refreshToken) {
@@ -68,10 +84,13 @@ export async function middleware(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
+        path: '/',
         maxAge: 60 * 60 * 24 * 30 // 30 days
       });
+      console.log('[MIDDLEWARE] Refresh token cookie set');
     }
     
+    console.log('[MIDDLEWARE] ========== SSO CALLBACK COMPLETE ==========');
     return response;
   }
   
@@ -93,16 +112,25 @@ export async function middleware(request: NextRequest) {
         });
         
         if (verifyResponse.ok) {
-          const { user } = await verifyResponse.json();
-          console.log('[MIDDLEWARE] Token verified on public path, user:', user.email);
-          const response = NextResponse.next();
+          const responseData = await verifyResponse.json();
+          console.log('[MIDDLEWARE] SSO response data:', JSON.stringify(responseData));
           
-          response.headers.set('x-user-id', user.id);
-          response.headers.set('x-user-email', user.email);
-          response.headers.set('x-user-name', user.name || '');
-          response.headers.set('x-user-class', user.classCode || '');
+          // Handle both { user: {...} } and direct user object responses
+          const user = responseData.user || responseData;
           
-          return response;
+          if (user && user.id && user.email) {
+            console.log('[MIDDLEWARE] Token verified on public path, user:', user.email);
+            const response = NextResponse.next();
+            
+            response.headers.set('x-user-id', user.id);
+            response.headers.set('x-user-email', user.email);
+            response.headers.set('x-user-name', user.name || '');
+            response.headers.set('x-user-class', user.classCode || '');
+            
+            return response;
+          } else {
+            console.log('[MIDDLEWARE] Invalid user data structure:', responseData);
+          }
         } else {
           console.log('[MIDDLEWARE] Token invalid on public path, clearing cookies');
           // Invalid token, clear it
@@ -158,7 +186,21 @@ export async function middleware(request: NextRequest) {
     }
     
     // Token valid, attach user info to headers (accessible in your pages/API routes)
-    const { user } = await verifyResponse.json();
+    const responseData = await verifyResponse.json();
+    console.log('[MIDDLEWARE] SSO response data:', JSON.stringify(responseData));
+    
+    // Handle both { user: {...} } and direct user object responses
+    const user = responseData.user || responseData;
+    
+    if (!user || !user.id || !user.email) {
+      console.error('[MIDDLEWARE] Invalid user data structure:', responseData);
+      const loginUrl = new URL(MANABOODLE_LOGIN_URL);
+      const returnUrl = `${request.nextUrl.origin}${request.nextUrl.pathname}${request.nextUrl.search}`;
+      loginUrl.searchParams.set('return_url', returnUrl);
+      loginUrl.searchParams.set('app_name', APP_NAME);
+      return NextResponse.redirect(loginUrl);
+    }
+    
     console.log('[MIDDLEWARE] Token verified, user:', user.email);
     const response = NextResponse.next();
     
