@@ -1,12 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function LandingPage({ user }: { user: any }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showLegendsInfo, setShowLegendsInfo] = useState(false);
   const [show2026Info, setShow2026Info] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showMenu]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
@@ -21,7 +38,7 @@ export default function LandingPage({ user }: { user: any }) {
           </Link>
           
           {user ? (
-            <div className="relative flex items-center gap-3">
+            <div className="relative flex items-center gap-3" ref={menuRef}>
               <button 
                 onClick={() => setShowMenu(!showMenu)}
                 className="p-2 hover:bg-gray-800 rounded-lg transition"
@@ -67,7 +84,7 @@ export default function LandingPage({ user }: { user: any }) {
               )}
             </div>
           ) : (
-            <div className="relative flex items-center gap-3">
+            <div className="relative flex items-center gap-3" ref={menuRef}>
               <button 
                 onClick={() => setShowMenu(!showMenu)}
                 className="p-2 hover:bg-gray-800 rounded-lg transition"
@@ -88,6 +105,14 @@ export default function LandingPage({ user }: { user: any }) {
                     >
                       Manaboodle
                     </a>
+                    
+                    <Link
+                      href="/account"
+                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      Account
+                    </Link>
                     
                     <Link
                       href="/login"

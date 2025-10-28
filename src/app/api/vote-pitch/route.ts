@@ -10,7 +10,14 @@ const supabase = createClient(
 async function verifyUser(request: NextRequest) {
   const token = request.cookies.get('manaboodle_sso_token')?.value;
   
+  console.log('[VOTE API] Checking auth:', {
+    hasToken: !!token,
+    tokenStart: token?.substring(0, 20) + '...',
+    allCookies: request.cookies.getAll().map(c => c.name)
+  });
+  
   if (!token) {
+    console.log('[VOTE API] No token found in cookies');
     return null;
   }
 
@@ -23,15 +30,34 @@ async function verifyUser(request: NextRequest) {
       cache: 'no-store'
     });
 
+    console.log('[VOTE API] SSO verify response:', {
+      status: response.status,
+      ok: response.ok
+    });
+
     if (!response.ok) {
       console.error('[VOTE API] SSO verification failed:', response.status);
+      const errorText = await response.text();
+      console.error('[VOTE API] Error response:', errorText);
       return null;
     }
 
     const data = await response.json();
-    return data.user || data;
+    console.log('[VOTE API] SSO response data:', {
+      hasUser: !!data.user,
+      hasDirectData: !!(data.id && data.email),
+      dataKeys: Object.keys(data)
+    });
+    
+    const user = data.user || data;
+    console.log('[VOTE API] Extracted user:', {
+      id: user?.id,
+      email: user?.email
+    });
+    
+    return user;
   } catch (error) {
-    console.error('[VOTE API] SSO verification failed:', error);
+    console.error('[VOTE API] SSO verification exception:', error);
     return null;
   }
 }

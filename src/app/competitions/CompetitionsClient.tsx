@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Leaderboard from '@/components/Leaderboard';
@@ -59,6 +59,23 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [showMenu, setShowMenu] = useState(false);
   const [userVotes, setUserVotes] = useState<number[]>([]);
   const [isVoting, setIsVoting] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showMenu]);
 
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
@@ -187,7 +204,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
             </div>
             
             {/* Right: Hamburger Menu */}
-            <div className="relative">
+            <div className="relative" ref={menuRef}>
               <button 
                 onClick={() => setShowMenu(!showMenu)}
                 className="p-2 hover:bg-gray-800 rounded-lg transition"
@@ -230,13 +247,16 @@ export default function CompetitionsClient({ user }: { user: any }) {
                     >
                       Account
                     </Link>
-                    <Link
-                      href="/api/logout"
-                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Log Out
-                    </Link>
+                    
+                    {user && (
+                      <Link
+                        href="/api/logout"
+                        className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400"
+                        onClick={() => setShowMenu(false)}
+                      >
+                        Log Out
+                      </Link>
+                    )}
                   </div>
                 </div>
               )}
@@ -356,6 +376,13 @@ export default function CompetitionsClient({ user }: { user: any }) {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800 py-8 mt-12">
+        <div className="container mx-auto px-4 text-center text-gray-500">
+          <p>&copy; 2025 RIZE by Manaboodle · Harvard Edition</p>
+        </div>
+      </footer>
     </div>
   );
 }
