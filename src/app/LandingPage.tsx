@@ -168,7 +168,7 @@ export default function LandingPage({ user }: { user: any }) {
                   href="/competitions?competition=legendary"
                   className="inline-block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 px-6 rounded-xl transition"
                 >
-                  Enter Competition →
+                  Vote Your Favorite →
                 </Link>
               </div>
             )}

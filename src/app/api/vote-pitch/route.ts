@@ -15,18 +15,21 @@ async function verifyUser(request: NextRequest) {
   }
 
   try {
-    const response = await fetch('https://www.manaboodle.com/sso/verify', {
+    const response = await fetch('https://www.manaboodle.com/api/sso/verify', {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        'Authorization': `Bearer ${token}`,
+        'Cache-Control': 'no-cache'
+      },
+      cache: 'no-store'
     });
 
     if (!response.ok) {
+      console.error('[VOTE API] SSO verification failed:', response.status);
       return null;
     }
 
-    const user = await response.json();
-    return user;
+    const data = await response.json();
+    return data.user || data;
   } catch (error) {
     console.error('[VOTE API] SSO verification failed:', error);
     return null;

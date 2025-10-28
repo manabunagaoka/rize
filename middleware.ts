@@ -38,9 +38,9 @@ export async function middleware(request: NextRequest) {
   if (ssoToken) {
     console.log('[MIDDLEWARE] SSO callback detected');
     
-    // Try to get the intended destination from return_url or default to /competitions
+    // Try to get the intended destination from return_url or default to landing page
     const returnUrl = request.nextUrl.searchParams.get('return_url');
-    let redirectPath = '/competitions?competition=legendary';
+    let redirectPath = '/';  // Default to landing page
     
     if (returnUrl) {
       try {

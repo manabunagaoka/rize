@@ -62,9 +62,7 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
   }, [entries.map(e => e.voteCount).join(',')]);
 
   const getRankBadge = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
+    // No medals - just rank numbers
     return `#${rank}`;
   };
 
