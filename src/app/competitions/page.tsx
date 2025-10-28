@@ -3,10 +3,8 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import CompetitionSidebar from '@/components/CompetitionSidebar';
 import Leaderboard from '@/components/Leaderboard';
 
-// Legendary Harvard startups data
 const SUCCESS_STORIES = [
   { id: 1, name: 'Facebook', founder: 'Mark Zuckerberg', year: '2004', valuation: '$1.2T', ticker: 'META',
     pitch: 'An online directory that connects people through social networks at colleges.',
@@ -57,8 +55,8 @@ function CompetitionsPageContent() {
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<number | undefined>();
   const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
 
-  // Get competition from URL or default to legendary
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
     setActiveCompetitionId(comp);
@@ -68,11 +66,9 @@ function CompetitionsPageContent() {
     setLoading(true);
     try {
       if (activeCompetitionId === 'legendary') {
-        // Fetch legendary pitch rankings
         const response = await fetch('/api/vote-pitch');
         const data = await response.json();
         
-        // Map SUCCESS_STORIES with vote counts
         const entries = SUCCESS_STORIES.map(story => {
           const ranking = data.rankings?.find((r: any) => r.pitch_id === story.id);
           return {
@@ -84,14 +80,11 @@ function CompetitionsPageContent() {
         
         setLeaderboardData(entries);
         
-        // Auto-select #1 if nothing selected
         if (!selectedEntryId && entries.length > 0) {
           const sorted = [...entries].sort((a, b) => b.voteCount - a.voteCount);
           setSelectedEntryId(sorted[0].id);
         }
       } else {
-        // Fetch student startups for class competitions
-        // TODO: Implement when we have student submissions
         setLeaderboardData([]);
       }
     } catch (error) {
@@ -101,16 +94,9 @@ function CompetitionsPageContent() {
     }
   }, [activeCompetitionId, selectedEntryId]);
 
-  // Fetch leaderboard data when competition changes
   useEffect(() => {
     fetchLeaderboard();
   }, [activeCompetitionId, fetchLeaderboard]);
-
-  const handleSelectCompetition = (id: string) => {
-    router.push(`/?competition=${id}`);
-    setActiveCompetitionId(id);
-    setSelectedEntryId(undefined);
-  };
 
   const handleSelectEntry = (id: number) => {
     setSelectedEntryId(id);
@@ -118,13 +104,78 @@ function CompetitionsPageContent() {
 
   const selectedPitch = SUCCESS_STORIES.find(s => s.id === selectedEntryId);
 
+  const competitionTitle = activeCompetitionId === 'legendary' 
+    ? 'Harvard Legends' 
+    : 'Harvard Class of 2026';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Competition Header/Dropdown */}
-      <CompetitionSidebar
-        activeCompetitionId={activeCompetitionId}
-        onSelectCompetition={handleSelectCompetition}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+      {/* Header */}
+      <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Link 
+              href="/"
+              className="p-2 hover:bg-gray-800 rounded-lg transition"
+              title="Back to home"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </Link>
+            
+            <div>
+              <h1 className="text-xl font-bold">{competitionTitle}</h1>
+              <p className="text-xs text-gray-400">RIZE by Manaboodle · Harvard Edition</p>
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 hover:bg-gray-800 rounded-lg transition"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Hamburger Menu */}
+        {showMenu && (
+          <div className="absolute right-4 top-16 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+            <div className="py-2">
+              <Link
+                href="/"
+                className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
+                onClick={() => setShowMenu(false)}
+              >
+                Home
+              </Link>
+              <a
+                href="https://www.manaboodle.com/academic-portal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
+              >
+                Manaboodle Account
+              </a>
+              <Link
+                href="/submit"
+                className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
+                onClick={() => setShowMenu(false)}
+              >
+                Submit Startup
+              </Link>
+              <Link
+                href="/api/logout"
+                className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400"
+              >
+                Log Out
+              </Link>
+            </div>
+          </div>
+        )}
+      </header>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -137,89 +188,63 @@ function CompetitionsPageContent() {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Left: Leaderboard */}
             <div>
-              <h2 className="text-2xl font-bold text-white mb-4">
-                {activeCompetitionId === 'legendary' ? '🏆 Legendary Pitches' : '🎓 Student Startups'}
-              </h2>
               <Leaderboard
                 competitionId={activeCompetitionId}
                 entries={leaderboardData}
                 onSelectEntry={handleSelectEntry}
                 selectedEntryId={selectedEntryId}
               />
-              
-              {activeCompetitionId !== 'legendary' && leaderboardData.length === 0 && (
-                <div className="mt-8 text-center">
-                  <Link
-                    href="/submit"
-                    className="inline-block px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-purple-700 transition-all duration-300"
-                  >
-                    Submit Your Startup
-                  </Link>
-                </div>
-              )}
             </div>
 
-            {/* Right: Selected Pitch Detail */}
+            {/* Right: Pitch Detail */}
             <div>
               {selectedPitch ? (
-                <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700 sticky top-8">
+                <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700 sticky top-24">
                   <div className="mb-6">
                     <h3 className="text-3xl font-bold text-white mb-2">{selectedPitch.name}</h3>
-                    <p className="text-gray-400">{selectedPitch.founder} • {selectedPitch.year}</p>
-                    <p className="text-2xl font-bold text-pink-500 mt-2">{selectedPitch.valuation}</p>
+                    <p className="text-gray-400">{selectedPitch.founder} · {selectedPitch.year}</p>
+                    <p className="text-2xl font-bold text-pink-400 mt-2">{selectedPitch.valuation}</p>
                   </div>
 
-                  {/* Original Pitch */}
-                  <div className="mb-6 p-6 bg-gray-900/50 rounded-xl border border-gray-700">
-                    <p className="text-sm text-gray-400 mb-3 font-semibold">ORIGINAL PITCH</p>
-                    <p className="text-white text-lg leading-relaxed">&ldquo;{selectedPitch.pitch}&rdquo;</p>
-                  </div>
-
-                  {/* Fun Fact */}
-                  <div className="mb-6">
-                    <p className="text-sm text-gray-400 mb-2 font-semibold">💡 FUN FACT</p>
-                    <p className="text-gray-300 leading-relaxed">{selectedPitch.funFact}</p>
-                  </div>
-
-                  {/* Stock Price */}
-                  {selectedPitch.ticker && (
-                    <div className="mb-6 p-4 bg-gray-900/50 rounded-lg">
-                      <p className="text-sm text-gray-400 mb-2">Stock: {selectedPitch.ticker}</p>
-                      {/* TODO: Add StockPrice component */}
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2">The Pitch</h4>
+                      <p className="text-white text-lg">{selectedPitch.pitch}</p>
                     </div>
-                  )}
 
-                  {/* Vote Button */}
-                  <button className={`w-full py-4 rounded-xl font-bold text-lg bg-gradient-to-r ${selectedPitch.color} text-white hover:opacity-90 transition-opacity`}>
-                    Vote for This Pitch
-                  </button>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2">Fun Fact</h4>
+                      <p className="text-gray-300">{selectedPitch.funFact}</p>
+                    </div>
 
-                  {/* Navigation */}
-                  <div className="flex justify-between mt-6">
-                    <button
-                      onClick={() => {
-                        const currentIndex = SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId);
-                        if (currentIndex > 0) {
-                          setSelectedEntryId(SUCCESS_STORIES[currentIndex - 1].id);
-                        }
-                      }}
-                      disabled={SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId) === 0}
-                      className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      ← Previous
+                    <button className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-4 px-6 rounded-xl transition">
+                      Vote for This Pitch
                     </button>
-                    <button
-                      onClick={() => {
-                        const currentIndex = SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId);
-                        if (currentIndex < SUCCESS_STORIES.length - 1) {
-                          setSelectedEntryId(SUCCESS_STORIES[currentIndex + 1].id);
-                        }
-                      }}
-                      disabled={SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId) === SUCCESS_STORIES.length - 1}
-                      className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Next →
-                    </button>
+
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => {
+                          const currentIndex = SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId);
+                          if (currentIndex > 0) {
+                            setSelectedEntryId(SUCCESS_STORIES[currentIndex - 1].id);
+                          }
+                        }}
+                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
+                      >
+                        ← Previous
+                      </button>
+                      <button
+                        onClick={() => {
+                          const currentIndex = SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId);
+                          if (currentIndex < SUCCESS_STORIES.length - 1) {
+                            setSelectedEntryId(SUCCESS_STORIES[currentIndex + 1].id);
+                          }
+                        }}
+                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
+                      >
+                        Next →
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -241,7 +266,7 @@ export default function CompetitionsPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading competitions...</p>
+          <p className="text-gray-400">Loading...</p>
         </div>
       </div>
     }>

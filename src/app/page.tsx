@@ -89,8 +89,6 @@ export default async function HomePage() {
             href="/competitions?competition=legendary"
             className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105"
           >
-            <div className="absolute top-4 right-4 text-4xl">🏆</div>
-            
             <h3 className="text-3xl font-bold text-white mb-3">
               Harvard Legends
             </h3>
@@ -123,8 +121,6 @@ export default async function HomePage() {
             href={user ? "/competitions?competition=harvard-2026-main" : "/login"}
             className="group relative bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-2xl p-8 border-2 border-blue-600/30 hover:border-blue-500 transition-all duration-300 hover:scale-105"
           >
-            <div className="absolute top-4 right-4 text-4xl">🎓</div>
-            
             <h3 className="text-3xl font-bold text-white mb-3">
               Harvard Class of 2026
             </h3>
