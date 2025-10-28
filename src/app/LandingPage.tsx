@@ -5,6 +5,8 @@ import { useState } from 'react';
 
 export default function LandingPage({ user }: { user: any }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showLegendsInfo, setShowLegendsInfo] = useState(false);
+  const [show2026Info, setShow2026Info] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
@@ -19,7 +21,7 @@ export default function LandingPage({ user }: { user: any }) {
           </Link>
           
           {user ? (
-            <div className="relative">
+            <div className="relative flex items-center gap-3">
               <button 
                 onClick={() => setShowMenu(!showMenu)}
                 className="p-2 hover:bg-gray-800 rounded-lg transition"
@@ -30,7 +32,7 @@ export default function LandingPage({ user }: { user: any }) {
               </button>
               
               {showMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+                <div className="absolute right-0 mt-2 top-full w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
                   <div className="py-2">
                     <div className="px-4 py-2 border-b border-gray-700">
                       <p className="text-sm text-gray-400">Signed in as</p>
@@ -38,20 +40,20 @@ export default function LandingPage({ user }: { user: any }) {
                     </div>
                     
                     <a
-                      href="https://www.manaboodle.com/academic-portal"
+                      href="https://www.manaboodle.com"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
                     >
-                      Manaboodle Account
+                      Manaboodle
                     </a>
                     
                     <Link
-                      href="/submit"
+                      href="/account"
                       className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
                       onClick={() => setShowMenu(false)}
                     >
-                      Submit Startup
+                      Account
                     </Link>
                     
                     <Link
@@ -65,12 +67,46 @@ export default function LandingPage({ user }: { user: any }) {
               )}
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="px-6 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition"
-            >
-              Sign In
-            </Link>
+            <div className="relative flex items-center gap-3">
+              <button 
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 hover:bg-gray-800 rounded-lg transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              {showMenu && (
+                <div className="absolute right-0 mt-2 top-full w-56 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50">
+                  <div className="py-2">
+                    <a
+                      href="https://www.manaboodle.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
+                    >
+                      Manaboodle
+                    </a>
+                    
+                    <Link
+                      href="/login"
+                      className="block px-4 py-2 text-sm hover:bg-gray-700 transition"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                </div>
+              )}
+              
+              <Link
+                href="/login?action=signup"
+                className="px-6 py-2 bg-pink-500 text-white rounded-lg font-medium hover:bg-pink-600 transition whitespace-nowrap"
+              >
+                Sign Up
+              </Link>
+            </div>
           )}
         </div>
       </header>
@@ -93,9 +129,9 @@ export default function LandingPage({ user }: { user: any }) {
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
           
           {/* Harvard Legends Competition */}
-          <Link 
-            href="/competitions?competition=legendary"
-            className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105"
+          <div 
+            onClick={() => setShowLegendsInfo(!showLegendsInfo)}
+            className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105 cursor-pointer"
           >
             <h3 className="text-3xl font-bold text-white mb-3">
               Harvard Legends
@@ -117,17 +153,31 @@ export default function LandingPage({ user }: { user: any }) {
             </div>
             
             <div className="mt-6 text-pink-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-              View Rankings
+              {showLegendsInfo ? 'Hide Details' : 'View Details'}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showLegendsInfo ? "M5 15l7-7 7 7" : "M13 7l5 5m0 0l-5 5m5-5H6"} />
               </svg>
             </div>
-          </Link>
+            
+            {showLegendsInfo && (
+              <div className="mt-6 pt-6 border-t border-yellow-600/30">
+                <p className="text-gray-300 mb-4">
+                  Explore legendary Harvard startups and vote on the best pitches. Learn from founders who built billion-dollar companies.
+                </p>
+                <Link 
+                  href="/competitions?competition=legendary"
+                  className="inline-block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 px-6 rounded-xl transition"
+                >
+                  Enter Competition →
+                </Link>
+              </div>
+            )}
+          </div>
 
           {/* Harvard Class of 2026 Competition */}
-          <Link 
-            href="/competitions?competition=harvard-2026-main"
-            className="group relative bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-2xl p-8 border-2 border-blue-600/30 hover:border-blue-500 transition-all duration-300 hover:scale-105"
+          <div 
+            onClick={() => setShow2026Info(!show2026Info)}
+            className="group relative bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-2xl p-8 border-2 border-blue-600/30 hover:border-blue-500 transition-all duration-300 hover:scale-105 cursor-pointer"
           >
             <h3 className="text-3xl font-bold text-white mb-3">
               Harvard Class of 2026
@@ -149,12 +199,26 @@ export default function LandingPage({ user }: { user: any }) {
             </div>
             
             <div className="mt-6 text-pink-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-              View Competition
+              {show2026Info ? 'Hide Details' : 'View Details'}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={show2026Info ? "M5 15l7-7 7 7" : "M13 7l5 5m0 0l-5 5m5-5H6"} />
               </svg>
             </div>
-          </Link>
+            
+            {show2026Info && (
+              <div className="mt-6 pt-6 border-t border-blue-600/30">
+                <p className="text-gray-300 mb-4">
+                  The Harvard Class of 2026 competition is opening soon. Submit your startup and compete for rankings, features, and investor introductions.
+                </p>
+                <Link 
+                  href="/competitions?competition=harvard-2026-main"
+                  className="inline-block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition"
+                >
+                  Learn More →
+                </Link>
+              </div>
+            )}
+          </div>
 
         </div>
       </section>

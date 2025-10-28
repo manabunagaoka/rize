@@ -6,16 +6,18 @@ import { Suspense } from 'react';
 
 function LoginPageContent() {
   const searchParams = useSearchParams();
+  const action = searchParams.get('action'); // 'signup' or default to 'signin'
+  const isSignUp = action === 'signup';
   
-  const handleLogin = () => {
+  const handleAuth = () => {
     // Get the current origin (works in dev and prod)
     const origin = window.location.origin;
     
     // Check if there's a returnTo param (where user was trying to go)
-    const returnTo = searchParams.get('returnTo') || '/competitions?competition=legendary';
+    const returnTo = searchParams.get('returnTo') || '/';
     const returnUrl = `${origin}${returnTo}`;
     
-    // Redirect to Manaboodle Academic Portal
+    // Redirect to Manaboodle Academic Portal (both sign in and sign up go here for now)
     const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
@@ -46,16 +48,16 @@ function LoginPageContent() {
         <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/50 p-8">
           <div className="mb-6">
             <h2 className="text-2xl font-semibold text-white mb-2">
-              Welcome back
+              {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
             <p className="text-gray-400">
-              Log in to start ranking and submit your project
+              {isSignUp ? 'Sign up to start ranking and submit your startup' : 'Log in to start ranking and submit your project'}
             </p>
           </div>
 
-          {/* Academic Portal Login Button */}
+          {/* Academic Portal Auth Button */}
           <button
-            onClick={handleLogin}
+            onClick={handleAuth}
             className="w-full bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 flex items-center justify-center gap-3 group"
           >
             <svg 
@@ -65,7 +67,7 @@ function LoginPageContent() {
             >
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
             </svg>
-            Log in with Manaboodle
+            {isSignUp ? 'Sign up with Manaboodle' : 'Log in with Manaboodle'}
           </button>
 
           <div className="mt-4 text-center text-sm text-gray-400">
