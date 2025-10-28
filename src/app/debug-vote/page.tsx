@@ -35,7 +35,8 @@ export default async function DebugPage() {
             const response = await fetch('/api/vote-pitch', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pitchId: 1 })
+              body: JSON.stringify({ pitchId: 1 }),
+              credentials: 'include'
             });
             
             const data = await response.json();

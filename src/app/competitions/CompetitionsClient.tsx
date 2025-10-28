@@ -69,7 +69,9 @@ export default function CompetitionsClient({ user }: { user: any }) {
     setLoading(true);
     try {
       if (activeCompetitionId === 'legendary') {
-        const response = await fetch('/api/vote-pitch');
+        const response = await fetch('/api/vote-pitch', {
+          credentials: 'include'
+        });
         const data = await response.json();
         
         // Get user votes if authenticated
@@ -117,7 +119,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
       const response = await fetch('/api/vote-pitch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pitchId })
+        body: JSON.stringify({ pitchId }),
+        credentials: 'include'
       });
       
       const data = await response.json();

@@ -72,7 +72,8 @@ export default function SubmitForm({ user }: SubmitFormProps) {
           user_email: user.email,
           user_name: user.name,
           user_class: user.classCode
-        })
+        }),
+        credentials: 'include'
       });
 
       if (!response.ok) {
