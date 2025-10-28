@@ -127,7 +127,7 @@ export default function DebugAuthPage() {
             {document.cookie || '❌ No cookies accessible from JavaScript'}
           </div>
           <p className="text-sm text-gray-400 mt-2">
-            Note: httpOnly cookies won't appear here (this is normal and correct)
+            Note: httpOnly cookies won&apos;t appear here (this is normal and correct)
           </p>
         </div>
 
