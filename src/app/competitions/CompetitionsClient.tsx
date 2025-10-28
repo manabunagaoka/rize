@@ -116,6 +116,9 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const handleVote = async (pitchId: number) => {
     setIsVoting(true);
     try {
+      console.log('[CLIENT] Starting vote for pitch:', pitchId);
+      console.log('[CLIENT] Cookies:', document.cookie);
+      
       const response = await fetch('/api/vote-pitch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +126,9 @@ export default function CompetitionsClient({ user }: { user: any }) {
         credentials: 'include'
       });
       
+      console.log('[CLIENT] Vote response status:', response.status);
       const data = await response.json();
+      console.log('[CLIENT] Vote response data:', data);
       
       if (data.success) {
         // Update user votes

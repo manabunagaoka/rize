@@ -77,7 +77,48 @@ export async function middleware(request: NextRequest) {
   
   // Skip authentication for public paths
   if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path))) {
-    console.log('[MIDDLEWARE] Public path, skipping auth:', pathname);
+    console.log('[MIDDLEWARE] Public path:', pathname);
+    
+    // For public paths, if token exists, verify it and inject user headers
+    // This allows pages to show logged-in state without requiring auth
+    if (token) {
+      try {
+        console.log('[MIDDLEWARE] Token exists on public path, verifying...');
+        const verifyResponse = await fetch(`${MANABOODLE_BASE_URL}/api/sso/verify`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
+          },
+          cache: 'no-store'
+        });
+        
+        if (verifyResponse.ok) {
+          const { user } = await verifyResponse.json();
+          console.log('[MIDDLEWARE] Token verified on public path, user:', user.email);
+          const response = NextResponse.next();
+          
+          response.headers.set('x-user-id', user.id);
+          response.headers.set('x-user-email', user.email);
+          response.headers.set('x-user-name', user.name || '');
+          response.headers.set('x-user-class', user.classCode || '');
+          
+          return response;
+        } else {
+          console.log('[MIDDLEWARE] Token invalid on public path, clearing cookies');
+          // Invalid token, clear it
+          const response = NextResponse.next();
+          response.cookies.delete('manaboodle_sso_token');
+          response.cookies.delete('manaboodle_sso_refresh');
+          return response;
+        }
+      } catch (error) {
+        console.error('[MIDDLEWARE] Error verifying token on public path:', error);
+        // On error, just continue without user headers
+        return NextResponse.next();
+      }
+    }
+    
+    // No token on public path, just continue
     return NextResponse.next();
   }
   
