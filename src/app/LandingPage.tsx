@@ -126,7 +126,7 @@ export default function LandingPage({ user }: { user: any }) {
 
           {/* Harvard Class of 2026 Competition */}
           <Link 
-            href={user ? "/competitions?competition=harvard-2026-main" : "/login"}
+            href="/competitions?competition=harvard-2026-main"
             className="group relative bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-2xl p-8 border-2 border-blue-600/30 hover:border-blue-500 transition-all duration-300 hover:scale-105"
           >
             <h3 className="text-3xl font-bold text-white mb-3">
@@ -149,7 +149,7 @@ export default function LandingPage({ user }: { user: any }) {
             </div>
             
             <div className="mt-6 text-pink-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-              {user ? "View Competition" : "Sign Up to Enter"}
+              View Competition
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>

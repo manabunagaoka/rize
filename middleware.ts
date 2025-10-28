@@ -36,9 +36,23 @@ export async function middleware(request: NextRequest) {
   // Handle SSO callback FIRST (before checking public paths)
   // This is critical because /login is public but /login?sso_token=... needs processing
   if (ssoToken) {
-    console.log('[MIDDLEWARE] SSO callback detected, redirecting to /vote');
-    // Redirect to vote page after successful login
-    const response = NextResponse.redirect(new URL('/vote', request.url));
+    console.log('[MIDDLEWARE] SSO callback detected');
+    
+    // Try to get the intended destination from return_url or default to /competitions
+    const returnUrl = request.nextUrl.searchParams.get('return_url');
+    let redirectPath = '/competitions?competition=legendary';
+    
+    if (returnUrl) {
+      try {
+        const returnUrlObj = new URL(returnUrl);
+        redirectPath = returnUrlObj.pathname + returnUrlObj.search;
+      } catch {
+        // If return_url is invalid, use default
+      }
+    }
+    
+    console.log('[MIDDLEWARE] Redirecting to:', redirectPath);
+    const response = NextResponse.redirect(new URL(redirectPath, request.url));
     
     // Store tokens in cookies
     response.cookies.set('manaboodle_sso_token', ssoToken, {
@@ -71,7 +85,8 @@ export async function middleware(request: NextRequest) {
   if (!token) {
     console.log('[MIDDLEWARE] No token, redirecting to Academic Portal');
     const loginUrl = new URL(MANABOODLE_LOGIN_URL);
-    loginUrl.searchParams.set('return_url', request.url);
+    const returnUrl = `${request.nextUrl.origin}${request.nextUrl.pathname}${request.nextUrl.search}`;
+    loginUrl.searchParams.set('return_url', returnUrl);
     loginUrl.searchParams.set('app_name', APP_NAME);
     return NextResponse.redirect(loginUrl);
   }
@@ -89,8 +104,11 @@ export async function middleware(request: NextRequest) {
     
     if (!verifyResponse.ok) {
       console.log('[MIDDLEWARE] Token verification failed, clearing cookies');
-      // Token invalid, clear cookies and redirect to RIZE login
-      const loginUrl = new URL('/login', request.url);
+      // Token invalid, clear cookies and redirect to Academic Portal login
+      const loginUrl = new URL(MANABOODLE_LOGIN_URL);
+      const returnUrl = `${request.nextUrl.origin}${request.nextUrl.pathname}${request.nextUrl.search}`;
+      loginUrl.searchParams.set('return_url', returnUrl);
+      loginUrl.searchParams.set('app_name', APP_NAME);
       
       const response = NextResponse.redirect(loginUrl);
       response.cookies.delete('manaboodle_sso_token');
@@ -115,7 +133,8 @@ export async function middleware(request: NextRequest) {
     
     // On error, redirect to Academic Portal login
     const loginUrl = new URL(MANABOODLE_LOGIN_URL);
-    loginUrl.searchParams.set('return_url', request.url);
+    const returnUrl = `${request.nextUrl.origin}${request.nextUrl.pathname}${request.nextUrl.search}`;
+    loginUrl.searchParams.set('return_url', returnUrl);
     loginUrl.searchParams.set('app_name', APP_NAME);
     return NextResponse.redirect(loginUrl);
   }

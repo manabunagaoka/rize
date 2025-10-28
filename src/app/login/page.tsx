@@ -1,12 +1,21 @@
 "use client";
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function LoginPage() {
+function LoginPageContent() {
+  const searchParams = useSearchParams();
+  
   const handleLogin = () => {
-    // Redirect to Manaboodle Academic Portal (NOT Harvard SSO)
-    // Use the actual RIZE deployment URL
-    const returnUrl = 'https://rize-git-main-manabunagaokas-projects.vercel.app';
+    // Get the current origin (works in dev and prod)
+    const origin = window.location.origin;
+    
+    // Check if there's a returnTo param (where user was trying to go)
+    const returnTo = searchParams.get('returnTo') || '/competitions?competition=legendary';
+    const returnUrl = `${origin}${returnTo}`;
+    
+    // Redirect to Manaboodle Academic Portal
     const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
@@ -114,5 +123,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }
