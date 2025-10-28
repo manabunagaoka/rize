@@ -13,12 +13,9 @@ function LoginPageContent() {
     // Get the current origin (works in dev and prod)
     const origin = window.location.origin;
     
-    // Check if there's a returnTo param (where user was trying to go)
-    const returnTo = searchParams.get('returnTo') || '/';
-    const returnUrl = `${origin}${returnTo}`;
-    
-    // Redirect to Manaboodle Academic Portal (both sign in and sign up go here for now)
-    const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(returnUrl)}&app_name=RIZE`;
+    // Use our API callback endpoint to ensure cookies are set properly  
+    const callbackUrl = `${origin}/api/sso-callback`;
+    const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(callbackUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
 

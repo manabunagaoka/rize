@@ -5,6 +5,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+console.log('🔥🔥🔥 MIDDLEWARE MODULE LOADED 🔥🔥🔥');
+
 // ============================================
 // CONFIGURATION
 // ============================================
