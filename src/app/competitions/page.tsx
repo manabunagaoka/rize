@@ -49,13 +49,17 @@ const SUCCESS_STORIES = [
 ];
 
 function CompetitionsPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeCompetitionId, setActiveCompetitionId] = useState<string>('legendary');
+  const router = useRouter();
+  const [activeCompetitionId, setActiveCompetitionId] = useState('legendary');
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
-  const [selectedEntryId, setSelectedEntryId] = useState<number | undefined>();
+  const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const [userVotes, setUserVotes] = useState<number[]>([]);
+  const [isVoting, setIsVoting] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
@@ -68,6 +72,17 @@ function CompetitionsPageContent() {
       if (activeCompetitionId === 'legendary') {
         const response = await fetch('/api/vote-pitch');
         const data = await response.json();
+        
+        // Check authentication and get user votes
+        if (!authChecked) {
+          if (data.userVotes) {
+            setUser({ authenticated: true });
+            setUserVotes(data.userVotes || []);
+          }
+          setAuthChecked(true);
+        } else if (data.userVotes) {
+          setUserVotes(data.userVotes || []);
+        }
         
         const entries = SUCCESS_STORIES.map(story => {
           const ranking = data.rankings?.find((r: any) => r.pitch_id === story.id);
@@ -92,7 +107,7 @@ function CompetitionsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [activeCompetitionId, selectedEntryId]);
+  }, [activeCompetitionId, selectedEntryId, authChecked]);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -102,11 +117,77 @@ function CompetitionsPageContent() {
     setSelectedEntryId(id);
   };
 
+  const handleVote = async (pitchId: number) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    setIsVoting(true);
+    try {
+      const response = await fetch('/api/vote-pitch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pitchId })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setUserVotes(data.userVotes || []);
+        await fetchLeaderboard();
+      } else {
+        alert(data.message || 'Failed to submit vote');
+      }
+    } catch (error) {
+      console.error('Vote failed:', error);
+      alert('Failed to submit vote. Please try again.');
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
   const selectedPitch = SUCCESS_STORIES.find(s => s.id === selectedEntryId);
 
   const competitionTitle = activeCompetitionId === 'legendary' 
     ? 'Harvard Legends' 
     : 'Harvard Class of 2026';
+
+  // Show loading state while checking auth
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <h2 className="text-3xl font-bold mb-4">Sign In Required</h2>
+          <p className="text-gray-400 mb-8">You need to sign in with your Harvard credentials to view rankings and vote.</p>
+          <Link 
+            href="/login"
+            className="inline-block bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-8 rounded-xl transition"
+          >
+            Sign In with Manaboodle
+          </Link>
+          <Link 
+            href="/"
+            className="block mt-4 text-gray-400 hover:text-white transition"
+          >
+            ← Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
@@ -192,7 +273,7 @@ function CompetitionsPageContent() {
                 competitionId={activeCompetitionId}
                 entries={leaderboardData}
                 onSelectEntry={handleSelectEntry}
-                selectedEntryId={selectedEntryId}
+                selectedEntryId={selectedEntryId ?? undefined}
               />
             </div>
 
@@ -217,8 +298,16 @@ function CompetitionsPageContent() {
                       <p className="text-gray-300">{selectedPitch.funFact}</p>
                     </div>
 
-                    <button className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-4 px-6 rounded-xl transition">
-                      Vote for This Pitch
+                    <button 
+                      onClick={() => handleVote(selectedPitch.id)}
+                      disabled={isVoting}
+                      className={`w-full font-semibold py-4 px-6 rounded-xl transition ${
+                        userVotes.includes(selectedPitch.id)
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-pink-500 hover:bg-pink-600 text-white'
+                      } ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isVoting ? 'Voting...' : userVotes.includes(selectedPitch.id) ? 'Voted!' : 'Vote for This Pitch'}
                     </button>
 
                     <div className="flex gap-4">
