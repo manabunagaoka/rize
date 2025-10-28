@@ -79,10 +79,24 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
         .eq('pitch_id', pitchId);
 
+      // Get updated rankings and user votes
+      const { data: rankings } = await supabase
+        .from('legendary_pitch_rankings')
+        .select('*');
+
+      const { data: votes } = await supabase
+        .from('legendary_pitch_votes')
+        .select('pitch_id')
+        .eq('user_id', user.id);
+
+      const userVotes = votes?.map(v => v.pitch_id) || [];
+
       return NextResponse.json({ 
         success: true, 
         action: 'unvoted',
-        message: 'Vote removed' 
+        message: 'Vote removed',
+        rankings: rankings || [],
+        userVotes
       });
     }
 
@@ -105,10 +119,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get updated rankings and user votes
+    const { data: rankings } = await supabase
+      .from('legendary_pitch_rankings')
+      .select('*');
+
+    const { data: votes } = await supabase
+      .from('legendary_pitch_votes')
+      .select('pitch_id')
+      .eq('user_id', user.id);
+
+    const userVotes = votes?.map(v => v.pitch_id) || [];
+
     return NextResponse.json({ 
       success: true, 
       action: 'voted',
-      message: 'Vote recorded!' 
+      message: 'Vote recorded!',
+      rankings: rankings || [],
+      userVotes
     });
 
   } catch (error) {
