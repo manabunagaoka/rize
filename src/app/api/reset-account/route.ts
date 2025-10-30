@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client only when needed
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 // Verify user from Manaboodle SSO
 async function verifyUser(request: NextRequest) {
@@ -51,6 +58,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Resetting account for user: ${user.id}`);
+
+    const supabase = getSupabaseAdmin();
 
     // Delete all investments
     const { error: investError } = await supabase

@@ -252,6 +252,15 @@ export default function CompetitionsClient({ user }: { user: any }) {
             {/* Portfolio (if logged in) */}
             {user && userBalance && (
               <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-2xl p-6 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-2xl font-bold text-white">Your Portfolio</h3>
+                  <Link 
+                    href="/dashboard"
+                    className="bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 px-4 py-2 rounded-lg font-semibold transition border border-pink-500/50 text-sm"
+                  >
+                    📊 Full Dashboard
+                  </Link>
+                </div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-300 mb-1">Cash Balance</h3>
