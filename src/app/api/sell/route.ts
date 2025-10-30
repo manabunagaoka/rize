@@ -95,11 +95,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate current price
-    const { data: priceData } = await supabase
-      .rpc('calculate_share_price', { pitch_id_param: pitchId });
-
-    const currentPrice = priceData || 100;
+    // Use real market price from database (updated by frontend via real stock API)
+    const currentPrice = marketData.current_price || 100;
     const totalProceeds = Math.floor(shares * currentPrice);
 
     // Get user balance
@@ -116,15 +113,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update market data FIRST
+    // Update market data - track volume and shares but price comes from real market
     const newTotalVolume = Math.max(0, marketData.total_volume - totalProceeds);
     const newTotalShares = Math.max(0, parseFloat(marketData.total_shares_issued) - shares);
-    const newPrice = 100 * (1 + newTotalVolume / 1000000);
 
     await supabase
       .from('pitch_market_data')
       .update({
-        current_price: newPrice,
+        current_price: currentPrice, // Keep real price from database
         total_volume: newTotalVolume,
         total_shares_issued: newTotalShares,
         updated_at: new Date().toISOString()
@@ -147,8 +143,8 @@ export async function POST(request: NextRequest) {
         .from('user_investments')
         .update({
           shares_owned: newShares,
-          current_value: Math.floor(newShares * newPrice),
-          unrealized_gain_loss: Math.floor(newShares * newPrice) - (investment.total_invested * (newShares / parseFloat(investment.shares_owned))),
+          current_value: Math.floor(newShares * currentPrice),
+          unrealized_gain_loss: Math.floor(newShares * currentPrice) - (investment.total_invested * (newShares / parseFloat(investment.shares_owned))),
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)

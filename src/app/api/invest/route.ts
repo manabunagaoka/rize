@@ -103,18 +103,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate share price using the pricing function
-    const { data: priceData, error: priceError } = await supabase
-      .rpc('calculate_share_price', { pitch_id_param: pitchId });
-
-    if (priceError) {
-      return NextResponse.json(
-        { error: 'Failed to calculate price' },
-        { status: 500 }
-      );
+    // Get real stock price from the ticker
+    const tickerMap: { [key: number]: string } = {
+      1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT',
+      6: 'RDDT', 7: 'RDDT', 8: 'WRBY', 9: 'TYPE', 10: 'BKNG'
+    };
+    
+    const ticker = tickerMap[pitchId];
+    let currentPrice = 100; // Default fallback
+    
+    if (ticker) {
+      try {
+        const priceResponse = await fetch(`https://rize-mu.vercel.app/api/stock/${ticker}`);
+        const priceData = await priceResponse.json();
+        if (priceData.price) {
+          currentPrice = parseFloat(priceData.price);
+        }
+      } catch (error) {
+        console.error('Failed to fetch real stock price:', error);
+      }
     }
 
-    const currentPrice = priceData || 100;
     const totalCost = Math.floor(shares * currentPrice);
 
     // Check if user has enough tokens
@@ -125,15 +134,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update market data FIRST so the new price is available
+    // Update market data - track volume and shares but price comes from real market
     const newTotalVolume = marketData.total_volume + totalCost;
     const newTotalShares = parseFloat(marketData.total_shares_issued) + shares;
-    const newPrice = 100 * (1 + newTotalVolume / 1000000);
 
     await supabase
       .from('pitch_market_data')
       .update({
-        current_price: newPrice,
+        current_price: currentPrice, // Store real price
         total_volume: newTotalVolume,
         total_shares_issued: newTotalShares,
         updated_at: new Date().toISOString()
@@ -160,8 +168,8 @@ export async function POST(request: NextRequest) {
           shares_owned: newShares,
           total_invested: newTotalInvested,
           avg_purchase_price: newAvgPrice,
-          current_value: Math.floor(newShares * newPrice),
-          unrealized_gain_loss: Math.floor(newShares * newPrice) - newTotalInvested,
+          current_value: Math.floor(newShares * currentPrice),
+          unrealized_gain_loss: Math.floor(newShares * currentPrice) - newTotalInvested,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)

@@ -72,11 +72,24 @@ export default function CompetitionsClient({ user }: { user: any }) {
     setLoading(true);
     try {
       if (activeCompetitionId === 'legendary') {
+        // First, sync real stock prices into database
+        try {
+          await fetch('/api/sync-prices', {
+            method: 'POST',
+            credentials: 'include'
+          });
+          console.log('✅ Stock prices synced');
+        } catch (error) {
+          console.error('⚠️ Price sync failed:', error);
+        }
+        
         // Fetch competitions data (leaderboard + company rankings)
         const compResponse = await fetch('/api/competitions', {
           credentials: 'include'
         });
         const compData = await compResponse.json();
+        
+        console.log('[CompetitionsClient] API Response:', compData);
         
         // Fetch user portfolio if logged in
         if (user) {
@@ -90,6 +103,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
         // Map companies with their market data
         const companiesWithData = SUCCESS_STORIES.map(story => {
           const ranking = compData.companies?.find((c: any) => c.pitch_id === story.id);
+          console.log(`[CompetitionsClient] ${story.name}:`, ranking);
           return {
             ...story,
             currentPrice: ranking?.current_price || 100,
