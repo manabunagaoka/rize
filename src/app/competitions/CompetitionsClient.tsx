@@ -138,7 +138,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
     }
 
     if (userBalance && amount > userBalance.available_tokens) {
-      alert(`Insufficient MTK balance. You have ${(userBalance.available_tokens / 1000).toFixed(0)}K MTK available.`);
+      alert(`Insufficient MTK balance. You have $${userBalance.available_tokens.toLocaleString()} MTK available.`);
       return;
     }
 
@@ -204,6 +204,17 @@ export default function CompetitionsClient({ user }: { user: any }) {
           </div>
         ) : (
           <>
+            {/* Rules Box */}
+            <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-2xl p-6 mb-8">
+              <h3 className="text-2xl font-bold text-white mb-3">📊 Harvard Legends Stock Exchange</h3>
+              <p className="text-gray-300 leading-relaxed">
+                Harvard Legends is an index that tracks stock prices of companies that started at Harvard. 
+                Invest in these companies based on their original pitch and fun facts to see how your portfolio grows. 
+                Compete against other fellows and AI Investors. We&apos;ve gifted you <span className="text-pink-400 font-bold">$1,000,000 Manaboodle Tokens (MTK)</span> to get started. 
+                Have fun, and remember to <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 underline">register YOUR startup</a> for the Manaboodle Stock Exchange IPO!
+              </p>
+            </div>
+
             {/* MTK Balance Bar (if logged in) */}
             {user && userBalance && (
               <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-2xl p-6 mb-8">
@@ -211,16 +222,16 @@ export default function CompetitionsClient({ user }: { user: any }) {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-300 mb-1">Your MTK Balance</h3>
                     <p className="text-4xl font-bold text-white">
-                      {(userBalance.available_tokens / 1000).toFixed(0)}K <span className="text-2xl text-gray-400">MTK</span>
+                      ${userBalance.available_tokens.toLocaleString()} <span className="text-2xl text-gray-400">MTK</span>
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-400">Portfolio Value</p>
                     <p className="text-2xl font-bold text-pink-400">
-                      {(userBalance.portfolio_value / 1000).toFixed(0)}K MTK
+                      ${userBalance.portfolio_value.toLocaleString()} MTK
                     </p>
                     <p className={`text-sm font-semibold ${userBalance.all_time_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {userBalance.all_time_gain_loss >= 0 ? '+' : ''}{(userBalance.all_time_gain_loss / 1000).toFixed(0)}K
+                      {userBalance.all_time_gain_loss >= 0 ? '+' : ''}${Math.abs(userBalance.all_time_gain_loss).toLocaleString()}
                       ({userBalance.total_invested > 0 ? ((userBalance.all_time_gain_loss / userBalance.total_invested) * 100).toFixed(1) : '0.0'}%)
                     </p>
                   </div>
@@ -277,7 +288,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                     <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs text-gray-400 uppercase mb-1">Current Price</p>
+                          <p className="text-xs text-gray-400 uppercase mb-1">Price Per Share</p>
                           <p className="text-2xl font-bold text-pink-400">
                             ${selectedPitch.currentPrice?.toFixed(2) || '100.00'}
                           </p>
@@ -285,7 +296,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                         <div>
                           <p className="text-xs text-gray-400 uppercase mb-1">Total Invested</p>
                           <p className="text-2xl font-bold text-white">
-                            {((selectedPitch.totalVolume || 0) / 1000).toFixed(0)}K MTK
+                            ${(selectedPitch.totalVolume || 0).toLocaleString()} MTK
                           </p>
                         </div>
                       </div>
@@ -319,19 +330,19 @@ export default function CompetitionsClient({ user }: { user: any }) {
                             onClick={() => setInvestmentAmount('50000')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            $50K
+                            $50,000
                           </button>
                           <button
                             onClick={() => setInvestmentAmount('100000')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            $100K
+                            $100,000
                           </button>
                           <button
                             onClick={() => setInvestmentAmount('250000')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            $250K
+                            $250,000
                           </button>
                         </div>
 
@@ -395,13 +406,6 @@ export default function CompetitionsClient({ user }: { user: any }) {
           </>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-800 py-8 mt-12">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>&copy; 2025 RIZE by Manaboodle · Harvard Edition</p>
-        </div>
-      </footer>
     </div>
   );
 }

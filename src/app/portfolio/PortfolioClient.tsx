@@ -105,7 +105,7 @@ export default function PortfolioClient({ user }: { user: any }) {
                 <div className="bg-gradient-to-br from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-2xl p-6">
                   <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">Total Wealth</h3>
                   <p className="text-4xl font-bold text-white mb-1">
-                    {(totalWealth / 1000).toFixed(0)}K
+                    ${totalWealth.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-400">MTK</p>
                 </div>
@@ -114,7 +114,7 @@ export default function PortfolioClient({ user }: { user: any }) {
                 <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                   <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">Available to Invest</h3>
                   <p className="text-4xl font-bold text-white mb-1">
-                    {balance ? (balance.available_tokens / 1000).toFixed(0) : '0'}K
+                    ${balance ? balance.available_tokens.toLocaleString() : '0'}
                   </p>
                   <p className="text-sm text-gray-400">MTK</p>
                 </div>
@@ -123,7 +123,7 @@ export default function PortfolioClient({ user }: { user: any }) {
                 <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                   <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">Portfolio Value</h3>
                   <p className="text-4xl font-bold text-white mb-1">
-                    {balance ? (balance.portfolio_value / 1000).toFixed(0) : '0'}K
+                    ${balance ? balance.portfolio_value.toLocaleString() : '0'}
                   </p>
                   <p className="text-sm text-gray-400">MTK</p>
                 </div>
@@ -136,12 +136,12 @@ export default function PortfolioClient({ user }: { user: any }) {
                     <div>
                       <h3 className="text-sm font-semibold text-gray-400 uppercase mb-1">All-Time Performance</h3>
                       <p className="text-gray-300">
-                        Total Invested: <span className="font-semibold text-white">{(balance.total_invested / 1000).toFixed(0)}K MTK</span>
+                        Total Invested: <span className="font-semibold text-white">${balance.total_invested.toLocaleString()} MTK</span>
                       </p>
                     </div>
                     <div className="text-right">
                       <p className={`text-3xl font-bold ${balance.all_time_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {balance.all_time_gain_loss >= 0 ? '+' : ''}{(balance.all_time_gain_loss / 1000).toFixed(1)}K
+                        {balance.all_time_gain_loss >= 0 ? '+' : ''}${Math.abs(balance.all_time_gain_loss).toLocaleString()}
                       </p>
                       <p className={`text-lg font-semibold ${balance.all_time_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {parseFloat(gainLossPercentage) >= 0 ? '+' : ''}{gainLossPercentage}%
@@ -190,7 +190,7 @@ export default function PortfolioClient({ user }: { user: any }) {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
                               <p className="text-gray-400 mb-1">Invested</p>
-                              <p className="text-white font-semibold">{(investment.total_invested / 1000).toFixed(1)}K MTK</p>
+                              <p className="text-white font-semibold">${investment.total_invested.toLocaleString()} MTK</p>
                             </div>
                             <div>
                               <p className="text-gray-400 mb-1">Current Price</p>
@@ -198,12 +198,12 @@ export default function PortfolioClient({ user }: { user: any }) {
                             </div>
                             <div>
                               <p className="text-gray-400 mb-1">Current Value</p>
-                              <p className="text-white font-semibold">{(investment.current_value / 1000).toFixed(1)}K MTK</p>
+                              <p className="text-white font-semibold">${investment.current_value.toLocaleString()} MTK</p>
                             </div>
                             <div>
                               <p className="text-gray-400 mb-1">Gain/Loss</p>
                               <p className={`font-bold ${investment.unrealized_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {investment.unrealized_gain_loss >= 0 ? '+' : ''}{(investment.unrealized_gain_loss / 1000).toFixed(1)}K
+                                {investment.unrealized_gain_loss >= 0 ? '+' : ''}${Math.abs(investment.unrealized_gain_loss).toLocaleString()}
                                 <span className="text-xs ml-1">
                                   ({investment.gain_loss_percentage >= 0 ? '+' : ''}{investment.gain_loss_percentage.toFixed(1)}%)
                                 </span>
