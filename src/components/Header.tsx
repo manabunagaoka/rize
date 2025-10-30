@@ -6,6 +6,14 @@ import Link from 'next/link';
 export default function Header({ user, showBack }: { user?: any; showBack?: boolean }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  // Get current path for redirect
+  const getCurrentPath = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname + window.location.search;
+    }
+    return '/';
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -44,7 +52,7 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
           <div className="flex items-center gap-3">
             {!user && !showBack && (
               <Link 
-                href="/login"
+                href={`/login?redirect_to=${encodeURIComponent(getCurrentPath())}`}
                 className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-lg transition"
               >
                 Sign In
@@ -78,9 +86,15 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                       </Link>
                     )}
 
-                    <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                      Account
-                    </Link>
+                    {user ? (
+                      <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Account
+                      </Link>
+                    ) : (
+                      <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm hover:bg-gray-700 transition">
+                        Create Account
+                      </a>
+                    )}
 
                     {user ? (
                       <Link href="/api/logout" className="block px-4 py-2 text-sm hover:bg-gray-700 transition text-red-400" onClick={() => setShowMenu(false)}>
@@ -88,12 +102,12 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                       </Link>
                     ) : (
                       <>
-                        <Link href="/login" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        <Link href={`/login?redirect_to=${encodeURIComponent(getCurrentPath())}`} className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                           Sign In
                         </Link>
-                        <Link href="/login?action=signup" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm hover:bg-gray-700 transition">
                           Sign Up
-                        </Link>
+                        </a>
                       </>
                     )}
                   </div>

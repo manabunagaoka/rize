@@ -373,7 +373,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                       <div className="bg-gray-900/50 border border-gray-700 rounded-xl p-6 text-center">
                         <p className="text-gray-400 mb-4">Sign in to start investing</p>
                         <Link
-                          href="/login"
+                          href={`/login?redirect_to=${encodeURIComponent('/competitions?competition=legendary')}`}
                           className="inline-block bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition"
                         >
                           Sign In

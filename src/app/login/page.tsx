@@ -7,14 +7,15 @@ import { Suspense } from 'react';
 function LoginPageContent() {
   const searchParams = useSearchParams();
   const action = searchParams.get('action'); // 'signup' or default to 'signin'
+  const redirectTo = searchParams.get('redirect_to') || '/competitions?competition=legendary';
   const isSignUp = action === 'signup';
   
   const handleAuth = () => {
     // Get the current origin (works in dev and prod)
     const origin = window.location.origin;
     
-    // Use our API callback endpoint to ensure cookies are set properly  
-    const callbackUrl = `${origin}/api/sso-callback`;
+    // Use our API callback endpoint with redirect parameter
+    const callbackUrl = `${origin}/api/sso-callback?redirect_to=${encodeURIComponent(redirectTo)}`;
     const loginUrl = `https://www.manaboodle.com/academic-portal/login?return_url=${encodeURIComponent(callbackUrl)}&app_name=RIZE`;
     window.location.href = loginUrl;
   };
