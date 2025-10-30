@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 // Mapping of pitch IDs to ticker symbols
 const PITCH_TICKERS: Record<number, string | null> = {
   1: 'META',      // Facebook
@@ -22,6 +17,12 @@ const PITCH_TICKERS: Record<number, string | null> = {
 
 export async function POST(request: Request) {
   try {
+    // Initialize Supabase client at runtime (not at module level)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    
     console.log('🔄 Starting price sync...');
     
     // Fetch current prices for all public companies
