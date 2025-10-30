@@ -47,6 +47,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [userBalance, setUserBalance] = useState<any>(null);
+  const [userHoldings, setUserHoldings] = useState<any[]>([]);
   const [shareCount, setShareCount] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'BUY' | 'SELL'>('BUY');
   const [isInvesting, setIsInvesting] = useState(false);
@@ -87,6 +88,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
           });
           const portfolioData = await portfolioResponse.json();
           setUserBalance(portfolioData.balance);
+          setUserHoldings(portfolioData.investments || []);
         }
         
         // Map companies with their market data
@@ -247,20 +249,20 @@ export default function CompetitionsClient({ user }: { user: any }) {
               </p>
             </div>
 
-            {/* MTK Balance Bar (if logged in) */}
+            {/* Portfolio (if logged in) */}
             {user && userBalance && (
               <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-2xl p-6 mb-8">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-300 mb-1">Your MTK Balance</h3>
-                    <p className="text-4xl font-bold text-white">
-                      ${userBalance.available_tokens.toLocaleString()} <span className="text-2xl text-gray-400">MTK</span>
+                    <h3 className="text-lg font-semibold text-gray-300 mb-1">Cash Balance</h3>
+                    <p className="text-3xl font-bold text-white">
+                      ${userBalance.available_tokens.toLocaleString()} <span className="text-xl text-gray-400">MTK</span>
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-400">Portfolio Value</p>
                     <p className="text-2xl font-bold text-pink-400">
-                      ${userBalance.portfolio_value.toLocaleString()} MTK
+                      ${userBalance.portfolio_value.toLocaleString()}
                     </p>
                     <p className={`text-sm font-semibold ${userBalance.all_time_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {userBalance.all_time_gain_loss >= 0 ? '+' : ''}${Math.abs(userBalance.all_time_gain_loss).toLocaleString()}
@@ -268,6 +270,38 @@ export default function CompetitionsClient({ user }: { user: any }) {
                     </p>
                   </div>
                 </div>
+
+                {/* Holdings List */}
+                {userHoldings.length > 0 && (
+                  <div className="border-t border-pink-500/30 pt-4">
+                    <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Your Holdings</h4>
+                    <div className="space-y-2">
+                      {userHoldings.map((holding) => {
+                        const companyNames: { [key: number]: string } = {
+                          1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT', 6: 'WRBY', 7: 'BKNG'
+                        };
+                        const ticker = companyNames[holding.pitch_id] || `#${holding.pitch_id}`;
+                        const gainLoss = holding.unrealized_gain_loss || 0;
+                        const isPositive = gainLoss >= 0;
+                        
+                        return (
+                          <div key={holding.pitch_id} className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-white font-semibold">{ticker}</span>
+                              <span className="text-gray-400 text-sm">{holding.shares_owned.toLocaleString()} shares</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-white font-semibold">${holding.current_value.toLocaleString()}</div>
+                              <div className={`text-xs ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                                {isPositive ? '+' : ''}{gainLoss.toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
