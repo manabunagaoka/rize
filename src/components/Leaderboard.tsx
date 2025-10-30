@@ -7,7 +7,7 @@ interface LeaderboardEntry {
   id: number;
   name: string;
   ticker?: string | null;
-  voteCount: number; // This is actually total investment volume
+  voteCount: number; // Real market cap value (for display)
   currentPrice?: number; // Current stock price
   previousRank?: number;
 }
@@ -57,6 +57,18 @@ function LivePrice({ ticker }: { ticker?: string | null }) {
       </div>
     </div>
   );
+}
+
+// Format market cap for display
+function formatMarketCap(value: number): string {
+  if (value >= 1_000_000_000_000) {
+    return `$${(value / 1_000_000_000_000).toFixed(1)}T`;
+  } else if (value >= 1_000_000_000) {
+    return `$${(value / 1_000_000_000).toFixed(0)}B`;
+  } else if (value >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(0)}M`;
+  }
+  return `$${value.toLocaleString()}`;
 }
 
 export default function Leaderboard({ competitionId, entries, onSelectEntry, selectedEntryId }: LeaderboardProps) {
@@ -116,7 +128,7 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
         <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 uppercase">
           <div className="col-span-1">Rank</div>
           <div className="col-span-5">Company</div>
-          <div className="col-span-2 text-right">Value</div>
+          <div className="col-span-2 text-right">Market Cap</div>
           <div className="col-span-4 text-right">Price & Change</div>
         </div>
       </div>
@@ -152,10 +164,10 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
                   </span>
                 </div>
 
-                {/* Investment Value */}
+                {/* Market Cap (Real Company Value) */}
                 <div className="col-span-2 text-right">
                   <span className="text-white font-semibold">
-                    ${entry.voteCount.toLocaleString()}
+                    {formatMarketCap(entry.voteCount)}
                   </span>
                 </div>
 

@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Mapping of pitch IDs to ticker symbols
+// Mapping of pitch IDs to ticker symbols (only publicly traded companies)
 const PITCH_TICKERS: Record<number, string | null> = {
   1: 'META',      // Facebook
   2: 'MSFT',      // Microsoft
   3: 'DBX',       // Dropbox
   4: 'AKAM',      // Akamai
   5: 'RDDT',      // Reddit
-  6: null,        // Priceonomics (not public)
-  7: null,        // Quora (not public)
-  8: 'WRBY',      // Warby Parker
-  9: null,        // Typeform (not public)
-  10: 'BKNG',     // Booking.com
+  6: 'WRBY',      // Warby Parker
+  7: 'BKNG',      // Booking.com
 };
 
 export async function POST(request: Request) {

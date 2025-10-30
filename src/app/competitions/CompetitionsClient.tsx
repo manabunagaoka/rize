@@ -8,43 +8,31 @@ import StockPrice from '@/components/StockPrice';
 import Header from '@/components/Header';
 
 const SUCCESS_STORIES = [
-  { id: 1, name: 'Facebook', founder: 'Mark Zuckerberg', year: '2004', valuation: '$1.2T', ticker: 'META',
+  { id: 1, name: 'Facebook', founder: 'Mark Zuckerberg', year: '2004', valuation: '$1.2T', marketCap: 1200000000000, ticker: 'META',
     pitch: 'An online directory that connects people through social networks at colleges.',
     funFact: 'Started as "TheFacebook" - exclusive to Harvard students with a .edu email. Expanded to other Ivy League schools within months.',
     color: 'from-blue-500 to-blue-600' },
-  { id: 2, name: 'Microsoft', founder: 'Bill Gates & Paul Allen', year: '1975', valuation: '$3.1T', ticker: 'MSFT',
+  { id: 2, name: 'Microsoft', founder: 'Bill Gates & Paul Allen', year: '1975', valuation: '$3.1T', marketCap: 3100000000000, ticker: 'MSFT',
     pitch: 'A computer on every desk and in every home, running our software.',
     funFact: 'Gates wrote a BASIC interpreter for the Altair 8800 in his dorm room. Sold it before even testing on real hardware - it worked.',
     color: 'from-green-500 to-green-600' },
-  { id: 3, name: 'Dropbox', founder: 'Drew Houston', year: '2007', valuation: '$10B', ticker: 'DBX',
+  { id: 3, name: 'Dropbox', founder: 'Drew Houston', year: '2007', valuation: '$10B', marketCap: 10000000000, ticker: 'DBX',
     pitch: 'Your files, anywhere. One folder that syncs across all your devices.',
     funFact: 'Drew forgot his USB drive on a bus trip and coded the first prototype during the 4-hour ride. Launched at Y Combinator.',
     color: 'from-purple-500 to-purple-600' },
-  { id: 4, name: 'Akamai', founder: 'Tom Leighton & Danny Lewin', year: '1998', valuation: '$15B', ticker: 'AKAM',
+  { id: 4, name: 'Akamai', founder: 'Tom Leighton & Danny Lewin', year: '1998', valuation: '$15B', marketCap: 15000000000, ticker: 'AKAM',
     pitch: 'Make the internet faster by serving content from servers closer to users.',
     funFact: 'Started as an MIT/Harvard math project. Now delivers 30% of all web traffic globally including Netflix and Spotify.',
     color: 'from-cyan-500 to-cyan-600' },
-  { id: 5, name: 'Reddit', founder: 'Steve Huffman & Alexis Ohanian', year: '2005', valuation: '$10B', ticker: 'RDDT',
+  { id: 5, name: 'Reddit', founder: 'Steve Huffman & Alexis Ohanian', year: '2005', valuation: '$10B', marketCap: 10000000000, ticker: 'RDDT',
     pitch: 'The front page of the internet - where communities create and share content.',
     funFact: 'Pitched as "Memepool meets Delicious" at Y Combinator. Built in 3 weeks using Python. Now 500M+ monthly users.',
     color: 'from-orange-500 to-orange-600' },
-  { id: 6, name: 'Priceonomics', founder: 'Rohin Dhar', year: '2010', valuation: 'Acquired', ticker: null,
-    pitch: 'Data-driven storytelling that helps you make better buying decisions.',
-    funFact: 'Started by scraping Craigslist to find fair prices. Pivoted to become a content marketing agency acquired by Content Harmony.',
-    color: 'from-yellow-500 to-yellow-600' },
-  { id: 7, name: 'Quora', founder: 'Adam D\'Angelo & Charlie Cheever', year: '2009', valuation: '$2B', ticker: null,
-    pitch: 'A place to share knowledge and better understand the world.',
-    funFact: 'Adam was Facebook\'s first CTO. Built Quora to create higher quality Q&A than Yahoo Answers. 400M+ monthly users.',
-    color: 'from-red-500 to-red-600' },
-  { id: 8, name: 'Warby Parker', founder: 'Neil Blumenthal & team', year: '2010', valuation: '$3B', ticker: 'WRBY',
+  { id: 6, name: 'Warby Parker', founder: 'Neil Blumenthal & team', year: '2010', valuation: '$3B', marketCap: 3000000000, ticker: 'WRBY',
     pitch: 'Designer eyewear at a revolutionary price, while leading the way for socially conscious businesses.',
     funFact: 'Started because founder lost his glasses and was shocked by the $500 price. Buy a pair, give a pair model. Now valued at $3B.',
     color: 'from-indigo-500 to-indigo-600' },
-  { id: 9, name: 'Typeform', founder: 'Robert Muñoz', year: '2012', valuation: '$935M', ticker: null,
-    pitch: 'Forms and surveys that people actually want to fill out.',
-    funFact: 'Built because founders hated boring online forms. Made them conversational and beautiful. 150M+ responses collected yearly.',
-    color: 'from-pink-500 to-pink-600' },
-  { id: 10, name: 'Booking.com', founder: 'Geert-Jan Bruinsma', year: '1996', valuation: '$100B', ticker: 'BKNG',
+  { id: 7, name: 'Booking.com', founder: 'Geert-Jan Bruinsma', year: '1996', valuation: '$100B', marketCap: 100000000000, ticker: 'BKNG',
     pitch: 'Book accommodations anywhere in the world with instant confirmation.',
     funFact: 'Started in Amsterdam, but expanded with Harvard MBA insights. Now books 1.5M room nights per day globally.',
     color: 'from-blue-400 to-blue-500' }
@@ -113,8 +101,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
           };
         });
         
-        // Sort companies by total volume (highest first)
-        const sortedCompanies = companiesWithData.sort((a, b) => b.totalVolume - a.totalVolume);
+        // Sort companies by real market cap (highest first)
+        const sortedCompanies = companiesWithData.sort((a, b) => b.marketCap - a.marketCap);
         
         setCompaniesData(sortedCompanies);
         setLeaderboardData(compData.leaderboard || []);
@@ -267,7 +255,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                   id: c.id,
                   name: c.name,
                   ticker: c.ticker,
-                  voteCount: c.totalVolume,
+                  voteCount: c.marketCap,  // Pass real market cap, not MTK volume
                   currentPrice: c.currentPrice
                 }))}
                 onSelectEntry={handleSelectEntry}
