@@ -59,7 +59,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [userBalance, setUserBalance] = useState<any>(null);
-  const [investmentAmount, setInvestmentAmount] = useState<string>('');
+  const [shareCount, setShareCount] = useState<string>('');
   const [isInvesting, setIsInvesting] = useState(false);
 
   useEffect(() => {
@@ -131,14 +131,19 @@ export default function CompetitionsClient({ user }: { user: any }) {
       return;
     }
 
-    const amount = parseInt(investmentAmount);
-    if (!amount || amount <= 0) {
-      alert('Please enter a valid investment amount');
+    const shares = parseInt(shareCount);
+    if (!shares || shares <= 0) {
+      alert('Please enter a valid number of shares');
       return;
     }
 
-    if (userBalance && amount > userBalance.available_tokens) {
-      alert(`Insufficient MTK balance. You have $${userBalance.available_tokens.toLocaleString()} MTK available.`);
+    // Calculate total cost
+    const selectedCompany = companiesData.find(c => c.id === pitchId);
+    const pricePerShare = selectedCompany?.currentPrice || 100;
+    const totalCost = shares * pricePerShare;
+
+    if (userBalance && totalCost > userBalance.available_tokens) {
+      alert(`Insufficient MTK balance. You need $${totalCost.toLocaleString()} MTK but only have $${userBalance.available_tokens.toLocaleString()} MTK available.`);
       return;
     }
 
@@ -147,15 +152,15 @@ export default function CompetitionsClient({ user }: { user: any }) {
       const response = await fetch('/api/invest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pitchId, amount }),
+        body: JSON.stringify({ pitchId, shares }),
         credentials: 'include'
       });
       
       const data = await response.json();
       
       if (data.success) {
-        alert(`Success! Purchased ${data.investment.shares.toFixed(2)} shares at $${data.investment.price.toFixed(2)}/share`);
-        setInvestmentAmount('');
+        alert(`Success! Purchased ${shares.toLocaleString()} shares at $${pricePerShare.toFixed(2)}/share for a total of $${totalCost.toLocaleString()} MTK`);
+        setShareCount('');
         // Refresh data to show updated rankings and balance
         await fetchData();
       } else {
@@ -205,13 +210,14 @@ export default function CompetitionsClient({ user }: { user: any }) {
         ) : (
           <>
             {/* Rules Box */}
+                        {/* Rules Box */}
             <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-2xl p-6 mb-8">
-              <h3 className="text-2xl font-bold text-white mb-3">📊 Harvard Legends Stock Exchange</h3>
+              <h3 className="text-2xl font-bold text-white mb-3">Harvard Legends Index</h3>
               <p className="text-gray-300 leading-relaxed">
-                Harvard Legends is an index that tracks stock prices of companies that started at Harvard. 
+                Harvard Legends Index tracks companies that started at Harvard. 
                 Invest in these companies based on their original pitch and fun facts to see how your portfolio grows. 
                 Compete against other fellows and AI Investors. We&apos;ve gifted you <span className="text-pink-400 font-bold">$1,000,000 Manaboodle Tokens (MTK)</span> to get started. 
-                Have fun, and remember to <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 underline">register YOUR startup</a> for the Manaboodle Stock Exchange IPO!
+                Have fun, and remember to <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 underline">register YOUR startup</a> for the Manaboodle IPO!
               </p>
             </div>
 
@@ -312,45 +318,50 @@ export default function CompetitionsClient({ user }: { user: any }) {
                       <div className="space-y-3">
                         <div>
                           <label className="text-sm font-semibold text-gray-400 uppercase mb-2 block">
-                            Investment Amount (MTK)
+                            Number of Shares
                           </label>
                           <input
                             type="number"
-                            value={investmentAmount}
-                            onChange={(e) => setInvestmentAmount(e.target.value)}
-                            placeholder="Enter amount..."
+                            value={shareCount}
+                            onChange={(e) => setShareCount(e.target.value)}
+                            placeholder="Enter number of shares..."
                             className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500"
                             min="0"
-                            step="1000"
+                            step="1"
                           />
+                          {shareCount && selectedPitch.currentPrice && (
+                            <p className="mt-2 text-sm text-gray-400">
+                              Total Cost: <span className="text-pink-400 font-semibold">${(parseInt(shareCount) * selectedPitch.currentPrice).toLocaleString()} MTK</span>
+                            </p>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-3 gap-2">
                           <button
-                            onClick={() => setInvestmentAmount('50000')}
+                            onClick={() => setShareCount('100')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            $50,000
+                            100 shares
                           </button>
                           <button
-                            onClick={() => setInvestmentAmount('100000')}
+                            onClick={() => setShareCount('500')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            $100,000
+                            500 shares
                           </button>
                           <button
-                            onClick={() => setInvestmentAmount('250000')}
+                            onClick={() => setShareCount('1000')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            $250,000
+                            1000 shares
                           </button>
                         </div>
 
                         <button 
                           onClick={() => handleInvest(selectedPitch.id)}
-                          disabled={isInvesting || !investmentAmount}
+                          disabled={isInvesting || !shareCount}
                           className={`w-full font-semibold py-4 px-6 rounded-xl transition ${
-                            isInvesting || !investmentAmount
+                            isInvesting || !shareCount
                               ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                               : 'bg-pink-500 hover:bg-pink-600 text-white'
                           }`}

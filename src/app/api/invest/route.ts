@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { pitchId, amount } = await request.json();
+    const { pitchId, shares } = await request.json();
 
-    if (!pitchId || !amount || amount <= 0) {
+    if (!pitchId || !shares || shares <= 0) {
       return NextResponse.json(
-        { error: 'Invalid pitch ID or amount' },
+        { error: 'Invalid pitch ID or share count' },
         { status: 400 }
       );
     }
@@ -89,14 +89,6 @@ export async function POST(request: NextRequest) {
       balance = newBalance;
     }
 
-    // Check if user has enough tokens
-    if (balance.available_tokens < amount) {
-      return NextResponse.json(
-        { error: 'Insufficient MTK balance', available: balance.available_tokens },
-        { status: 400 }
-      );
-    }
-
     // Get current market data
     const { data: marketData, error: marketError } = await supabase
       .from('pitch_market_data')
@@ -122,8 +114,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const currentPrice = parseFloat(priceData || '100.00');
-    const sharesPurchased = amount / currentPrice;
+    const currentPrice = priceData || 100;
+    const totalCost = Math.floor(shares * currentPrice);
+
+    // Check if user has enough tokens
+    if (balance.available_tokens < totalCost) {
+      return NextResponse.json(
+        { error: 'Insufficient MTK balance', available: balance.available_tokens, required: totalCost },
+        { status: 400 }
+      );
+    }
+
+    // Update market data FIRST so the new price is available
+    const newTotalVolume = marketData.total_volume + totalCost;
+    const newTotalShares = parseFloat(marketData.total_shares_issued) + shares;
+    const newPrice = 100 * (1 + newTotalVolume / 1000000);
+
+    await supabase
+      .from('pitch_market_data')
+      .update({
+        current_price: newPrice,
+        total_volume: newTotalVolume,
+        total_shares_issued: newTotalShares,
+        updated_at: new Date().toISOString()
+      })
+      .eq('pitch_id', pitchId);
 
     // Get or create user investment
     const { data: existingInvestment } = await supabase
@@ -135,8 +150,8 @@ export async function POST(request: NextRequest) {
 
     if (existingInvestment) {
       // Update existing investment
-      const newShares = parseFloat(existingInvestment.shares_owned) + sharesPurchased;
-      const newTotalInvested = existingInvestment.total_invested + amount;
+      const newShares = parseFloat(existingInvestment.shares_owned) + shares;
+      const newTotalInvested = existingInvestment.total_invested + totalCost;
       const newAvgPrice = newTotalInvested / newShares;
 
       await supabase
@@ -145,6 +160,8 @@ export async function POST(request: NextRequest) {
           shares_owned: newShares,
           total_invested: newTotalInvested,
           avg_purchase_price: newAvgPrice,
+          current_value: Math.floor(newShares * newPrice),
+          unrealized_gain_loss: Math.floor(newShares * newPrice) - newTotalInvested,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -156,9 +173,11 @@ export async function POST(request: NextRequest) {
         .insert({
           user_id: user.id,
           pitch_id: pitchId,
-          shares_owned: sharesPurchased,
-          total_invested: amount,
-          avg_purchase_price: currentPrice
+          shares_owned: shares,
+          total_invested: totalCost,
+          avg_purchase_price: currentPrice,
+          current_value: totalCost, // Initial value equals amount invested
+          unrealized_gain_loss: 0 // No gain/loss initially
         });
     }
 
@@ -169,29 +188,32 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         pitch_id: pitchId,
         transaction_type: 'BUY',
-        shares: sharesPurchased,
+        shares: shares,
         price_per_share: currentPrice,
-        total_amount: amount,
+        total_amount: totalCost,
         balance_before: balance.available_tokens,
-        balance_after: balance.available_tokens - amount
+        balance_after: balance.available_tokens - totalCost
       });
 
     // Update user balance
+    const newPortfolioValue = await supabase
+      .from('user_investments')
+      .select('current_value')
+      .eq('user_id', user.id);
+    
+    const totalPortfolioValue = (newPortfolioValue.data || []).reduce((sum, inv) => sum + inv.current_value, 0);
+
     await supabase
       .from('user_token_balances')
       .update({
-        available_tokens: balance.available_tokens - amount,
-        total_invested: balance.total_invested + amount,
+        available_tokens: balance.available_tokens - totalCost,
+        total_invested: balance.total_invested + totalCost,
+        portfolio_value: totalPortfolioValue,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id);
 
-    // Update market data
-    const newTotalVolume = marketData.total_volume + amount;
-    const newTotalShares = parseFloat(marketData.total_shares_issued) + sharesPurchased;
-    const newPrice = 100 * (1 + newTotalVolume / 1000000);
-
-    // Check if this is a new unique investor
+    // Update unique investors count
     const { count } = await supabase
       .from('user_investments')
       .select('user_id', { count: 'exact', head: true })
@@ -201,24 +223,17 @@ export async function POST(request: NextRequest) {
     await supabase
       .from('pitch_market_data')
       .update({
-        current_price: newPrice,
-        total_volume: newTotalVolume,
-        total_shares_issued: newTotalShares,
-        unique_investors: count || 0,
-        updated_at: new Date().toISOString()
+        unique_investors: count || 0
       })
       .eq('pitch_id', pitchId);
-
-    // Trigger portfolio value updates
-    await supabase.rpc('update_portfolio_values');
 
     return NextResponse.json({
       success: true,
       investment: {
-        shares: sharesPurchased,
+        shares: shares,
         price: currentPrice,
-        amount: amount,
-        newBalance: balance.available_tokens - amount
+        totalCost: totalCost,
+        newBalance: balance.available_tokens - totalCost
       }
     });
 
