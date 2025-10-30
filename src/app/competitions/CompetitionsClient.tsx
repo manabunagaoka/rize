@@ -60,6 +60,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [loading, setLoading] = useState(true);
   const [userBalance, setUserBalance] = useState<any>(null);
   const [shareCount, setShareCount] = useState<string>('');
+  const [transactionType, setTransactionType] = useState<'BUY' | 'SELL'>('BUY');
   const [isInvesting, setIsInvesting] = useState(false);
 
   useEffect(() => {
@@ -253,7 +254,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
                 entries={companiesData.map(c => ({
                   id: c.id,
                   name: c.name,
-                  voteCount: c.totalVolume
+                  voteCount: c.totalVolume,
+                  currentPrice: c.currentPrice
                 }))}
                 onSelectEntry={handleSelectEntry}
                 selectedEntryId={selectedEntryId ?? undefined}
@@ -315,7 +317,37 @@ export default function CompetitionsClient({ user }: { user: any }) {
 
                     {/* Investment Interface */}
                     {user ? (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
+                        {/* BUY / SELL Toggle */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => {
+                              setTransactionType('BUY');
+                              setShareCount('');
+                            }}
+                            className={`py-3 px-4 rounded-lg font-semibold transition ${
+                              transactionType === 'BUY'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            BUY
+                          </button>
+                          <button
+                            onClick={() => {
+                              setTransactionType('SELL');
+                              setShareCount('');
+                            }}
+                            className={`py-3 px-4 rounded-lg font-semibold transition ${
+                              transactionType === 'SELL'
+                                ? 'bg-red-500 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            SELL
+                          </button>
+                        </div>
+
                         <div>
                           <label className="text-sm font-semibold text-gray-400 uppercase mb-2 block">
                             Number of Shares
@@ -330,9 +362,21 @@ export default function CompetitionsClient({ user }: { user: any }) {
                             step="1"
                           />
                           {shareCount && selectedPitch.currentPrice && (
-                            <p className="mt-2 text-sm text-gray-400">
-                              Total Cost: <span className="text-pink-400 font-semibold">${(parseInt(shareCount) * selectedPitch.currentPrice).toLocaleString()} MTK</span>
-                            </p>
+                            <div className="mt-2 p-3 bg-gray-900/70 rounded-lg border border-gray-700">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-400">
+                                  {transactionType === 'BUY' ? 'Total Cost:' : 'Total Proceeds:'}
+                                </span>
+                                <span className={`font-bold text-lg ${transactionType === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
+                                  ${(parseInt(shareCount) * selectedPitch.currentPrice).toLocaleString()} MTK
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-gray-500">
+                                  @ ${selectedPitch.currentPrice.toFixed(2)} per share
+                                </span>
+                              </div>
+                            </div>
                           )}
                         </div>
                         
@@ -341,19 +385,19 @@ export default function CompetitionsClient({ user }: { user: any }) {
                             onClick={() => setShareCount('100')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            100 shares
+                            100
                           </button>
                           <button
                             onClick={() => setShareCount('500')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            500 shares
+                            500
                           </button>
                           <button
                             onClick={() => setShareCount('1000')}
                             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
                           >
-                            1000 shares
+                            1000
                           </button>
                         </div>
 
@@ -363,10 +407,12 @@ export default function CompetitionsClient({ user }: { user: any }) {
                           className={`w-full font-semibold py-4 px-6 rounded-xl transition ${
                             isInvesting || !shareCount
                               ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                              : 'bg-pink-500 hover:bg-pink-600 text-white'
+                              : transactionType === 'BUY'
+                              ? 'bg-green-500 hover:bg-green-600 text-white'
+                              : 'bg-red-500 hover:bg-red-600 text-white'
                           }`}
                         >
-                          {isInvesting ? 'Processing...' : 'Invest Now'}
+                          {isInvesting ? 'Processing...' : `${transactionType} ${shareCount || '0'} Shares`}
                         </button>
                       </div>
                     ) : (

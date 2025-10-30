@@ -38,7 +38,7 @@ export default function LandingPage({ user }: { user: any }) {
             className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105 cursor-pointer"
           >
             <h3 className="text-3xl font-bold text-white mb-3">
-              Harvard Legends
+              Harvard Legends Index
             </h3>
             
             <p className="text-gray-300 mb-6">

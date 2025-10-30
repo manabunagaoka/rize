@@ -6,6 +6,7 @@ interface LeaderboardEntry {
   id: number;
   name: string;
   voteCount: number; // This is actually total investment volume
+  currentPrice?: number; // Current stock price
   previousRank?: number;
 }
 
@@ -74,7 +75,7 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
           <div className="col-span-1">Rank</div>
           <div className="col-span-7">Company</div>
           <div className="col-span-2 text-right">Value</div>
-          <div className="col-span-2 text-right">Trend</div>
+          <div className="col-span-2 text-right">Price</div>
         </div>
       </div>
 
@@ -116,10 +117,10 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
                   </span>
                 </div>
 
-                {/* Movement */}
+                {/* Current Price */}
                 <div className="col-span-2 text-right">
-                  <span className={`text-sm font-semibold ${entry.movementColor}`}>
-                    {entry.movement}
+                  <span className="text-white font-semibold">
+                    ${entry.currentPrice?.toFixed(2) || '100.00'}
                   </span>
                 </div>
               </div>
