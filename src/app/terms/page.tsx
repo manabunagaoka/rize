@@ -15,7 +15,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-2xl font-semibold text-white mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing and using RIZE ("the Service"), you accept and agree to be bound by these Terms of Service. 
+              By accessing and using RIZE (&quot;the Service&quot;), you accept and agree to be bound by these Terms of Service. 
               If you do not agree to these terms, you must not use the Service.
             </p>
           </section>
@@ -132,7 +132,7 @@ export default function TermsOfService() {
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>
-                RIZE is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, express or implied
+                RIZE is provided &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; without warranties of any kind, express or implied
               </li>
               <li>
                 We are NOT responsible for loss of MTK, portfolio data, leaderboard rankings, or account information
@@ -227,7 +227,7 @@ export default function TermsOfService() {
             <p className="text-sm">
               RIZE is a free educational game where you practice investment strategies with fake money (MTK) 
               that has no real value. You must be 13+ to play. We can change or shut down the service anytime. 
-              We're not responsible if you lose data or if the game stops working. Don't cheat, don't harass 
+              We&apos;re not responsible if you lose data or if the game stops working. Don&apos;t cheat, don&apos;t harass 
               others, and understand this is just for fun and learning—not real investing.
             </p>
           </section>

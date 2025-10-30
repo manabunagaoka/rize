@@ -22,8 +22,8 @@ export default function HowToPlay() {
                 <span className="text-yellow-400 font-semibold"> MTK has ZERO real-world value</span> and cannot be exchanged for real money.
               </p>
               <p>
-                <strong className="text-white">Purpose:</strong> Use MTK to build an investment portfolio by buying "shares" 
-                in Harvard's legendary startup pitches. Grow your wealth and climb the leaderboard!
+                <strong className="text-white">Purpose:</strong> Use MTK to build an investment portfolio by buying &quot;shares&quot; 
+                in Harvard&apos;s legendary startup pitches. Grow your wealth and climb the leaderboard!
               </p>
             </div>
           </section>
@@ -45,8 +45,8 @@ export default function HowToPlay() {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">2. Buy Shares</h3>
                 <p>
-                  Click "Invest" on any startup. Choose how much MTK to invest. The system automatically calculates 
-                  how many shares you'll receive at the current price.
+                  Click &quot;Invest&quot; on any startup. Choose how much MTK to invest. The system automatically calculates 
+                  how many shares you&apos;ll receive at the current price.
                 </p>
               </div>
               
@@ -75,7 +75,7 @@ export default function HowToPlay() {
             </h2>
             <div className="space-y-3 text-sm">
               <p>
-                Share prices in RIZE aren't fixed—they grow based on total investment volume. This creates 
+                Share prices in RIZE aren&apos;t fixed—they grow based on total investment volume. This creates 
                 real market dynamics where popular companies become more expensive.
               </p>
               
@@ -112,7 +112,7 @@ export default function HowToPlay() {
               Meet the 10 AI Investors
             </h2>
             <p className="text-sm mb-4">
-              You're competing against 10 AI investors, each with a unique personality and investment strategy. 
+              You&apos;re competing against 10 AI investors, each with a unique personality and investment strategy. 
               Study their moves to learn different approaches!
             </p>
             
@@ -162,7 +162,7 @@ export default function HowToPlay() {
               <div className="bg-gray-800 rounded p-3">
                 <p className="text-lg mb-1"><strong className="text-white">FOMO Master</strong></p>
                 <p className="text-gray-400 mb-1">Strategy: Momentum</p>
-                <p className="italic text-gray-500">&quot;Can't miss the next big thing!&quot;</p>
+                <p className="italic text-gray-500">&quot;Can&apos;t miss the next big thing!&quot;</p>
                 <p className="text-xs mt-2">Chases whatever is gaining the most volume.</p>
               </div>
               
@@ -176,14 +176,14 @@ export default function HowToPlay() {
               <div className="bg-gray-800 rounded p-3">
                 <p className="text-lg mb-1"><strong className="text-white">The Contrarian</strong></p>
                 <p className="text-gray-400 mb-1">Strategy: Contrarian</p>
-                <p className="italic text-gray-500">&quot;When others are greedy, I'm fearful&quot;</p>
+                <p className="italic text-gray-500">&quot;When others are greedy, I&apos;m fearful&quot;</p>
                 <p className="text-xs mt-2">Buys undervalued, sells overpriced companies.</p>
               </div>
               
               <div className="bg-gray-800 rounded p-3">
                 <p className="text-lg mb-1"><strong className="text-white">The Oracle</strong></p>
                 <p className="text-gray-400 mb-1">Strategy: Perfect Timing</p>
-                <p className="italic text-gray-500">&quot;I see what you don't...&quot;</p>
+                <p className="italic text-gray-500">&quot;I see what you don&apos;t...&quot;</p>
                 <p className="text-xs mt-2">Mysteriously picks winners with uncanny accuracy.</p>
               </div>
             </div>

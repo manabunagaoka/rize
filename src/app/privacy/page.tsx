@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
               <strong>Last Updated:</strong> October 29, 2025
             </p>
             <p>
-              This Privacy Policy describes how RIZE ("we," "us," or "our") collects, uses, and shares 
+              This Privacy Policy describes how RIZE (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) collects, uses, and shares 
               information when you use our educational investment simulation platform.
             </p>
           </section>
@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
             <ul className="list-disc list-inside space-y-2 ml-4">
               <li>
                 <strong>With Manaboodle:</strong> RIZE is integrated with Manaboodle SSO, so authentication 
-                data is shared with Manaboodle's authentication service
+                data is shared with Manaboodle&apos;s authentication service
               </li>
               <li>
                 <strong>Service Providers:</strong> We use Supabase for database hosting and Vercel for 
@@ -151,7 +151,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-3">9. Children's Privacy</h2>
+            <h2 className="text-2xl font-semibold text-white mb-3">9. Children&apos;s Privacy</h2>
             <p>
               RIZE is intended for users aged 13 and above. We do not knowingly collect personal information 
               from children under 13. If you believe a child under 13 has created an account, please contact 
@@ -196,7 +196,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-xl font-bold text-white mb-3">Summary (Not Legally Binding)</h2>
             <p className="text-sm">
               We collect your Manaboodle account info, game activity (investments, portfolio), and technical 
-              data to run RIZE. Your leaderboard rankings and portfolio stats are public. We don't sell your 
+              data to run RIZE. Your leaderboard rankings and portfolio stats are public. We don&apos;t sell your 
               data. We use secure hosting (Supabase/Vercel) and encryption. You can request to see or delete 
               your data. Must be 13+ to use RIZE.
             </p>

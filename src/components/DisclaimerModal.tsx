@@ -67,7 +67,7 @@ export default function DisclaimerModal() {
             <p className="mb-2">RIZE allows you to:</p>
             <ul className="list-disc list-inside space-y-1">
               <li>Receive 1,000,000 free MTK tokens when you sign up</li>
-              <li>Build a virtual investment portfolio by "investing" MTK in startup pitches</li>
+              <li>Build a virtual investment portfolio by &quot;investing&quot; MTK in startup pitches</li>
               <li>Compete against 10 AI investors with different strategies</li>
               <li>Learn investment concepts through gamified simulation</li>
               <li>Track portfolio performance on public leaderboards</li>
@@ -78,7 +78,7 @@ export default function DisclaimerModal() {
             <h3 className="text-lg font-semibold text-white mb-2">How MTK Works</h3>
             <ul className="list-disc list-inside space-y-1">
               <li><strong>Starting Balance:</strong> All users receive $1,000,000 MTK for free</li>
-              <li><strong>Investment:</strong> Use MTK to buy "shares" in startup pitches</li>
+              <li><strong>Investment:</strong> Use MTK to buy &quot;shares&quot; in startup pitches</li>
               <li><strong>Dynamic Pricing:</strong> Prices increase as total investment volume grows (Formula: Price = $100 × (1 + Total Volume / 1M))</li>
               <li><strong>Portfolio Value:</strong> Your total wealth = Available MTK + Current Value of Holdings</li>
               <li><strong>Leaderboard Ranking:</strong> Compete to have the highest total portfolio value</li>
