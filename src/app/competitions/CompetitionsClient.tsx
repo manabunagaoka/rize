@@ -275,9 +275,9 @@ export default function CompetitionsClient({ user }: { user: any }) {
                 </div>
 
                 {/* Holdings List */}
-                {userHoldings.length > 0 ? (
-                  <div className="border-t border-pink-500/30 pt-4">
-                    <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Your Holdings</h4>
+                <div className="border-t border-pink-500/30 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Your Holdings</h4>
+                  {userHoldings.length > 0 ? (
                     <div className="space-y-2">
                       {userHoldings.map((holding) => {
                         const companyNames: { [key: number]: string } = {
@@ -303,14 +303,12 @@ export default function CompetitionsClient({ user }: { user: any }) {
                         );
                       })}
                     </div>
-                  </div>
-                ) : (
-                  <div className="border-t border-pink-500/30 pt-4">
+                  ) : (
                     <p className="text-gray-400 text-center py-4">
-                      No holdings yet. Select a company below and invest to get started! 💰
+                      No holdings yet. Select a company and invest to get started.
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
 
