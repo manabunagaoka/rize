@@ -266,6 +266,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                 entries={companiesData.map(c => ({
                   id: c.id,
                   name: c.name,
+                  ticker: c.ticker,
                   voteCount: c.totalVolume,
                   currentPrice: c.currentPrice
                 }))}

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface LeaderboardEntry {
   id: number;
   name: string;
+  ticker?: string | null;
   voteCount: number; // This is actually total investment volume
   currentPrice?: number; // Current stock price
   previousRank?: number;
@@ -15,6 +17,46 @@ interface LeaderboardProps {
   entries: LeaderboardEntry[];
   onSelectEntry: (id: number) => void;
   selectedEntryId?: number;
+}
+
+// Mini component to fetch and display real-time stock price
+function LivePrice({ ticker }: { ticker?: string | null }) {
+  const [data, setData] = useState<{ price: number; changePercent: number } | null>(null);
+  
+  useEffect(() => {
+    if (!ticker) return;
+    
+    async function fetchPrice() {
+      try {
+        const response = await fetch(`/api/stock/${ticker}`);
+        const apiData = await response.json();
+        setData({
+          price: apiData.c,
+          changePercent: apiData.dp
+        });
+      } catch (error) {
+        console.error('Error fetching price:', error);
+      }
+    }
+    
+    fetchPrice();
+  }, [ticker]);
+  
+  if (!ticker || !data) {
+    return <span className="text-gray-500">-</span>;
+  }
+  
+  const isPositive = data.changePercent >= 0;
+  
+  return (
+    <div className="flex items-center justify-end gap-2">
+      <span className="font-semibold">${data.price.toFixed(2)}</span>
+      <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+        {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+        <span>{isPositive ? '+' : ''}{data.changePercent.toFixed(2)}%</span>
+      </div>
+    </div>
+  );
 }
 
 export default function Leaderboard({ competitionId, entries, onSelectEntry, selectedEntryId }: LeaderboardProps) {
@@ -73,9 +115,9 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
       <div className="bg-gray-900 px-4 py-3 border-b border-gray-700">
         <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 uppercase">
           <div className="col-span-1">Rank</div>
-          <div className="col-span-7">Company</div>
+          <div className="col-span-5">Company</div>
           <div className="col-span-2 text-right">Value</div>
-          <div className="col-span-2 text-right">Price</div>
+          <div className="col-span-4 text-right">Price & Change</div>
         </div>
       </div>
 
@@ -104,7 +146,7 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
                 </div>
 
                 {/* Name */}
-                <div className="col-span-7 text-left">
+                <div className="col-span-5 text-left">
                   <span className="text-white font-medium truncate block">
                     {entry.name}
                   </span>
@@ -117,11 +159,9 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
                   </span>
                 </div>
 
-                {/* Current Price */}
-                <div className="col-span-2 text-right">
-                  <span className="text-white font-semibold">
-                    ${entry.currentPrice?.toFixed(2) || '100.00'}
-                  </span>
+                {/* Current Price with % Change */}
+                <div className="col-span-4 text-right text-white">
+                  <LivePrice ticker={entry.ticker} />
                 </div>
               </div>
             </button>
