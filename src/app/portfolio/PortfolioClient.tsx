@@ -10,18 +10,30 @@ interface Investment {
   shares_owned: number;
   total_invested: number;
   avg_purchase_price: number;
-  current_price: number;
   current_value: number;
   unrealized_gain_loss: number;
   gain_loss_percentage: number;
+  current_price: number;
+}
+
+interface Transaction {
+  id: string;
+  pitch_id: number;
+  company_name: string;
+  transaction_type: 'BUY' | 'SELL';
+  shares: number;
+  price_per_share: number;
+  total_amount: number;
+  timestamp: string;
 }
 
 interface Balance {
+  user_id: string;
   total_tokens: number;
   available_tokens: number;
+  total_invested: number;
   portfolio_value: number;
   all_time_gain_loss: number;
-  total_invested: number;
 }
 
 interface Transaction {

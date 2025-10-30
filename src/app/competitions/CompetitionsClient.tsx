@@ -128,13 +128,11 @@ export default function CompetitionsClient({ user }: { user: any }) {
 
   const handleInvest = async (pitchId: number) => {
     if (!user) {
-      alert('Please sign in to invest');
       return;
     }
 
     const shares = parseInt(shareCount);
     if (!shares || shares <= 0) {
-      alert('Please enter a valid number of shares');
       return;
     }
 
@@ -143,14 +141,16 @@ export default function CompetitionsClient({ user }: { user: any }) {
     const pricePerShare = selectedCompany?.currentPrice || 100;
     const totalCost = shares * pricePerShare;
 
-    if (userBalance && totalCost > userBalance.available_tokens) {
-      alert(`Insufficient MTK balance. You need $${totalCost.toLocaleString()} MTK but only have $${userBalance.available_tokens.toLocaleString()} MTK available.`);
-      return;
+    if (transactionType === 'BUY') {
+      if (userBalance && totalCost > userBalance.available_tokens) {
+        return;
+      }
     }
 
     setIsInvesting(true);
     try {
-      const response = await fetch('/api/invest', {
+      const apiEndpoint = transactionType === 'BUY' ? '/api/invest' : '/api/sell';
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pitchId, shares }),
@@ -160,16 +160,12 @@ export default function CompetitionsClient({ user }: { user: any }) {
       const data = await response.json();
       
       if (data.success) {
-        alert(`Success! Purchased ${shares.toLocaleString()} shares at $${pricePerShare.toFixed(2)}/share for a total of $${totalCost.toLocaleString()} MTK`);
         setShareCount('');
         // Refresh data to show updated rankings and balance
         await fetchData();
-      } else {
-        alert(data.error || 'Failed to process investment');
       }
     } catch (error) {
-      console.error('Investment failed:', error);
-      alert('Failed to process investment. Please try again.');
+      console.error('Transaction failed:', error);
     } finally {
       setIsInvesting(false);
     }
@@ -266,59 +262,54 @@ export default function CompetitionsClient({ user }: { user: any }) {
             <div>
               {selectedPitch ? (
                 <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700 sticky top-24">
-                  <div className="mb-6">
-                    <h3 className="text-3xl font-bold text-white mb-2">{selectedPitch.name}</h3>
-                    <p className="text-gray-400">{selectedPitch.founder} · {selectedPitch.year}</p>
-                    
-                    <div className="flex items-center gap-4 mt-3">
-                      <p className="text-2xl font-bold text-pink-400">{selectedPitch.valuation}</p>
-                      {selectedPitch.ticker && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-400">{selectedPitch.ticker}</span>
-                          <StockPrice ticker={selectedPitch.ticker} />
-                        </div>
-                      )}
+                  {/* 1. Company Name */}
+                  <h3 className="text-3xl font-bold text-white mb-3">{selectedPitch.name}</h3>
+                  
+                  {/* 2. Founders Names and Year */}
+                  <p className="text-gray-300 text-lg mb-4">{selectedPitch.founder} · {selectedPitch.year}</p>
+                  
+                  {/* 3. Market Value */}
+                  <p className="text-2xl font-bold text-pink-400 mb-4">{selectedPitch.valuation}</p>
+                  
+                  {/* 4. Ticker Symbol */}
+                  {selectedPitch.ticker && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg text-gray-400 font-semibold">{selectedPitch.ticker}</span>
+                      <StockPrice ticker={selectedPitch.ticker} />
                     </div>
+                  )}
+                  
+                  {/* 5. Price Per Share */}
+                  <div className="mb-3">
+                    <span className="text-sm text-gray-400">Price Per Share: </span>
+                    <span className="text-xl font-bold text-white">
+                      ${selectedPitch.currentPrice?.toFixed(2) || '100.00'}
+                    </span>
                   </div>
-
-                  <div className="space-y-6">
+                  
+                  {/* 6. % Up/Down - TODO: Calculate based on 24h change */}
+                  <div className="mb-6">
+                    <span className="text-sm text-green-400">+0.00%</span>
+                    <span className="text-xs text-gray-500 ml-2">(24h)</span>
+                  </div>
+                  
+                  <div className="border-t border-gray-700 pt-6 space-y-6">
+                    {/* 7. The Pitch */}
                     <div>
                       <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2">The Pitch</h4>
                       <p className="text-white text-lg">{selectedPitch.pitch}</p>
                     </div>
 
+                    {/* 8. Fun Fact */}
                     <div>
                       <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2">Fun Fact</h4>
                       <p className="text-gray-300">{selectedPitch.funFact}</p>
                     </div>
 
-                    {/* Market Data */}
-                    <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-gray-400 uppercase mb-1">Price Per Share</p>
-                          <p className="text-2xl font-bold text-pink-400">
-                            ${selectedPitch.currentPrice?.toFixed(2) || '100.00'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400 uppercase mb-1">Total Invested</p>
-                          <p className="text-2xl font-bold text-white">
-                            ${(selectedPitch.totalVolume || 0).toLocaleString()} MTK
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-gray-700">
-                        <p className="text-xs text-gray-400">
-                          {selectedPitch.uniqueInvestors || 0} investor{(selectedPitch.uniqueInvestors || 0) !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Investment Interface */}
+                    {/* 9-12. Investment Interface */}
                     {user ? (
-                      <div className="space-y-4">
-                        {/* BUY / SELL Toggle */}
+                      <div className="space-y-4 pt-4 border-t border-gray-700">
+                        {/* 9. BUY / SELL Toggle */}
                         <div className="grid grid-cols-2 gap-3">
                           <button
                             onClick={() => {
@@ -348,6 +339,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                           </button>
                         </div>
 
+                        {/* 10. Number of Shares - Manual Entry Only */}
                         <div>
                           <label className="text-sm font-semibold text-gray-400 uppercase mb-2 block">
                             Number of Shares
@@ -357,62 +349,50 @@ export default function CompetitionsClient({ user }: { user: any }) {
                             value={shareCount}
                             onChange={(e) => setShareCount(e.target.value)}
                             placeholder="Enter number of shares..."
-                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500"
+                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white text-lg focus:outline-none focus:border-pink-500"
                             min="0"
                             step="1"
                           />
-                          {shareCount && selectedPitch.currentPrice && (
-                            <div className="mt-2 p-3 bg-gray-900/70 rounded-lg border border-gray-700">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-400">
-                                  {transactionType === 'BUY' ? 'Total Cost:' : 'Total Proceeds:'}
-                                </span>
-                                <span className={`font-bold text-lg ${transactionType === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
-                                  ${(parseInt(shareCount) * selectedPitch.currentPrice).toLocaleString()} MTK
-                                </span>
-                              </div>
-                              <div className="flex justify-between items-center mt-1">
-                                <span className="text-xs text-gray-500">
-                                  @ ${selectedPitch.currentPrice.toFixed(2)} per share
-                                </span>
-                              </div>
-                            </div>
-                          )}
                         </div>
                         
-                        <div className="grid grid-cols-3 gap-2">
-                          <button
-                            onClick={() => setShareCount('100')}
-                            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
-                          >
-                            100
-                          </button>
-                          <button
-                            onClick={() => setShareCount('500')}
-                            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
-                          >
-                            500
-                          </button>
-                          <button
-                            onClick={() => setShareCount('1000')}
-                            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
-                          >
-                            1000
-                          </button>
-                        </div>
+                        {/* 11. Preview of Order */}
+                        {shareCount && parseInt(shareCount) > 0 && selectedPitch.currentPrice && (
+                          <div className="p-4 bg-gray-900/70 rounded-lg border-2 border-pink-500/50">
+                            <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Order Preview</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Shares:</span>
+                                <span className="text-white font-semibold">{parseInt(shareCount).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Price per Share:</span>
+                                <span className="text-white font-semibold">${selectedPitch.currentPrice.toFixed(2)}</span>
+                              </div>
+                              <div className="border-t border-gray-700 pt-2 mt-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-300 font-semibold">Total:</span>
+                                  <span className={`text-xl font-bold ${transactionType === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
+                                    ${(parseInt(shareCount) * selectedPitch.currentPrice).toLocaleString()} MTK
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
+                        {/* 12. Order Button */}
                         <button 
                           onClick={() => handleInvest(selectedPitch.id)}
-                          disabled={isInvesting || !shareCount}
-                          className={`w-full font-semibold py-4 px-6 rounded-xl transition ${
-                            isInvesting || !shareCount
+                          disabled={isInvesting || !shareCount || parseInt(shareCount) <= 0}
+                          className={`w-full font-bold py-4 px-6 rounded-xl transition text-lg ${
+                            isInvesting || !shareCount || parseInt(shareCount) <= 0
                               ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                               : transactionType === 'BUY'
-                              ? 'bg-green-500 hover:bg-green-600 text-white'
-                              : 'bg-red-500 hover:bg-red-600 text-white'
+                              ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30'
+                              : 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30'
                           }`}
                         >
-                          {isInvesting ? 'Processing...' : `${transactionType} ${shareCount || '0'} Shares`}
+                          {isInvesting ? 'Processing...' : `${transactionType} Order`}
                         </button>
                       </div>
                     ) : (
@@ -426,31 +406,6 @@ export default function CompetitionsClient({ user }: { user: any }) {
                         </Link>
                       </div>
                     )}
-
-                    <div className="flex gap-4">
-                      <button
-                        onClick={() => {
-                          const currentIndex = SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId);
-                          if (currentIndex > 0) {
-                            setSelectedEntryId(SUCCESS_STORIES[currentIndex - 1].id);
-                          }
-                        }}
-                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
-                      >
-                        ← Previous
-                      </button>
-                      <button
-                        onClick={() => {
-                          const currentIndex = SUCCESS_STORIES.findIndex(s => s.id === selectedEntryId);
-                          if (currentIndex < SUCCESS_STORIES.length - 1) {
-                            setSelectedEntryId(SUCCESS_STORIES[currentIndex + 1].id);
-                          }
-                        }}
-                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
-                      >
-                        Next →
-                      </button>
-                    </div>
                   </div>
                 </div>
               ) : (
