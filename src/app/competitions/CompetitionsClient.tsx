@@ -87,6 +87,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
             credentials: 'include'
           });
           const portfolioData = await portfolioResponse.json();
+          console.log('[CompetitionsClient] Portfolio data:', portfolioData);
+          console.log('[CompetitionsClient] User holdings:', portfolioData.investments);
           setUserBalance(portfolioData.balance);
           setUserHoldings(portfolioData.investments || []);
         }
@@ -252,15 +254,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
             {/* Portfolio (if logged in) */}
             {user && userBalance && (
               <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-2xl p-6 mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-2xl font-bold text-white">Your Portfolio</h3>
-                  <Link 
-                    href="/dashboard"
-                    className="bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 px-4 py-2 rounded-lg font-semibold transition border border-pink-500/50 text-sm"
-                  >
-                    📊 Full Dashboard
-                  </Link>
-                </div>
+                <h3 className="text-2xl font-bold text-white mb-6">Your Portfolio</h3>
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-300 mb-1">Cash Balance</h3>
@@ -281,7 +275,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                 </div>
 
                 {/* Holdings List */}
-                {userHoldings.length > 0 && (
+                {userHoldings.length > 0 ? (
                   <div className="border-t border-pink-500/30 pt-4">
                     <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Your Holdings</h4>
                     <div className="space-y-2">
@@ -309,6 +303,12 @@ export default function CompetitionsClient({ user }: { user: any }) {
                         );
                       })}
                     </div>
+                  </div>
+                ) : (
+                  <div className="border-t border-pink-500/30 pt-4">
+                    <p className="text-gray-400 text-center py-4">
+                      No holdings yet. Select a company below and invest to get started! 💰
+                    </p>
                   </div>
                 )}
               </div>
