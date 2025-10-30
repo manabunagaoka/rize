@@ -99,12 +99,14 @@ export default function CompetitionsClient({ user }: { user: any }) {
           };
         });
         
-        setCompaniesData(companiesWithData);
+        // Sort companies by total volume (highest first)
+        const sortedCompanies = companiesWithData.sort((a, b) => b.totalVolume - a.totalVolume);
+        
+        setCompaniesData(sortedCompanies);
         setLeaderboardData(compData.leaderboard || []);
         
-        if (!selectedEntryId && companiesWithData.length > 0) {
-          const sorted = [...companiesWithData].sort((a, b) => b.totalVolume - a.totalVolume);
-          setSelectedEntryId(sorted[0].id);
+        if (!selectedEntryId && sortedCompanies.length > 0) {
+          setSelectedEntryId(sortedCompanies[0].id);
         }
       } else {
         // For Class of 2026, show empty state
