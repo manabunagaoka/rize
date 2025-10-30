@@ -50,6 +50,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [shareCount, setShareCount] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'BUY' | 'SELL'>('BUY');
   const [isInvesting, setIsInvesting] = useState(false);
+  const [realStockPrice, setRealStockPrice] = useState<number | null>(null);
 
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
@@ -126,6 +127,32 @@ export default function CompetitionsClient({ user }: { user: any }) {
     fetchData();
   }, [activeCompetitionId, fetchData]);
 
+  // Fetch real stock price when a company is selected
+  useEffect(() => {
+    async function fetchRealPrice() {
+      const selectedPitch = companiesData.find(c => c.id === selectedEntryId);
+      if (!selectedPitch || !selectedPitch.ticker) {
+        setRealStockPrice(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/stock/${selectedPitch.ticker}`);
+        const data = await response.json();
+        if (data.c && data.c > 0) {
+          setRealStockPrice(data.c);
+        } else {
+          setRealStockPrice(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch real stock price:', error);
+        setRealStockPrice(null);
+      }
+    }
+
+    fetchRealPrice();
+  }, [selectedEntryId, companiesData]);
+
   const handleSelectEntry = (id: number) => {
     setSelectedEntryId(id);
   };
@@ -136,14 +163,12 @@ export default function CompetitionsClient({ user }: { user: any }) {
     }
 
     const shares = parseInt(shareCount);
-    if (!shares || shares <= 0) {
+    if (!shares || shares <= 0 || !realStockPrice) {
       return;
     }
 
-    // Calculate total cost
-    const selectedCompany = companiesData.find(c => c.id === pitchId);
-    const pricePerShare = selectedCompany?.currentPrice || 100;
-    const totalCost = shares * pricePerShare;
+    // Calculate total cost using real stock price
+    const totalCost = Math.floor(shares * realStockPrice);
 
     if (transactionType === 'BUY') {
       if (userBalance && totalCost > userBalance.available_tokens) {
@@ -347,7 +372,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
                         </div>
                         
                         {/* 11. Preview of Order */}
-                        {shareCount && parseInt(shareCount) > 0 && selectedPitch.currentPrice && (
+                        {shareCount && parseInt(shareCount) > 0 && realStockPrice && (
                           <div className="p-4 bg-gray-900/70 rounded-lg border-2 border-pink-500/50">
                             <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Order Preview</h4>
                             <div className="space-y-2">
@@ -357,13 +382,13 @@ export default function CompetitionsClient({ user }: { user: any }) {
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-gray-400">Price per Share:</span>
-                                <span className="text-white font-semibold">${selectedPitch.currentPrice.toFixed(2)}</span>
+                                <span className="text-white font-semibold">${realStockPrice.toFixed(2)}</span>
                               </div>
                               <div className="border-t border-gray-700 pt-2 mt-2">
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-300 font-semibold">Total:</span>
                                   <span className={`text-xl font-bold ${transactionType === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
-                                    ${(parseInt(shareCount) * selectedPitch.currentPrice).toLocaleString()} MTK
+                                    ${Math.floor(parseInt(shareCount) * realStockPrice).toLocaleString()} MTK
                                   </span>
                                 </div>
                               </div>
