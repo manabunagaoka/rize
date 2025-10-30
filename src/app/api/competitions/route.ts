@@ -8,22 +8,38 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Fetch all competitions with stats
-    const { data: competitions, error } = await supabase
-      .from('competition_stats')
+    // Fetch investment leaderboard (AI + real users)
+    const { data: leaderboard, error: leaderboardError } = await supabase
+      .from('investment_leaderboard')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('rank', { ascending: true })
+      .limit(20);
 
-    if (error) {
-      console.error('[COMPETITIONS API] Fetch error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch competitions' },
-        { status: 500 }
-      );
+    if (leaderboardError) {
+      console.error('[COMPETITIONS API] Leaderboard error:', leaderboardError);
+    }
+
+    // Fetch company rankings
+    const { data: companies, error: companiesError } = await supabase
+      .from('company_rankings')
+      .select(`
+        *,
+        pitch:pitch_id (
+          id,
+          title,
+          founder,
+          description
+        )
+      `)
+      .order('market_rank', { ascending: true });
+
+    if (companiesError) {
+      console.error('[COMPETITIONS API] Companies error:', companiesError);
     }
 
     return NextResponse.json({
-      competitions: competitions || []
+      leaderboard: leaderboard || [],
+      companies: companies || []
     });
 
   } catch (error) {

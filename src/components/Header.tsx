@@ -72,6 +72,12 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                       Manaboodle
                     </a>
 
+                    {user && (
+                      <Link href="/portfolio" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        My Portfolio
+                      </Link>
+                    )}
+
                     <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                       Account
                     </Link>

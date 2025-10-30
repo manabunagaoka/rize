@@ -55,109 +55,121 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const router = useRouter();
   const [activeCompetitionId, setActiveCompetitionId] = useState('legendary');
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [companiesData, setCompaniesData] = useState<any[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userVotes, setUserVotes] = useState<number[]>([]);
-  const [isVoting, setIsVoting] = useState(false);
+  const [userBalance, setUserBalance] = useState<any>(null);
+  const [investmentAmount, setInvestmentAmount] = useState<string>('');
+  const [isInvesting, setIsInvesting] = useState(false);
 
   useEffect(() => {
     const comp = searchParams.get('competition') || 'legendary';
     setActiveCompetitionId(comp);
   }, [searchParams]);
 
-  const fetchLeaderboard = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       if (activeCompetitionId === 'legendary') {
-        const response = await fetch('/api/vote-pitch', {
+        // Fetch competitions data (leaderboard + company rankings)
+        const compResponse = await fetch('/api/competitions', {
           credentials: 'include'
         });
-        const data = await response.json();
+        const compData = await compResponse.json();
         
-        // Get user votes if authenticated
-        if (data.userVotes !== undefined) {
-          setUserVotes(data.userVotes);
+        // Fetch user portfolio if logged in
+        if (user) {
+          const portfolioResponse = await fetch('/api/portfolio', {
+            credentials: 'include'
+          });
+          const portfolioData = await portfolioResponse.json();
+          setUserBalance(portfolioData.balance);
         }
         
-        const entries = SUCCESS_STORIES.map(story => {
-          const ranking = data.rankings?.find((r: any) => r.pitch_id === story.id);
+        // Map companies with their market data
+        const companiesWithData = SUCCESS_STORIES.map(story => {
+          const ranking = compData.companies?.find((c: any) => c.pitch_id === story.id);
           return {
-            id: story.id,
-            name: story.name,
-            voteCount: ranking?.vote_count || 0
+            ...story,
+            currentPrice: ranking?.current_price || 100,
+            totalVolume: ranking?.total_volume || 0,
+            uniqueInvestors: ranking?.unique_investors || 0,
+            marketRank: ranking?.market_rank || story.id
           };
         });
         
-        setLeaderboardData(entries);
+        setCompaniesData(companiesWithData);
+        setLeaderboardData(compData.leaderboard || []);
         
-        if (!selectedEntryId && entries.length > 0) {
-          const sorted = [...entries].sort((a, b) => b.voteCount - a.voteCount);
+        if (!selectedEntryId && companiesWithData.length > 0) {
+          const sorted = [...companiesWithData].sort((a, b) => b.totalVolume - a.totalVolume);
           setSelectedEntryId(sorted[0].id);
         }
       } else {
         // For Class of 2026, show empty state
         setLeaderboardData([]);
+        setCompaniesData([]);
       }
     } catch (error) {
-      console.error('Failed to fetch leaderboard:', error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
     }
-  }, [activeCompetitionId, selectedEntryId]);
+  }, [activeCompetitionId, selectedEntryId, user]);
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, [activeCompetitionId, fetchLeaderboard]);
+    fetchData();
+  }, [activeCompetitionId, fetchData]);
 
   const handleSelectEntry = (id: number) => {
     setSelectedEntryId(id);
   };
 
-  const handleVote = async (pitchId: number) => {
-    setIsVoting(true);
+  const handleInvest = async (pitchId: number) => {
+    if (!user) {
+      alert('Please sign in to invest');
+      return;
+    }
+
+    const amount = parseInt(investmentAmount);
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid investment amount');
+      return;
+    }
+
+    if (userBalance && amount > userBalance.available_tokens) {
+      alert(`Insufficient MTK balance. You have ${(userBalance.available_tokens / 1000).toFixed(0)}K MTK available.`);
+      return;
+    }
+
+    setIsInvesting(true);
     try {
-      console.log('[CLIENT] Starting vote for pitch:', pitchId);
-      console.log('[CLIENT] Cookies:', document.cookie);
-      
-      const response = await fetch('/api/vote-pitch', {
+      const response = await fetch('/api/invest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pitchId }),
+        body: JSON.stringify({ pitchId, amount }),
         credentials: 'include'
       });
       
-      console.log('[CLIENT] Vote response status:', response.status);
       const data = await response.json();
-      console.log('[CLIENT] Vote response data:', data);
       
       if (data.success) {
-        // Update user votes
-        setUserVotes(data.userVotes || []);
-        
-        // Update leaderboard with new rankings
-        if (data.rankings && activeCompetitionId === 'legendary') {
-          const entries = SUCCESS_STORIES.map(story => {
-            const ranking = data.rankings.find((r: any) => r.pitch_id === story.id);
-            return {
-              id: story.id,
-              name: story.name,
-              voteCount: ranking?.vote_count || 0
-            };
-          });
-          setLeaderboardData(entries);
-        }
+        alert(`Success! Purchased ${data.investment.shares.toFixed(2)} shares at $${data.investment.price.toFixed(2)}/share`);
+        setInvestmentAmount('');
+        // Refresh data to show updated rankings and balance
+        await fetchData();
       } else {
-        alert(data.error || data.message || 'Failed to submit vote');
+        alert(data.error || 'Failed to process investment');
       }
     } catch (error) {
-      console.error('Vote failed:', error);
-      alert('Failed to submit vote. Please try again.');
+      console.error('Investment failed:', error);
+      alert('Failed to process investment. Please try again.');
     } finally {
-      setIsVoting(false);
+      setIsInvesting(false);
     }
   };
 
-  const selectedPitch = SUCCESS_STORIES.find(s => s.id === selectedEntryId);
+  const selectedPitch = companiesData.find(c => c.id === selectedEntryId) || SUCCESS_STORIES.find(s => s.id === selectedEntryId);
 
   const competitionTitle = activeCompetitionId === 'legendary' 
     ? 'Harvard Legends' 
@@ -191,12 +203,41 @@ export default function CompetitionsClient({ user }: { user: any }) {
             </div>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-2 gap-8">
+          <>
+            {/* MTK Balance Bar (if logged in) */}
+            {user && userBalance && (
+              <div className="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-2xl p-6 mb-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-300 mb-1">Your MTK Balance</h3>
+                    <p className="text-4xl font-bold text-white">
+                      {(userBalance.available_tokens / 1000).toFixed(0)}K <span className="text-2xl text-gray-400">MTK</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-400">Portfolio Value</p>
+                    <p className="text-2xl font-bold text-pink-400">
+                      {(userBalance.portfolio_value / 1000).toFixed(0)}K MTK
+                    </p>
+                    <p className={`text-sm font-semibold ${userBalance.all_time_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {userBalance.all_time_gain_loss >= 0 ? '+' : ''}{(userBalance.all_time_gain_loss / 1000).toFixed(0)}K
+                      ({userBalance.total_invested > 0 ? ((userBalance.all_time_gain_loss / userBalance.total_invested) * 100).toFixed(1) : '0.0'}%)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid lg:grid-cols-2 gap-8">
             {/* Left: Leaderboard */}
             <div>
               <Leaderboard
                 competitionId={activeCompetitionId}
-                entries={leaderboardData}
+                entries={companiesData.map(c => ({
+                  id: c.id,
+                  name: c.name,
+                  voteCount: c.totalVolume
+                }))}
                 onSelectEntry={handleSelectEntry}
                 selectedEntryId={selectedEntryId ?? undefined}
               />
@@ -232,17 +273,91 @@ export default function CompetitionsClient({ user }: { user: any }) {
                       <p className="text-gray-300">{selectedPitch.funFact}</p>
                     </div>
 
-                    <button 
-                      onClick={() => handleVote(selectedPitch.id)}
-                      disabled={isVoting}
-                      className={`w-full font-semibold py-4 px-6 rounded-xl transition ${
-                        userVotes.includes(selectedPitch.id)
-                          ? 'bg-green-600 hover:bg-green-700 text-white'
-                          : 'bg-pink-500 hover:bg-pink-600 text-white'
-                      } ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {isVoting ? 'Voting...' : userVotes.includes(selectedPitch.id) ? 'Voted!' : 'Vote for This Pitch'}
-                    </button>
+                    {/* Market Data */}
+                    <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-gray-400 uppercase mb-1">Current Price</p>
+                          <p className="text-2xl font-bold text-pink-400">
+                            ${selectedPitch.currentPrice?.toFixed(2) || '100.00'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400 uppercase mb-1">Total Invested</p>
+                          <p className="text-2xl font-bold text-white">
+                            {((selectedPitch.totalVolume || 0) / 1000).toFixed(0)}K MTK
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <p className="text-xs text-gray-400">
+                          {selectedPitch.uniqueInvestors || 0} investor{(selectedPitch.uniqueInvestors || 0) !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Investment Interface */}
+                    {user ? (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-semibold text-gray-400 uppercase mb-2 block">
+                            Investment Amount (MTK)
+                          </label>
+                          <input
+                            type="number"
+                            value={investmentAmount}
+                            onChange={(e) => setInvestmentAmount(e.target.value)}
+                            placeholder="Enter amount..."
+                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500"
+                            min="0"
+                            step="1000"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            onClick={() => setInvestmentAmount('50000')}
+                            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
+                          >
+                            $50K
+                          </button>
+                          <button
+                            onClick={() => setInvestmentAmount('100000')}
+                            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
+                          >
+                            $100K
+                          </button>
+                          <button
+                            onClick={() => setInvestmentAmount('250000')}
+                            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg text-sm transition"
+                          >
+                            $250K
+                          </button>
+                        </div>
+
+                        <button 
+                          onClick={() => handleInvest(selectedPitch.id)}
+                          disabled={isInvesting || !investmentAmount}
+                          className={`w-full font-semibold py-4 px-6 rounded-xl transition ${
+                            isInvesting || !investmentAmount
+                              ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                              : 'bg-pink-500 hover:bg-pink-600 text-white'
+                          }`}
+                        >
+                          {isInvesting ? 'Processing...' : 'Invest Now'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-900/50 border border-gray-700 rounded-xl p-6 text-center">
+                        <p className="text-gray-400 mb-4">Sign in to start investing</p>
+                        <Link
+                          href="/login"
+                          className="inline-block bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition"
+                        >
+                          Sign In
+                        </Link>
+                      </div>
+                    )}
 
                     <div className="flex gap-4">
                       <button
@@ -277,6 +392,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
               )}
             </div>
           </div>
+          </>
         )}
       </div>
 
