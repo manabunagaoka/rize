@@ -89,8 +89,14 @@ export default function CompetitionsClient({ user }: { user: any }) {
           const portfolioData = await portfolioResponse.json();
           console.log('[CompetitionsClient] Portfolio data:', portfolioData);
           console.log('[CompetitionsClient] User holdings:', portfolioData.investments);
+          console.log('[CompetitionsClient] Number of holdings:', portfolioData.investments?.length || 0);
+          
+          // Filter holdings to only show those with shares > 0
+          const activeHoldings = (portfolioData.investments || []).filter((h: any) => h.shares_owned > 0);
+          console.log('[CompetitionsClient] Active holdings (shares > 0):', activeHoldings);
+          
           setUserBalance(portfolioData.balance);
-          setUserHoldings(portfolioData.investments || []);
+          setUserHoldings(activeHoldings);
         }
         
         // Map companies with their market data
@@ -276,7 +282,9 @@ export default function CompetitionsClient({ user }: { user: any }) {
 
                 {/* Holdings List */}
                 <div className="border-t border-pink-500/30 pt-4">
-                  <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">Your Holdings</h4>
+                  <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">
+                    Your Holdings ({userHoldings.length})
+                  </h4>
                   {userHoldings.length > 0 ? (
                     <div className="space-y-2">
                       {userHoldings.map((holding) => {
