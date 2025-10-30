@@ -43,6 +43,8 @@ export async function GET(request: NextRequest) {
   try {
     const user = await verifyUser(request);
     
+    console.log('[Portfolio API] Verified user:', user);
+    
     if (!user) {
       return NextResponse.json(
         { error: 'Not authenticated' },
@@ -51,11 +53,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user balance
+    console.log('[Portfolio API] Fetching balance for user_id:', user.id);
     const { data: balance, error: balanceError } = await supabase
       .from('user_token_balances')
       .select('*')
       .eq('user_id', user.id)
       .single();
+
+    console.log('[Portfolio API] Balance data:', balance);
+    console.log('[Portfolio API] Balance error:', balanceError);
 
     if (balanceError || !balance) {
       // Return default for new users
@@ -72,11 +78,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's investments
+    console.log('[Portfolio API] Fetching investments for user:', user.id);
     const { data: investments, error: investError } = await supabase
       .from('user_investments')
       .select('*')
       .eq('user_id', user.id)
       .gt('shares_owned', 0);
+
+    console.log('[Portfolio API] Query result - investments:', investments);
+    console.log('[Portfolio API] Query result - error:', investError);
+    console.log('[Portfolio API] Number of investments:', investments?.length || 0);
 
     if (investError) {
       console.error('Investment fetch error:', investError);
