@@ -276,45 +276,31 @@ export default function CompetitionsClient({ user }: { user: any }) {
                   {/* 3. Market Value */}
                   <p className="text-2xl font-bold text-pink-400 mb-4">{selectedPitch.valuation}</p>
                   
-                  {/* 4. Ticker Symbol */}
+                  {/* 4. Ticker Symbol with Live Price */}
                   {selectedPitch.ticker && (
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-6">
                       <span className="text-lg text-gray-400 font-semibold">{selectedPitch.ticker}</span>
                       <StockPrice ticker={selectedPitch.ticker} />
                     </div>
                   )}
                   
-                  {/* 5. Price Per Share */}
-                  <div className="mb-3">
-                    <span className="text-sm text-gray-400">Price Per Share: </span>
-                    <span className="text-xl font-bold text-white">
-                      ${selectedPitch.currentPrice?.toFixed(2) || '100.00'}
-                    </span>
-                  </div>
-                  
-                  {/* 6. % Up/Down - TODO: Calculate based on 24h change */}
-                  <div className="mb-6">
-                    <span className="text-sm text-green-400">+0.00%</span>
-                    <span className="text-xs text-gray-500 ml-2">(24h)</span>
-                  </div>
-                  
                   <div className="border-t border-gray-700 pt-6 space-y-6">
-                    {/* 7. The Pitch */}
+                    {/* 5. The Pitch */}
                     <div>
                       <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2">The Pitch</h4>
                       <p className="text-white text-lg">{selectedPitch.pitch}</p>
                     </div>
 
-                    {/* 8. Fun Fact */}
+                    {/* 6. Fun Fact */}
                     <div>
                       <h4 className="text-sm font-semibold text-gray-400 uppercase mb-2">Fun Fact</h4>
                       <p className="text-gray-300">{selectedPitch.funFact}</p>
                     </div>
 
-                    {/* 9-12. Investment Interface */}
+                    {/* 7-10. Investment Interface */}
                     {user ? (
                       <div className="space-y-4 pt-4 border-t border-gray-700">
-                        {/* 9. BUY / SELL Toggle */}
+                        {/* 7. BUY / SELL Toggle */}
                         <div className="grid grid-cols-2 gap-3">
                           <button
                             onClick={() => {
