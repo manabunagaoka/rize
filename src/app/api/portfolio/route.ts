@@ -71,18 +71,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get user's investments with company details
+    // Get user's investments
     const { data: investments, error: investError } = await supabase
       .from('user_investments')
-      .select(`
-        *,
-        pitch:pitch_id (
-          id,
-          title,
-          founder,
-          description
-        )
-      `)
+      .select('*')
       .eq('user_id', user.id)
       .gt('shares_owned', 0);
 
@@ -90,28 +82,53 @@ export async function GET(request: NextRequest) {
       console.error('Investment fetch error:', investError);
     }
 
+    // Company ticker mapping
+    const tickerMap: { [key: number]: string } = {
+      1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT',
+      6: 'WRBY', 7: 'BKNG'
+    };
+
     // Get current market prices for all investments
     const investmentsWithPrices = await Promise.all(
       (investments || []).map(async (inv) => {
-        const { data: marketData } = await supabase
-          .from('pitch_market_data')
-          .select('current_price')
-          .eq('pitch_id', inv.pitch_id)
-          .single();
+        const ticker = tickerMap[inv.pitch_id];
+        let currentPrice = 100;
+        
+        if (ticker) {
+          try {
+            const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock/${ticker}`);
+            const priceData = await priceResponse.json();
+            if (priceData.c && priceData.c > 0) {
+              currentPrice = priceData.c;
+            }
+          } catch (error) {
+            console.error(`Failed to fetch price for ${ticker}:`, error);
+          }
+        }
+
+        const currentValue = Math.floor(parseFloat(inv.shares_owned) * currentPrice);
+        const unrealizedGainLoss = currentValue - inv.total_invested;
 
         return {
           ...inv,
-          current_price: marketData?.current_price || 100
+          shares_owned: parseFloat(inv.shares_owned),
+          current_price: currentPrice,
+          current_value: currentValue,
+          unrealized_gain_loss: unrealizedGainLoss
         };
       })
     );
+
+    // Calculate total portfolio value
+    const totalPortfolioValue = investmentsWithPrices.reduce((sum, inv) => sum + inv.current_value, 0);
+    const totalGainLoss = investmentsWithPrices.reduce((sum, inv) => sum + inv.unrealized_gain_loss, 0);
 
     return NextResponse.json({
       balance: {
         total_tokens: balance.total_tokens,
         available_tokens: balance.available_tokens,
-        portfolio_value: balance.portfolio_value,
-        all_time_gain_loss: balance.all_time_gain_loss,
+        portfolio_value: totalPortfolioValue,
+        all_time_gain_loss: totalGainLoss,
         total_invested: balance.total_invested
       },
       investments: investmentsWithPrices

@@ -95,8 +95,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use real market price from database (updated by frontend via real stock API)
-    const currentPrice = marketData.current_price || 100;
+    // Get real stock price from the ticker
+    const tickerMap: { [key: number]: string } = {
+      1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT',
+      6: 'WRBY', 7: 'BKNG'
+    };
+    
+    const ticker = tickerMap[pitchId];
+    let currentPrice = marketData.current_price || 100; // Use database price as fallback
+    
+    if (ticker) {
+      try {
+        const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock/${ticker}`);
+        const priceData = await priceResponse.json();
+        if (priceData.c && priceData.c > 0) {
+          currentPrice = priceData.c;
+        }
+      } catch (error) {
+        console.error('Failed to fetch real stock price, using database price:', error);
+      }
+    }
+    
     const totalProceeds = Math.floor(shares * currentPrice);
 
     // Get user balance

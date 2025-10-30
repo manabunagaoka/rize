@@ -106,21 +106,21 @@ export async function POST(request: NextRequest) {
     // Get real stock price from the ticker
     const tickerMap: { [key: number]: string } = {
       1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT',
-      6: 'RDDT', 7: 'RDDT', 8: 'WRBY', 9: 'TYPE', 10: 'BKNG'
+      6: 'WRBY', 7: 'BKNG'
     };
     
     const ticker = tickerMap[pitchId];
-    let currentPrice = 100; // Default fallback
+    let currentPrice = marketData.current_price || 100; // Use database price as fallback
     
     if (ticker) {
       try {
-        const priceResponse = await fetch(`https://rize-mu.vercel.app/api/stock/${ticker}`);
+        const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock/${ticker}`);
         const priceData = await priceResponse.json();
-        if (priceData.price) {
-          currentPrice = parseFloat(priceData.price);
+        if (priceData.c && priceData.c > 0) {
+          currentPrice = priceData.c;
         }
       } catch (error) {
-        console.error('Failed to fetch real stock price:', error);
+        console.error('Failed to fetch real stock price, using database price:', error);
       }
     }
 
