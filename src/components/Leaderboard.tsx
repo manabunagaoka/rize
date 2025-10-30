@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 interface LeaderboardEntry {
   id: number;
   name: string;
-  voteCount: number;
+  voteCount: number; // This is actually total investment volume
   previousRank?: number;
 }
 
@@ -72,9 +72,9 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
       <div className="bg-gray-900 px-4 py-3 border-b border-gray-700">
         <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 uppercase">
           <div className="col-span-1">Rank</div>
-          <div className="col-span-7">Name</div>
-          <div className="col-span-2 text-right">Votes</div>
-          <div className="col-span-2 text-right">Change</div>
+          <div className="col-span-7">Company</div>
+          <div className="col-span-2 text-right">Value</div>
+          <div className="col-span-2 text-right">Trend</div>
         </div>
       </div>
 
@@ -109,10 +109,10 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
                   </span>
                 </div>
 
-                {/* Vote Count */}
+                {/* Investment Value */}
                 <div className="col-span-2 text-right">
                   <span className="text-white font-semibold">
-                    {entry.voteCount}
+                    ${entry.voteCount.toLocaleString()}
                   </span>
                 </div>
 
