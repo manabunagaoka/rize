@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
     setIsResetting(true);
     try {
-      const response = await fetch('/api/reset-account', {
+      const response = await fetch('/api/clear-my-account', {
         method: 'POST',
         credentials: 'include'
       });
