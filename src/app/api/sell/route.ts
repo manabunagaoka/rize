@@ -148,6 +148,9 @@ export async function POST(request: NextRequest) {
 
     // Update or delete user investment
     const newShares = parseFloat(investment.shares_owned) - shares;
+    const proportionSold = shares / parseFloat(investment.shares_owned);
+    const costBasisSold = Math.floor(investment.total_invested * proportionSold);
+    const newTotalInvested = investment.total_invested - costBasisSold;
     
     if (newShares <= 0) {
       // Delete investment if no shares left
@@ -157,13 +160,18 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
         .eq('pitch_id', pitchId);
     } else {
-      // Update investment
+      // Update investment - reduce shares and cost basis proportionally
+      const newCurrentValue = Math.floor(newShares * currentPrice);
+      const newUnrealizedGainLoss = newCurrentValue - newTotalInvested;
+      
       await supabase
         .from('user_investments')
         .update({
           shares_owned: newShares,
-          current_value: Math.floor(newShares * currentPrice),
-          unrealized_gain_loss: Math.floor(newShares * currentPrice) - (investment.total_invested * (newShares / parseFloat(investment.shares_owned))),
+          total_invested: newTotalInvested,
+          avg_purchase_price: newTotalInvested / newShares,
+          current_value: newCurrentValue,
+          unrealized_gain_loss: newUnrealizedGainLoss,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -171,6 +179,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Record transaction
+    const realizedGainLoss = totalProceeds - costBasisSold;
+    
     await supabase
       .from('investment_transactions')
       .insert({
@@ -184,7 +194,7 @@ export async function POST(request: NextRequest) {
         balance_after: balance.available_tokens + totalProceeds
       });
 
-    // Update user balance
+    // Update user balance - reduce total_invested by cost basis, not proceeds
     const { data: newPortfolioValue } = await supabase
       .from('user_investments')
       .select('current_value')
@@ -196,7 +206,7 @@ export async function POST(request: NextRequest) {
       .from('user_token_balances')
       .update({
         available_tokens: balance.available_tokens + totalProceeds,
-        total_invested: Math.max(0, balance.total_invested - totalProceeds),
+        total_invested: Math.max(0, balance.total_invested - costBasisSold), // Reduce by cost basis
         portfolio_value: totalPortfolioValue,
         updated_at: new Date().toISOString()
       })
@@ -222,6 +232,8 @@ export async function POST(request: NextRequest) {
         shares: shares,
         price: currentPrice,
         totalProceeds: totalProceeds,
+        costBasis: costBasisSold,
+        realizedGainLoss: realizedGainLoss,
         newBalance: balance.available_tokens + totalProceeds
       }
     });

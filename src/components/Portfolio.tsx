@@ -84,24 +84,33 @@ export default function Portfolio() {
     <div className="space-y-6">
       {/* Portfolio Summary */}
       <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-8 text-white">
-        <h2 className="text-sm font-semibold uppercase opacity-90 mb-2">Total Portfolio Value</h2>
-        <div className="text-5xl font-bold mb-4">
-          ${totalValue.toLocaleString()} <span className="text-2xl opacity-75">MTK</span>
-        </div>
-        <div className="grid grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-3 gap-6">
+          {/* MTK Balance */}
           <div>
-            <div className="text-sm opacity-75">Cash Balance</div>
-            <div className="text-xl font-semibold">${data.balance.available_tokens.toLocaleString()}</div>
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">MTK Balance</div>
+            <div className="text-3xl font-bold">
+              ${data.balance.available_tokens.toLocaleString()}
+            </div>
           </div>
+          
+          {/* Portfolio Value (holdings) */}
           <div>
-            <div className="text-sm opacity-75">Invested</div>
-            <div className="text-xl font-semibold">${data.balance.portfolio_value.toLocaleString()}</div>
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Value</div>
+            <div className="text-3xl font-bold">
+              ${data.balance.portfolio_value.toLocaleString()}
+            </div>
+            <div className="text-xs opacity-75 mt-1">Changes daily with market</div>
           </div>
+          
+          {/* Daily Gain/Loss */}
           <div>
-            <div className="text-sm opacity-75">Gain/Loss</div>
-            <div className={`text-xl font-semibold flex items-center gap-1 ${totalGainLoss >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-              {totalGainLoss >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-              ${Math.abs(totalGainLoss).toLocaleString()} ({gainLossPercent}%)
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">All-Time P&L</div>
+            <div className={`text-3xl font-bold flex items-center gap-2 ${totalGainLoss >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+              {totalGainLoss >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+              {totalGainLoss >= 0 ? '+' : '-'}${Math.abs(totalGainLoss).toLocaleString()}
+            </div>
+            <div className="text-sm opacity-90 mt-1">
+              {totalGainLoss >= 0 ? '+' : ''}{gainLossPercent}%
             </div>
           </div>
         </div>
