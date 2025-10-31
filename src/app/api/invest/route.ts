@@ -125,7 +125,9 @@ export async function POST(request: NextRequest) {
         console.log(`[Invest API] Fetched price for ${ticker}:`, priceData);
         if (priceData.c && priceData.c > 0) {
           currentPrice = priceData.c;
-          console.log(`[Invest API] Using real price: $${currentPrice}`);
+          console.log(`[Invest API] Using real market price: $${currentPrice} for ${ticker}`);
+        } else {
+          console.log(`[Invest API] WARNING: Failed to get real price, using fallback: $${currentPrice}`);
         }
       } catch (error) {
         console.error('Failed to fetch real stock price, using database price:', error);
