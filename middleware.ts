@@ -23,7 +23,12 @@ const PUBLIC_PATHS = [
   '/debug-auth',    // Debug authentication page
   '/api/debug-auth', // Debug API endpoint
   '/competitions',  // Competitions page (public viewing)
+  '/dashboard',     // Dashboard (requires auth but no redirect loop)
   '/api/stock',     // Stock price API (public)
+  '/api/portfolio', // Portfolio API
+  '/api/invest',    // Investment API
+  '/api/sell',      // Sell API
+  '/api/clear-my-account', // Account reset API
 ];
 
 export async function middleware(request: NextRequest) {
