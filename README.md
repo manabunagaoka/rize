@@ -1,6 +1,6 @@
-# Rize by Manaboodle - Harvard Edition
+# MM7 Index - Manaboodle Magnificent 7
 
-A ranking platform for Harvard student startups. Students vote on top companies and submit their own projects to compete for rankings.
+An investment competition platform where users compete against AI investors across multiple market indexes. Build your portfolio, unlock new markets, and win the chance to invest in your own startup!
 
 ## 🚀 Tech Stack
 
@@ -9,18 +9,19 @@ A ranking platform for Harvard student startups. Students vote on top companies 
 - **Styling:** Tailwind CSS
 - **Authentication:** Custom SSO via manaboodle.com
 - **Database:** Supabase (PostgreSQL)
-- **Animations:** Framer Motion
+- **Stock Data:** Finnhub API (real-time market prices)
 - **Icons:** Lucide React
 - **Deployment:** Vercel
 
 ## 📋 Features
 
-1. **Public Landing Page** - Top 10 historical Harvard startups
-2. **Voting System** - Rate companies on 5 criteria (1-5 stars each)
-3. **Project Submission** - After voting on 5+ companies, submit your startup
-4. **Live Leaderboard** - Real-time rankings of student projects
-5. **My Projects** - Track your submission's ranking
-6. **Admin Dashboard** - Manage submissions and moderate content
+1. **Investor Leaderboard** - Compete against 7 AI investors and other users
+2. **Multiple Indexes** - HM7 (Harvard Magnificent 7), H2026, S&P7, DowJ7, and more
+3. **Real-Time Trading** - Buy and sell stocks with real market prices
+4. **Progressive Unlock System** - Achieve +10%, +20% gains to unlock new indexes
+5. **Startup Registration** - Submit your startup and get your own index
+6. **Portfolio Tracking** - Monitor your holdings, gains/losses, and transaction history
+7. **Username System** - Create your investor identity
 
 ## 🔐 Authentication
 

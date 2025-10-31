@@ -43,8 +43,8 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
 
             <Link href="/" className="flex items-center gap-3">
               <div>
-                <h1 className="text-2xl font-bold">RIZE</h1>
-                <p className="text-xs text-gray-400">by Manaboodle · Harvard Edition</p>
+                <h1 className="text-2xl font-bold">MM7 Index</h1>
+                <p className="text-xs text-gray-400">Manaboodle Magnificent 7</p>
               </div>
             </Link>
           </div>

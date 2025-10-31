@@ -6,13 +6,13 @@ import DisclaimerModal from '@/components/DisclaimerModal';
 const inter = Inter({ subsets: ['latin'], variable: '--font-geist-sans' });
 
 export const metadata: Metadata = {
-  title: 'Rize by Manaboodle - Investment Game',
-  description: 'Educational investment simulation. Build your portfolio with 1M free MTK tokens. Compete against AI investors. Learn investment strategies.',
-  keywords: ['investment game', 'portfolio simulation', 'Harvard startups', 'educational finance', 'MTK tokens'],
+  title: 'MM7 Index - Manaboodle Magnificent 7',
+  description: 'Invest in the Magnificent 7 and compete against AI investors. Build your portfolio with 1M free MTK tokens. Winner invests in their own startup!',
+  keywords: ['investment game', 'portfolio simulation', 'Harvard startups', 'Magnificent 7', 'MM7 Index', 'Manaboodle'],
   authors: [{ name: 'Manaboodle' }],
   openGraph: {
-    title: 'Rize by Manaboodle - Investment Game',
-    description: 'Build your portfolio with 1M free tokens. Compete against 10 AI investors.',
+    title: 'MM7 Index - Manaboodle Magnificent 7',
+    description: 'Compete against AI investors. Build your portfolio. Unlock new indexes.',
     type: 'website',
   },
 };
