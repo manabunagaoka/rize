@@ -145,6 +145,16 @@ export default function CompetitionsClient({ user }: { user: any }) {
     fetchData();
   }, [activeCompetitionId, fetchData]);
 
+  // Auto-refresh data every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing portfolio data...');
+      fetchData();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
   // Fetch real stock price when a company is selected
   useEffect(() => {
     async function fetchRealPrice() {
@@ -282,8 +292,8 @@ export default function CompetitionsClient({ user }: { user: any }) {
                       ${userBalance.portfolio_value.toLocaleString()}
                     </p>
                     <p className={`text-sm font-semibold ${userBalance.all_time_gain_loss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {userBalance.all_time_gain_loss >= 0 ? '+' : ''}${Math.abs(userBalance.all_time_gain_loss).toLocaleString()}
-                      ({userBalance.total_invested > 0 ? ((userBalance.all_time_gain_loss / userBalance.total_invested) * 100).toFixed(1) : '0.0'}%)
+                      {userBalance.all_time_gain_loss >= 0 ? '+' : '-'}${Math.abs(userBalance.all_time_gain_loss).toLocaleString()}
+                      ({userBalance.total_invested > 0 ? (userBalance.all_time_gain_loss >= 0 ? '+' : '-') + Math.abs((userBalance.all_time_gain_loss / userBalance.total_invested) * 100).toFixed(1) : '0.0'}%)
                     </p>
                   </div>
                 </div>

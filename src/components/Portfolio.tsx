@@ -110,7 +110,7 @@ export default function Portfolio() {
               {totalGainLoss >= 0 ? '+' : '-'}${Math.abs(totalGainLoss).toLocaleString()}
             </div>
             <div className="text-sm opacity-90 mt-1">
-              {totalGainLoss >= 0 ? '+' : ''}{gainLossPercent}%
+              {totalGainLoss >= 0 ? '+' : '-'}{Math.abs(parseFloat(gainLossPercent)).toFixed(2)}%
             </div>
           </div>
         </div>
