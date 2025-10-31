@@ -5,7 +5,6 @@ import { useState } from 'react';
 import Header from '@/components/Header';
 
 export default function LandingPage({ user }: { user: any }) {
-  const [showLegendsInfo, setShowLegendsInfo] = useState(false);
   const [show2026Info, setShow2026Info] = useState(false);
 
   return (
@@ -32,23 +31,23 @@ export default function LandingPage({ user }: { user: any }) {
       <section className="container mx-auto px-4 pb-20">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
           
-          {/* Harvard Legends Competition */}
-          <div 
-            onClick={() => setShowLegendsInfo(!showLegendsInfo)}
-            className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105 cursor-pointer"
+          {/* Harvard Magnificent 7 Competition */}
+          <Link 
+            href="/competitions?competition=legendary"
+            className="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-2xl p-8 border-2 border-yellow-600/30 hover:border-yellow-500 transition-all duration-300 hover:scale-105 cursor-pointer block"
           >
             <h3 className="text-3xl font-bold text-white mb-3">
-              Harvard Legends Index
+              Harvard Magnificent 7 Index
             </h3>
             
             <p className="text-gray-300 mb-6">
-              Vote on the best pitches from Harvard founders who built billion-dollar companies
+              Invest in companies you like and compete against other fellows and AI Investors. Winner gets to invest your earning in your own startup.
             </p>
             
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Rule</p>
-                <p className="text-white font-medium">Vote on the best pitch</p>
+                <p className="text-sm text-gray-400">Status</p>
+                <p className="text-white font-medium">Invest & Compete</p>
               </div>
               
               <div className="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full text-sm font-semibold">
@@ -57,26 +56,12 @@ export default function LandingPage({ user }: { user: any }) {
             </div>
             
             <div className="mt-6 text-pink-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-              {showLegendsInfo ? 'Hide Details' : 'View Details'}
+              Enter Competition
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showLegendsInfo ? "M5 15l7-7 7 7" : "M13 7l5 5m0 0l-5 5m5-5H6"} />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </div>
-            
-            {showLegendsInfo && (
-              <div className="mt-6 pt-6 border-t border-yellow-600/30">
-                <p className="text-gray-300 mb-4">
-                  Explore legendary Harvard startups and vote on the best pitches. Learn from founders who built billion-dollar companies.
-                </p>
-                <Link 
-                  href="/competitions?competition=legendary"
-                  className="inline-block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 px-6 rounded-xl transition"
-                >
-                  Vote Your Favorite →
-                </Link>
-              </div>
-            )}
-          </div>
+          </Link>
 
           {/* Harvard Class of 2026 Competition */}
           <div 

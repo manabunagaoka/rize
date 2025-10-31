@@ -231,7 +231,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const selectedPitch = companiesData.find(c => c.id === selectedEntryId) || SUCCESS_STORIES.find(s => s.id === selectedEntryId);
 
   const competitionTitle = activeCompetitionId === 'legendary' 
-    ? 'Harvard Legends' 
+    ? 'Harvard Magnificent 7' 
     : 'Harvard Class of 2026';
 
   return (
@@ -266,11 +266,10 @@ export default function CompetitionsClient({ user }: { user: any }) {
             {/* Rules Box */}
                         {/* Rules Box */}
             <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-2xl p-6 mb-8">
-              <h3 className="text-2xl font-bold text-white mb-3">Harvard Legends Index</h3>
+              <h3 className="text-2xl font-bold text-white mb-3">Harvard Magnificent 7 Index</h3>
               <p className="text-gray-300 leading-relaxed">
-                Harvard Legends Index tracks companies that started at Harvard. 
-                Invest in these companies based on their original pitch and fun facts to see how your portfolio grows. 
-                Compete against other fellows and AI Investors. We&apos;ve gifted you <span className="text-pink-400 font-bold">$1,000,000 Manaboodle Tokens (MTK)</span> to get started. 
+                Invest in companies you like and compete against other fellows and AI Investors. Winner gets to invest your earning in your own startup. 
+                We&apos;ve gifted you <span className="text-pink-400 font-bold">$1,000,000 Manaboodle Tokens (MTK)</span> to get started. 
                 Have fun, and remember to <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 underline">register YOUR startup</a> for the Manaboodle IPO!
               </p>
             </div>

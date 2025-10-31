@@ -173,7 +173,7 @@ export default function Portfolio() {
         ) : (
           <div className="px-6 py-12 text-center text-gray-400">
             <p className="text-lg">No investments yet</p>
-            <p className="text-sm mt-2">Start investing in Harvard legends to build your portfolio!</p>
+            <p className="text-sm mt-2">Start investing in the Magnificent 7 to build your portfolio!</p>
           </div>
         )}
       </div>
