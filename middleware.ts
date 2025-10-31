@@ -22,6 +22,8 @@ const PUBLIC_PATHS = [
   '/login',         // RIZE login page
   '/debug-auth',    // Debug authentication page
   '/api/debug-auth', // Debug API endpoint
+  '/competitions',  // Competitions page (public viewing)
+  '/api/stock',     // Stock price API (public)
 ];
 
 export async function middleware(request: NextRequest) {
@@ -50,15 +52,20 @@ export async function middleware(request: NextRequest) {
     console.log('[MIDDLEWARE] ========== SSO CALLBACK DETECTED ==========');
     console.log('[MIDDLEWARE] SSO Token received:', ssoToken.substring(0, 30) + '...');
     
-    // Try to get the intended destination from return_url or default to landing page
+    // Try to get the intended destination from return_url or default to competitions page
     const returnUrl = request.nextUrl.searchParams.get('return_url');
-    let redirectPath = '/';  // Default to landing page
+    let redirectPath = '/competitions?competition=legendary';  // Default to competitions page after login
     
     if (returnUrl) {
       try {
         const returnUrlObj = new URL(returnUrl);
-        redirectPath = returnUrlObj.pathname + returnUrlObj.search;
-        console.log('[MIDDLEWARE] Parsed return_url to:', redirectPath);
+        // Only use return_url if it's not the root or login page
+        if (returnUrlObj.pathname !== '/' && returnUrlObj.pathname !== '/login') {
+          redirectPath = returnUrlObj.pathname + returnUrlObj.search;
+          console.log('[MIDDLEWARE] Parsed return_url to:', redirectPath);
+        } else {
+          console.log('[MIDDLEWARE] Ignoring return_url (root/login), using default competitions page');
+        }
       } catch (e) {
         // If return_url is invalid, use default
         console.log('[MIDDLEWARE] Invalid return_url, using default:', e);
