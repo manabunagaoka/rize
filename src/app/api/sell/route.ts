@@ -106,21 +106,24 @@ export async function POST(request: NextRequest) {
     
     if (ticker) {
       try {
-        // Use absolute URL for Vercel deployment
-        const baseUrl = process.env.VERCEL_URL 
-          ? `https://${process.env.VERCEL_URL}` 
-          : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const priceResponse = await fetch(`${baseUrl}/api/stock/${ticker}`, {
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        const priceData = await priceResponse.json();
-        console.log(`[Sell API] Fetched price for ${ticker}:`, priceData);
-        if (priceData.c && priceData.c > 0) {
-          currentPrice = priceData.c;
-          console.log(`[Sell API] Using real price: $${currentPrice}`);
+        // Fetch directly from Finnhub API instead of internal endpoint
+        const apiKey = process.env.STOCK_API_KEY;
+        if (!apiKey) {
+          console.error('[Sell API] STOCK_API_KEY not found in environment');
+        } else {
+          const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`;
+          const priceResponse = await fetch(finnhubUrl);
+          const priceData = await priceResponse.json();
+          console.log(`[Sell API] Fetched price for ${ticker} from Finnhub:`, priceData);
+          if (priceData.c && priceData.c > 0) {
+            currentPrice = priceData.c;
+            console.log(`[Sell API] Using real market price: $${currentPrice} for ${ticker}`);
+          } else {
+            console.log(`[Sell API] WARNING: Failed to get real price, using fallback: $${currentPrice}`);
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch real stock price, using database price:', error);
+        console.error('[Sell API] Failed to fetch real stock price, using database price:', error);
       }
     }
     

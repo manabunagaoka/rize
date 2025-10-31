@@ -107,16 +107,15 @@ export async function GET(request: NextRequest) {
         
         if (ticker) {
           try {
-            // Use absolute URL for Vercel deployment
-            const baseUrl = process.env.VERCEL_URL 
-              ? `https://${process.env.VERCEL_URL}` 
-              : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-            const priceResponse = await fetch(`${baseUrl}/api/stock/${ticker}`, {
-              headers: { 'Cache-Control': 'no-cache' }
-            });
-            const priceData = await priceResponse.json();
-            if (priceData.c && priceData.c > 0) {
-              currentPrice = priceData.c;
+            // Fetch directly from Finnhub API instead of internal endpoint
+            const apiKey = process.env.STOCK_API_KEY;
+            if (apiKey) {
+              const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`;
+              const priceResponse = await fetch(finnhubUrl);
+              const priceData = await priceResponse.json();
+              if (priceData.c && priceData.c > 0) {
+                currentPrice = priceData.c;
+              }
             }
           } catch (error) {
             console.error(`Failed to fetch price for ${ticker}:`, error);
