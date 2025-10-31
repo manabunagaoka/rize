@@ -48,6 +48,7 @@ export default function CompetitionsClient({ user }: { user: any }) {
   const [loading, setLoading] = useState(true);
   const [userBalance, setUserBalance] = useState<any>(null);
   const [userHoldings, setUserHoldings] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [shareCount, setShareCount] = useState<string>('');
   const [transactionType, setTransactionType] = useState<'BUY' | 'SELL'>('BUY');
   const [isInvesting, setIsInvesting] = useState(false);
@@ -97,6 +98,13 @@ export default function CompetitionsClient({ user }: { user: any }) {
           
           setUserBalance(portfolioData.balance);
           setUserHoldings(activeHoldings);
+          
+          // Fetch transaction history
+          const txResponse = await fetch('/api/transactions', {
+            credentials: 'include'
+          });
+          const txData = await txResponse.json();
+          setTransactions(txData.transactions || []);
         }
         
         // Map companies with their market data
@@ -316,6 +324,43 @@ export default function CompetitionsClient({ user }: { user: any }) {
                       No holdings yet. Select a company and invest to get started.
                     </p>
                   )}
+                </div>
+
+                {/* Transaction History */}
+                <div className="border-t border-pink-500/30 pt-4 mt-4">
+                  <h4 className="text-sm font-semibold text-gray-400 uppercase mb-3">
+                    Recent Transactions
+                  </h4>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {transactions.length > 0 ? (
+                      transactions.map((tx) => {
+                        const isBuy = tx.transaction_type === 'BUY';
+                        const date = new Date(tx.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        
+                        return (
+                          <div key={tx.id} className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 text-sm">
+                            <div className="flex items-center gap-3">
+                              <span className={`font-bold ${isBuy ? 'text-green-400' : 'text-red-400'}`}>
+                                {isBuy ? 'BUY' : 'SELL'}
+                              </span>
+                              <span className="text-white font-semibold">{tx.ticker}</span>
+                              <span className="text-gray-400">{tx.shares.toLocaleString()} shares</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-white font-semibold">
+                                ${tx.price_per_share.toFixed(2)} ea
+                              </div>
+                              <div className="text-xs text-gray-500">{date}</div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-gray-500 text-sm text-center py-4">
+                        No transactions yet
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
