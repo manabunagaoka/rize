@@ -107,7 +107,13 @@ export async function GET(request: NextRequest) {
         
         if (ticker) {
           try {
-            const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock/${ticker}`);
+            // Use absolute URL for Vercel deployment
+            const baseUrl = process.env.VERCEL_URL 
+              ? `https://${process.env.VERCEL_URL}` 
+              : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+            const priceResponse = await fetch(`${baseUrl}/api/stock/${ticker}`, {
+              headers: { 'Cache-Control': 'no-cache' }
+            });
             const priceData = await priceResponse.json();
             if (priceData.c && priceData.c > 0) {
               currentPrice = priceData.c;

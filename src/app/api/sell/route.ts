@@ -106,10 +106,18 @@ export async function POST(request: NextRequest) {
     
     if (ticker) {
       try {
-        const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock/${ticker}`);
+        // Use absolute URL for Vercel deployment
+        const baseUrl = process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}` 
+          : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const priceResponse = await fetch(`${baseUrl}/api/stock/${ticker}`, {
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         const priceData = await priceResponse.json();
+        console.log(`[Sell API] Fetched price for ${ticker}:`, priceData);
         if (priceData.c && priceData.c > 0) {
           currentPrice = priceData.c;
+          console.log(`[Sell API] Using real price: $${currentPrice}`);
         }
       } catch (error) {
         console.error('Failed to fetch real stock price, using database price:', error);
