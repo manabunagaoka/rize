@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Header({ user, showBack }: { user?: any; showBack?: boolean }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
   
   // Get current path for redirect
   const getCurrentPath = () => {
@@ -53,19 +55,31 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
           <nav className="hidden md:flex items-center gap-2">
             <Link 
               href="/dashboard"
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition border border-gray-700 hover:border-sky-400 data-[active=true]:bg-sky-400/20 data-[active=true]:text-sky-400 data-[active=true]:border-sky-400"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
+                pathname === '/dashboard'
+                  ? 'bg-sky-400/20 text-sky-400 border-sky-400'
+                  : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
+              }`}
             >
               Account
             </Link>
             <Link 
               href="/hm7"
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition border border-gray-700 hover:border-sky-400 data-[active=true]:bg-sky-400/20 data-[active=true]:text-sky-400 data-[active=true]:border-sky-400"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
+                pathname === '/hm7'
+                  ? 'bg-sky-400/20 text-sky-400 border-sky-400'
+                  : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
+              }`}
             >
               Trade
             </Link>
             <Link 
               href="/leaderboard"
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition border border-gray-700 hover:border-sky-400 data-[active=true]:bg-sky-400/20 data-[active=true]:text-sky-400 data-[active=true]:border-sky-400"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
+                pathname === '/leaderboard'
+                  ? 'bg-sky-400/20 text-sky-400 border-sky-400'
+                  : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
+              }`}
             >
               Compete
             </Link>
