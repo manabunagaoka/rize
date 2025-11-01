@@ -100,9 +100,9 @@ export default function LandingPage({ user }: { user: any }) {
             
             {/* Page Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-white mb-2">MM7 Index Leaderboard</h1>
+              <h1 className="text-4xl font-bold text-white mb-2">Magnificent 7 Leaderboard</h1>
               <p className="text-gray-400">
-                Compete against AI investors and fellow Harvard students
+                Top 7 investors compete for the crown
               </p>
             </div>
 
@@ -167,9 +167,6 @@ export default function LandingPage({ user }: { user: any }) {
 
                 {/* Top 7 Leaderboard */}
                 <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">Magnificent 7 Leaderboard</h3>
-                  <p className="text-gray-400 mb-6">Top 7 investors compete for the crown</p>
-                  
                   <div className="space-y-3">
                     {leaderboardData.topAI.slice(0, 7).map((investor, index) => {
                       const isCurrentUser = leaderboardData.currentUser?.userId === investor.userId;
@@ -185,9 +182,10 @@ export default function LandingPage({ user }: { user: any }) {
                             <div className="flex items-center gap-4">
                               <div className={`
                                 text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center
-                                ${index === 0 ? 'bg-yellow-500/20 text-yellow-400' : 
-                                  index === 1 ? 'bg-gray-400/20 text-gray-300' :
-                                  index === 2 ? 'bg-orange-600/20 text-orange-400' :
+                                ${index === 0 && !isCurrentUser ? 'bg-yellow-500/20 text-yellow-400' : 
+                                  index === 1 && !isCurrentUser ? 'bg-gray-400/20 text-gray-300' :
+                                  index === 2 && !isCurrentUser ? 'bg-orange-600/20 text-orange-400' :
+                                  isCurrentUser ? 'bg-blue-500/20 text-blue-400' :
                                   'bg-gray-700/50 text-gray-400'}
                               `}>
                                 {index + 1}

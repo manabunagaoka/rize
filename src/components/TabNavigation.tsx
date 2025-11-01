@@ -30,9 +30,9 @@ export default function TabNavigation({ defaultTab = 'leaderboard', onTabChange 
   };
 
   const tabs = [
-    { id: 'leaderboard' as TabType, label: 'Leaderboard', icon: '👑', locked: false },
-    { id: 'hm7' as TabType, label: 'HM7', icon: '🎓', locked: false },
-    { id: 'h2026' as TabType, label: 'H2026', icon: '🔒', locked: true }
+    { id: 'leaderboard' as TabType, label: 'Leaderboard', icon: '', locked: false },
+    { id: 'hm7' as TabType, label: 'HM7', icon: '', locked: false },
+    { id: 'h2026' as TabType, label: 'H2026', icon: '', locked: true }
   ];
 
   return (
@@ -61,8 +61,7 @@ export default function TabNavigation({ defaultTab = 'leaderboard', onTabChange 
                 aria-current={isActive ? 'page' : undefined}
               >
                 <span className="flex items-center gap-2">
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
+                  {tab.label}
                   {isLocked && <span className="text-xs text-gray-500">(+10% to unlock)</span>}
                 </span>
               </button>
