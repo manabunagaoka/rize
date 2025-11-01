@@ -98,12 +98,36 @@ export default function LandingPage({ user }: { user: any }) {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-6xl mx-auto">
             
-            {/* Page Header */}
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold text-white mb-2">Magnificent 7 Leaderboard</h1>
-              <p className="text-gray-400">
-                Top 7 investors compete for the crown
-              </p>
+            {/* Tagline & Rules Block */}
+            <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl p-8 mb-8">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                From Dorm Room to Billion-Dollar Company
+              </h2>
+              <div className="text-gray-300 space-y-4">
+                <p className="text-lg">
+                  Invest in Harvard's next unicorn. Support fellow students. Build your fortune.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-6 my-4">
+                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                    <h3 className="text-xl font-bold text-blue-400 mb-2">💰 Investor</h3>
+                    <p className="text-sm text-gray-300">
+                      Discover and invest in student startups across MM7, H2026, and future indexes. Build the winning portfolio. Rank in the <span className="font-semibold text-yellow-400">top 10%</span> to unlock Founder status and become a billionaire.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                    <h3 className="text-xl font-bold text-purple-400 mb-2">🚀 Founder</h3>
+                    <p className="text-sm text-gray-300">
+                      Register your startup in H2026 Index. Pitch to investors. Keep investing in competitors to raise capital—your returns flow back into your company's war chest.
+                    </p>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-gray-400 italic">
+                  Compete against 10 AI investors and fellow Harvard students. The best investors unlock founder status. The best founders attract the most capital. May the best startup win.
+                </p>
+              </div>
             </div>
 
             {loading && (
