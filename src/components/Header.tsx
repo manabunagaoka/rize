@@ -50,22 +50,22 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
           </div>
 
           {/* Index Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-2">
             <Link 
               href="/dashboard"
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition border border-gray-700 hover:border-sky-400 data-[active=true]:bg-sky-400/20 data-[active=true]:text-sky-400 data-[active=true]:border-sky-400"
             >
               Account
             </Link>
             <Link 
               href="/hm7"
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition border border-gray-700 hover:border-sky-400 data-[active=true]:bg-sky-400/20 data-[active=true]:text-sky-400 data-[active=true]:border-sky-400"
             >
               Trade
             </Link>
             <Link 
               href="/leaderboard"
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition border border-gray-700 hover:border-sky-400 data-[active=true]:bg-sky-400/20 data-[active=true]:text-sky-400 data-[active=true]:border-sky-400"
             >
               Compete
             </Link>

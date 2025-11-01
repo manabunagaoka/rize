@@ -48,7 +48,7 @@ export default function DashboardClient({ user }: { user: User }) {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Your Account</h1>
+            <h1 className="text-4xl font-bold mb-2">Account</h1>
             <p className="text-gray-400">{user.email}</p>
           </div>
           <button
