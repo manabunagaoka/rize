@@ -16,7 +16,7 @@ ON user_token_balances (LOWER(username));
 UPDATE user_token_balances 
 SET username = 'ManaMana', 
     username_set_at = NOW()
-WHERE user_email = 'your-email@harvard.edu';
+WHERE user_email = 'manabunagaoka@gse.harvard.edu';
 
 -- Verify the update
 SELECT user_id, user_email, username, username_set_at 
