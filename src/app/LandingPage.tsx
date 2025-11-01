@@ -165,106 +165,101 @@ export default function LandingPage({ user }: { user: any }) {
                   </div>
                 )}
 
-                {/* Top AI Investors Section */}
-                {leaderboardData.topAI.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold text-white mb-4">Top AI Investors (Benchmark)</h3>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {leaderboardData.topAI.map((investor) => (
+                {/* Top 7 Leaderboard */}
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">Magnificent 7 Leaderboard</h3>
+                  <p className="text-gray-400 mb-6">Top 7 investors compete for the crown</p>
+                  
+                  <div className="space-y-3">
+                    {leaderboardData.topAI.slice(0, 7).map((investor, index) => {
+                      const isCurrentUser = leaderboardData.currentUser?.userId === investor.userId;
+                      return (
                         <div 
                           key={investor.userId}
-                          className="bg-gray-800/50 border border-gray-700 rounded-lg p-4"
+                          className={`
+                            ${isCurrentUser ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-2 border-blue-500' : 'bg-gray-800/50 border border-gray-700'}
+                            rounded-lg p-5 transition-all hover:scale-102
+                          `}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="font-bold text-white">#{investor.rank} {investor.username}</div>
-                            <div className="text-sm text-gray-500">AI</div>
-                          </div>
-                          <div className="text-2xl font-bold text-white mb-1">
-                            {formatCurrency(investor.portfolioValue)}
-                          </div>
-                          <div className={`text-sm font-semibold ${getPerformanceColor(investor.portfolioValue)}`}>
-                            {formatPercentage(investor.portfolioValue)}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className={`
+                                text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center
+                                ${index === 0 ? 'bg-yellow-500/20 text-yellow-400' : 
+                                  index === 1 ? 'bg-gray-400/20 text-gray-300' :
+                                  index === 2 ? 'bg-orange-600/20 text-orange-400' :
+                                  'bg-gray-700/50 text-gray-400'}
+                              `}>
+                                {index + 1}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <div className="font-bold text-white text-lg">
+                                    {isCurrentUser && <span className="text-blue-400">@</span>}
+                                    {investor.username}
+                                  </div>
+                                  <span className={`
+                                    px-2 py-0.5 text-xs font-semibold rounded-full
+                                    ${investor.isAI ? 'bg-purple-900/50 text-purple-300' : 'bg-green-900/50 text-green-300'}
+                                  `}>
+                                    {investor.isAI ? 'AI' : 'You'}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-400 mt-1">
+                                  Cash: {formatCurrency(investor.cash)} | Holdings: {formatCurrency(investor.holdingsValue)}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-white">
+                                {formatCurrency(investor.portfolioValue)}
+                              </div>
+                              <div className={`text-sm font-semibold ${getPerformanceColor(investor.portfolioValue)}`}>
+                                {formatPercentage(investor.portfolioValue)}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Full Leaderboard Table */}
-                <div className="bg-gray-800/30 rounded-xl border border-gray-700 overflow-hidden">
-                  <div className="p-6 border-b border-gray-700">
-                    <h3 className="text-xl font-bold text-white">Full Rankings</h3>
-                    <p className="text-sm text-gray-400">Total Investors: {leaderboardData.totalInvestors}</p>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-900/50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Rank
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Investor
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Type
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Portfolio Value
-                          </th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
-                            Performance
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
-                        {leaderboardData.leaderboard.map((investor) => {
-                          const isCurrentUser = leaderboardData.currentUser?.userId === investor.userId;
-                          return (
-                            <tr 
-                              key={investor.userId}
-                              className={`
-                                ${isCurrentUser ? 'bg-blue-900/20 border-l-4 border-l-blue-500' : 'hover:bg-gray-800/30'}
-                                transition-colors
-                              `}
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-lg font-bold text-white">#{investor.rank}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="font-medium text-white">
-                                  {isCurrentUser && <span className="text-blue-400">@</span>}
-                                  {investor.username}
+                      );
+                    })}
+                    
+                    {/* Show current user if not in top 7 */}
+                    {leaderboardData.currentUser && leaderboardData.currentUser.rank > 7 && (
+                      <>
+                        <div className="text-center py-2 text-gray-500">...</div>
+                        <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 border-2 border-blue-500 rounded-lg p-5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="text-2xl font-bold w-10 h-10 rounded-full flex items-center justify-center bg-gray-700/50 text-gray-400">
+                                {leaderboardData.currentUser.rank}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <div className="font-bold text-white text-lg">
+                                    <span className="text-blue-400">@</span>
+                                    {leaderboardData.currentUser.username}
+                                  </div>
+                                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-900/50 text-green-300">
+                                    You
+                                  </span>
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`
-                                  px-2 py-1 text-xs font-semibold rounded-full
-                                  ${investor.isAI ? 'bg-purple-900/50 text-purple-300' : 'bg-green-900/50 text-green-300'}
-                                `}>
-                                  {investor.isAI ? 'AI' : 'Human'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right">
-                                <div className="text-lg font-bold text-white">
-                                  {formatCurrency(investor.portfolioValue)}
+                                <div className="text-sm text-gray-400 mt-1">
+                                  Cash: {formatCurrency(leaderboardData.currentUser.cash)} | Holdings: {formatCurrency(leaderboardData.currentUser.holdingsValue)}
                                 </div>
-                                <div className="text-sm text-gray-400">
-                                  Cash: {formatCurrency(investor.cash)}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right">
-                                <div className={`text-lg font-bold ${getPerformanceColor(investor.portfolioValue)}`}>
-                                  {formatPercentage(investor.portfolioValue)}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-white">
+                                {formatCurrency(leaderboardData.currentUser.portfolioValue)}
+                              </div>
+                              <div className={`text-sm font-semibold ${getPerformanceColor(leaderboardData.currentUser.portfolioValue)}`}>
+                                {formatPercentage(leaderboardData.currentUser.portfolioValue)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
