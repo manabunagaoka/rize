@@ -121,9 +121,9 @@ export default function LeaderboardPage() {
           
           {/* Page Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">MM7 Index Leaderboard</h1>
+            <h1 className="text-4xl font-bold text-white mb-2">Leaderboard</h1>
             <p className="text-gray-400">
-              Compete against AI investors and fellow Harvard students
+              Compete against 10 AI investors and fellow Harvard students
             </p>
           </div>
 
