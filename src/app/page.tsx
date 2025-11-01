@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import LandingPage from './LandingPage';
+import LandingPage from './LandingPageNew';
 
 async function getUserFromToken() {
   const cookieStore = cookies();

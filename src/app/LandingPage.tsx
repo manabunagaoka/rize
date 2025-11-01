@@ -87,45 +87,81 @@ export default function LandingPage({ user }: { user: any }) {
       {/* Header */}
       <Header user={user} />
 
-      {/* Tab Navigation */}
-      <TabNavigation 
-        defaultTab={activeTab} 
-        onTabChange={(tab) => setActiveTab(tab)}
-      />
-
-      {/* Leaderboard Tab Content */}
-      {activeTab === 'leaderboard' && (
-        <div className="container mx-auto px-4 py-12">
-          <div className="max-w-6xl mx-auto">
-            
-            {/* Tagline & Rules Block */}
+      {/* Main Landing Page Content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          
+          {/* Setup Card - Hero Section */}
             <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl p-8 mb-8">
-              <h2 className="text-3xl font-bold text-white mb-4">
+              <h2 className="text-3xl font-bold text-white mb-3">
                 From Dorm Room to Billion-Dollar Company
               </h2>
+              <p className="text-lg text-yellow-400 font-semibold mb-4">
+                Sign up and get $1,000,000 MTK (Manaboodle Token) to start investing!
+              </p>
               <div className="text-gray-300 space-y-4">
-                <p className="text-lg">
-                  Invest in Harvard&apos;s next unicorn. Support fellow students. Build your fortune.
+                <p className="text-base">
+                  Invest in index funds or Harvard&apos;s next unicorn. Support fellow students. Build your fortune.
                 </p>
                 
                 <div className="grid md:grid-cols-2 gap-6 my-4">
-                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                    <h3 className="text-xl font-bold text-blue-400 mb-2">💰 Investor</h3>
-                    <p className="text-sm text-gray-300">
-                      Discover and invest in student startups across MM7, H2026, and future indexes. Build the winning portfolio. Rank in the <span className="font-semibold text-yellow-400">top 10%</span> to unlock Founder status and become a billionaire.
+                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-5">
+                    <h3 className="text-xl font-bold text-blue-400 mb-3">Investor</h3>
+                    <p className="text-sm text-gray-300 mb-3">
+                      Discover and invest in index funds. Build the winning portfolio and earn top tier titles.
                     </p>
+                    <div className="space-y-1 text-xs mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-yellow-400 font-bold">1.</span>
+                        <span className="text-yellow-300 font-semibold">Titan</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 font-bold">2.</span>
+                        <span className="text-gray-300 font-semibold">Oracle</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-400 font-bold">3.</span>
+                        <span className="text-orange-300 font-semibold">Alchemist</span>
+                      </div>
+                    </div>
+                    <Link 
+                      href="/login?redirect_to=/"
+                      className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition text-center"
+                    >
+                      Sign Up as Investor
+                    </Link>
                   </div>
                   
-                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                    <h3 className="text-xl font-bold text-purple-400 mb-2">🚀 Founder</h3>
-                    <p className="text-sm text-gray-300">
-                      Register your startup in H2026 Index. Pitch to investors. Keep investing in competitors to raise capital—your returns flow back into your company&apos;s war chest.
+                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-5">
+                    <h3 className="text-xl font-bold text-purple-400 mb-3">Founder</h3>
+                    <p className="text-sm text-gray-300 mb-3">
+                      Register your startup in your graduating class Index. Pitch to investors. Opt in for IPO when ready while earning your own capital by investing in other companies—your returns flow back into your company&apos;s war chest. Win top tier titles.
                     </p>
+                    <div className="space-y-1 text-xs mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-yellow-400 font-bold">1.</span>
+                        <span className="text-yellow-300 font-semibold">Unicorn</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 font-bold">2.</span>
+                        <span className="text-gray-300 font-semibold">Phoenix</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-400 font-bold">3.</span>
+                        <span className="text-orange-300 font-semibold">Dragon</span>
+                      </div>
+                    </div>
+                    <Link 
+                      href="/login?redirect_to=/"
+                      className="block w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition text-center"
+                    >
+                      Sign Up as Founder
+                    </Link>
                   </div>
                 </div>
                 
                 <p className="text-sm text-gray-400 italic">
-                  Compete against 10 AI investors and fellow Harvard students. The best investors unlock founder status. The best founders attract the most capital. May the best startup win.
+                  Compete against 10 AI investors and fellow Harvard students to earn your title.
                 </p>
               </div>
             </div>

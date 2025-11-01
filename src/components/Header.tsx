@@ -43,11 +43,33 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
 
             <Link href="/" className="flex items-center gap-3">
               <div>
-                <h1 className="text-2xl font-bold">MM7 Index</h1>
+                <h1 className="text-xl font-bold">MM7 Index - Harvard Edition</h1>
                 <p className="text-xs text-gray-400">Manaboodle Magnificent 7</p>
               </div>
             </Link>
           </div>
+
+          {/* Index Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Link 
+              href="/leaderboard"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
+            >
+              Leaderboard
+            </Link>
+            <Link 
+              href="/hm7"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
+            >
+              HM7
+            </Link>
+            <Link 
+              href="/h2026"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
+            >
+              H2026
+            </Link>
+          </nav>
 
           <div className="flex items-center gap-3">
             {!user && !showBack && (
@@ -75,6 +97,19 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                         <p className="text-sm font-medium truncate">{user.email}</p>
                       </div>
                     )}
+
+                    {/* Mobile Index Navigation */}
+                    <div className="md:hidden border-b border-gray-700">
+                      <Link href="/leaderboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Leaderboard
+                      </Link>
+                      <Link href="/hm7" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        HM7
+                      </Link>
+                      <Link href="/h2026" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        H2026
+                      </Link>
+                    </div>
 
                     <a href="https://www.manaboodle.com" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm hover:bg-gray-700 transition">
                       Manaboodle
