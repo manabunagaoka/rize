@@ -33,12 +33,12 @@ function LoginPageContent() {
         <div className="text-center mb-8">
           <div className="flex items-baseline justify-center gap-2">
             <h1 className="text-5xl font-bold text-white">
-              RIZE
+              Unicorn
             </h1>
             <span className="text-lg text-gray-400 font-medium">by Manaboodle</span>
           </div>
           <p className="text-gray-400 text-lg mt-2">
-            Rank Harvard&apos;s legendary startups
+            Harvard Edition
           </p>
         </div>
 
@@ -49,7 +49,7 @@ function LoginPageContent() {
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
             <p className="text-gray-400">
-              {isSignUp ? 'Sign up to start ranking and submit your startup' : 'Log in to start ranking and submit your project'}
+              {isSignUp ? 'Sign up to start trading Harvard unicorns' : 'Log in to trade and compete'}
             </p>
           </div>
 
