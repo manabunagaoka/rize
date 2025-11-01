@@ -105,7 +105,7 @@ export default function LandingPage({ user }: { user: any }) {
               </h2>
               <div className="text-gray-300 space-y-4">
                 <p className="text-lg">
-                  Invest in Harvard's next unicorn. Support fellow students. Build your fortune.
+                  Invest in Harvard&apos;s next unicorn. Support fellow students. Build your fortune.
                 </p>
                 
                 <div className="grid md:grid-cols-2 gap-6 my-4">
@@ -119,7 +119,7 @@ export default function LandingPage({ user }: { user: any }) {
                   <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
                     <h3 className="text-xl font-bold text-purple-400 mb-2">🚀 Founder</h3>
                     <p className="text-sm text-gray-300">
-                      Register your startup in H2026 Index. Pitch to investors. Keep investing in competitors to raise capital—your returns flow back into your company's war chest.
+                      Register your startup in H2026 Index. Pitch to investors. Keep investing in competitors to raise capital—your returns flow back into your company&apos;s war chest.
                     </p>
                   </div>
                 </div>
