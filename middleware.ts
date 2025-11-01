@@ -23,7 +23,7 @@ const PUBLIC_PATHS = [
   '/debug-auth',    // Debug authentication page
   '/api/debug-auth', // Debug API endpoint
   '/competitions',  // Competitions page (public viewing)
-  '/dashboard',     // Dashboard (requires auth but no redirect loop)
+  // '/dashboard' removed - now requires authentication
   '/api/stock',     // Stock price API (public)
   '/api/portfolio', // Portfolio API
   '/api/invest',    // Investment API
