@@ -75,7 +75,7 @@ export default async function TradePage() {
               
               <div className="mb-4">
                 <h2 className="text-3xl font-bold mb-2">HM7</h2>
-                <p className="text-green-300 font-semibold mb-1">Magnificent 7</p>
+                <p className="text-green-300 font-semibold mb-1">Harvard Magnificent 7</p>
                 <p className="text-gray-300 text-sm">Trade Harvard&apos;s legendary unicorns</p>
               </div>
 
@@ -114,7 +114,7 @@ export default async function TradePage() {
               
               <div className="mb-4">
                 <h2 className="text-3xl font-bold mb-2">H2026</h2>
-                <p className="text-purple-300 font-semibold mb-1">Class of 2026</p>
+                <p className="text-purple-300 font-semibold mb-1">Harvard Class of 2026</p>
                 <p className="text-gray-300 text-sm">Join the next generation of unicorns</p>
               </div>
 
@@ -152,7 +152,7 @@ export default async function TradePage() {
             
             <div className="mb-4">
               <h2 className="text-3xl font-bold mb-2">H2027</h2>
-              <p className="text-purple-300 font-semibold mb-1">Class of 2027</p>
+              <p className="text-purple-300 font-semibold mb-1">Harvard Class of 2027</p>
               <p className="text-gray-300 text-sm">Applications opening soon</p>
             </div>
 
@@ -195,14 +195,21 @@ export default async function TradePage() {
                 bringing together students from across all Harvard schools to develop ventures that make a positive impact on the world.
               </p>
               <p>
-                Winners from past years have gone on to become successful startups. Many H2024 and H2025 participants came from 
-                this prestigious program.
+                Alumni startups and past winners are invited to submit inquiries about joining our trading platform.
               </p>
             </div>
 
-            <div className="flex items-center text-gray-400 font-semibold gap-2">
-              <span>Full article coming soon</span>
-            </div>
+            <a 
+              href="https://www.manaboodle.com/contact" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded-lg transition"
+            >
+              <span>Submit Inquiry</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
           </div>
 
         </div>
