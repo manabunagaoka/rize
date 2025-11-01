@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import LandingPage from './LandingPageNew';
 
 async function getUserFromToken() {
@@ -43,6 +44,11 @@ async function getUserFromToken() {
 
 export default async function HomePage() {
   const user = await getUserFromToken();
+
+  // Redirect logged-in users to dashboard
+  if (user) {
+    redirect('/dashboard');
+  }
 
   return <LandingPage user={user} />;
 }

@@ -43,8 +43,8 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
 
             <Link href="/" className="flex items-center gap-3">
               <div>
-                <h1 className="text-xl font-bold">MM7 Index - Harvard Edition</h1>
-                <p className="text-xs text-gray-400">Manaboodle Magnificent 7</p>
+                <h1 className="text-xl font-bold">Unicorn - Harvard Edition</h1>
+                <p className="text-xs text-gray-400">by Manaboodle</p>
               </div>
             </Link>
           </div>
@@ -52,22 +52,22 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
           {/* Index Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             <Link 
-              href="/leaderboard"
+              href="/dashboard"
               className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
             >
-              Leaderboard
+              Account
             </Link>
             <Link 
               href="/hm7"
               className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
             >
-              HM7
+              Trade
             </Link>
             <Link 
-              href="/h2026"
+              href="/leaderboard"
               className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
             >
-              H2026
+              Compete
             </Link>
           </nav>
 
@@ -100,14 +100,14 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
 
                     {/* Mobile Index Navigation */}
                     <div className="md:hidden border-b border-gray-700">
-                      <Link href="/leaderboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                        Leaderboard
+                      <Link href="/dashboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Account
                       </Link>
                       <Link href="/hm7" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                        HM7
+                        Trade
                       </Link>
-                      <Link href="/h2026" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                        H2026
+                      <Link href="/leaderboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Compete
                       </Link>
                     </div>
 
