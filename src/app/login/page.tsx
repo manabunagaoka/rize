@@ -31,14 +31,11 @@ function LoginPageContent() {
       <div className="relative w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <div className="flex items-baseline justify-center gap-2">
-            <h1 className="text-5xl font-bold text-white">
-              Unicorn
-            </h1>
-            <span className="text-lg text-gray-400 font-medium">by Manaboodle</span>
-          </div>
-          <p className="text-gray-400 text-lg mt-2">
-            Harvard Edition
+          <h1 className="text-5xl font-bold text-white mb-1">
+            Unicorn - Harvard Edition
+          </h1>
+          <p className="text-gray-400 text-lg">
+            by Manaboodle
           </p>
         </div>
 
