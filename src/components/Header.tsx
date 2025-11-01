@@ -54,9 +54,9 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
           {/* Index Navigation */}
           <nav className="hidden md:flex items-center gap-2">
             <Link 
-              href="/dashboard"
+              href="/account"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                pathname === '/dashboard'
+                pathname === '/account'
                   ? 'bg-sky-400/20 text-sky-400 border-sky-400'
                   : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
               }`}
@@ -114,7 +114,7 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
 
                     {/* Mobile Index Navigation */}
                     <div className="md:hidden border-b border-gray-700">
-                      <Link href="/dashboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                      <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                         Account
                       </Link>
                       <Link href="/hm7" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>

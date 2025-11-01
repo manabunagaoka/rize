@@ -25,6 +25,15 @@ interface Transaction {
   ticker: string;
 }
 
+interface NewsPost {
+  id: string;
+  title: string;
+  content: string;
+  type: 'IPO' | 'ADMIN' | 'MARKET';
+  created_at: string;
+  published: boolean;
+}
+
 interface PortfolioData {
   balance: {
     total_tokens: number;
@@ -50,11 +59,13 @@ const COMPANY_NAMES: { [key: number]: { name: string; ticker: string } } = {
 export default function Portfolio() {
   const [data, setData] = useState<PortfolioData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [news, setNews] = useState<NewsPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPortfolio();
     fetchTransactions();
+    fetchNews();
   }, []);
 
   async function fetchPortfolio() {
@@ -80,6 +91,18 @@ export default function Portfolio() {
       setTransactions(result.transactions || []);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
+    }
+  }
+
+  async function fetchNews() {
+    try {
+      const response = await fetch('/api/news', {
+        credentials: 'include'
+      });
+      const result = await response.json();
+      setNews(result.news || []);
+    } catch (error) {
+      console.error('Failed to fetch news:', error);
     }
   }
 
@@ -266,6 +289,47 @@ export default function Portfolio() {
           <div className="px-6 py-12 text-center text-gray-400">
             <p className="text-lg">No transactions yet</p>
             <p className="text-sm mt-2">Your trading history will appear here</p>
+          </div>
+        )}
+      </div>
+
+      {/* News */}
+      <div className="bg-gray-800 rounded-2xl overflow-hidden">
+        <div className="bg-gray-900 px-6 py-4 border-b border-gray-700">
+          <h3 className="text-xl font-bold text-white">News</h3>
+        </div>
+
+        {news && news.length > 0 ? (
+          <div className="divide-y divide-gray-700">
+            {news.map((post) => {
+              const date = new Date(post.created_at);
+              const typeBadgeColor = 
+                post.type === 'IPO' ? 'bg-purple-500/20 text-purple-400' :
+                post.type === 'MARKET' ? 'bg-blue-500/20 text-blue-400' :
+                'bg-pink-500/20 text-pink-400';
+              
+              return (
+                <div key={post.id} className="px-6 py-5 hover:bg-gray-700/30 transition">
+                  <div className="flex items-start gap-3 mb-2">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${typeBadgeColor}`}>
+                      {post.type}
+                    </span>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-white mb-2">{post.title}</h4>
+                      <p className="text-gray-300 text-sm mb-2">{post.content}</p>
+                      <p className="text-xs text-gray-500">
+                        {date.toLocaleDateString()} at {date.toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="px-6 py-12 text-center text-gray-400">
+            <p className="text-lg">No news yet</p>
+            <p className="text-sm mt-2">Market updates and IPO announcements will appear here</p>
           </div>
         )}
       </div>

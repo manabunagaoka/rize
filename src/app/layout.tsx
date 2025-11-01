@@ -39,7 +39,7 @@ export default function RootLayout({
                 Manaboodle
               </a>
             </div>
-            <p>© 2025 Manaboodle. RIZE is an educational simulation platform.</p>
+            <p>© 2025 Manaboodle</p>
             <p className="text-gray-600">
               Must be 13+ to play. We are not responsible for data loss or service interruptions.
             </p>
