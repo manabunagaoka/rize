@@ -76,13 +76,13 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
-          <p className="text-gray-400 mb-8">Please log in to view your portfolio</p>
+          <h1 className="text-4xl font-bold mb-4">Account</h1>
+          <p className="text-gray-400 mb-8">Please log in to view your account</p>
           <Link 
-            href="/competitions?competition=legendary" 
+            href="/login?redirect_to=/dashboard" 
             className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold transition inline-block"
           >
-            Go to Competitions
+            Log In
           </Link>
         </div>
       </div>
@@ -94,24 +94,16 @@ export default function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Your Portfolio</h1>
+            <h1 className="text-4xl font-bold mb-2">Your Account</h1>
             <p className="text-gray-400">{user.email}</p>
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleResetAccount}
-              disabled={isResetting}
-              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-semibold transition border border-red-500/50 disabled:opacity-50"
-            >
-              {isResetting ? 'Resetting...' : '🔄 Reset Account'}
-            </button>
-            <Link 
-              href="/competitions?competition=legendary" 
-              className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold transition"
-            >
-              Trade Stocks →
-            </Link>
-          </div>
+          <button
+            onClick={handleResetAccount}
+            disabled={isResetting}
+            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-semibold transition border border-red-500/50 disabled:opacity-50"
+          >
+            {isResetting ? 'Resetting...' : '🔄 Reset Account'}
+          </button>
         </div>
         
         <Portfolio />

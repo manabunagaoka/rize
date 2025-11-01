@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'No SSO token provided' }, { status: 400 });
   }
   
-  // Get redirect path from query params, default to competitions page
-  const redirectTo = request.nextUrl.searchParams.get('redirect_to') || '/competitions?competition=legendary';
+  // Get redirect path from query params, default to dashboard
+  const redirectTo = request.nextUrl.searchParams.get('redirect_to') || '/dashboard';
   const redirectPath = redirectTo;
   
   console.log('[SSO CALLBACK API] Redirecting to:', redirectPath);

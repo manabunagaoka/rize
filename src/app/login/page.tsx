@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 function LoginPageContent() {
   const searchParams = useSearchParams();
   const action = searchParams.get('action'); // 'signup' or default to 'signin'
-  const redirectTo = searchParams.get('redirect_to') || '/competitions?competition=legendary';
+  const redirectTo = searchParams.get('redirect_to') || '/dashboard';
   const isSignUp = action === 'signup';
   
   const handleAuth = () => {
