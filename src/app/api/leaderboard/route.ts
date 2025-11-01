@@ -43,12 +43,13 @@ export async function GET(request: NextRequest) {
   try {
     const user = await verifyUser(request);
     
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
+    // Allow unauthenticated access to leaderboard, but don't show current user data
+    // if (!user) {
+    //   return NextResponse.json(
+    //     { error: 'Not authenticated' },
+    //     { status: 401 }
+    //   );
+    // }
 
     // Fetch all investors with their balances and holdings
     const { data: investors, error: investorsError } = await supabase
@@ -72,10 +73,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all user investments (stock holdings)
+    // Fetch all user investments (pitch holdings)
     const { data: investments, error: investmentsError } = await supabase
       .from('user_investments')
-      .select('user_id, ticker_symbol, shares_owned');
+      .select(`
+        user_id,
+        pitch_id,
+        shares_owned,
+        current_value
+      `);
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -85,35 +91,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get unique ticker symbols to fetch current prices
-    const tickersSet = new Set<string>();
-    investments?.forEach(inv => tickersSet.add(inv.ticker_symbol));
-    const tickers = Array.from(tickersSet);
+    // Get unique pitch IDs to fetch current prices
+    const pitchIdsSet = new Set<number>();
+    investments?.forEach(inv => pitchIdsSet.add(inv.pitch_id));
+    const pitchIds = Array.from(pitchIdsSet);
     
-    // Fetch current stock prices from Finnhub
-    const stockPrices: Record<string, number> = {};
-    await Promise.all(
-      tickers.map(async (ticker) => {
-        try {
-          const response = await fetch(
-            `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${process.env.FINNHUB_API_KEY}`
-          );
-          const data = await response.json();
-          stockPrices[ticker] = data.c || 0; // Current price
-        } catch (error) {
-          console.error(`Error fetching price for ${ticker}:`, error);
-          stockPrices[ticker] = 0;
-        }
-      })
-    );
+    // Fetch current pitch market data (prices)
+    const { data: pitchMarketData, error: marketError } = await supabase
+      .from('pitch_market_data')
+      .select('pitch_id, current_price')
+      .in('pitch_id', pitchIds);
+
+    if (marketError) {
+      console.error('Error fetching market data:', marketError);
+      // Continue anyway with empty market data
+    }
+
+    // Create a map of pitch_id to current price
+    const pitchPrices: Record<number, number> = {};
+    pitchMarketData?.forEach(pm => {
+      pitchPrices[pm.pitch_id] = pm.current_price || 0;
+    });
 
     // Calculate portfolio value for each investor
     const leaderboardData = investors?.map(investor => {
       // Calculate holdings value
       const userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
       const holdingsValue = userInvestments.reduce((sum, inv) => {
-        const stockValue = (inv.shares_owned || 0) * (stockPrices[inv.ticker_symbol] || 0);
-        return sum + stockValue;
+        // Use current_value from database if available, otherwise calculate
+        const value = inv.current_value || ((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 0));
+        return sum + value;
       }, 0);
 
       // Portfolio value = cash + holdings
@@ -129,10 +136,10 @@ export async function GET(request: NextRequest) {
         holdingsValue,
         portfolioValue,
         holdings: userInvestments.map(inv => ({
-          ticker: inv.ticker_symbol,
+          ticker: `PITCH-${inv.pitch_id}`, // Show pitch ID as ticker
           shares: inv.shares_owned,
-          currentPrice: stockPrices[inv.ticker_symbol] || 0,
-          value: (inv.shares_owned || 0) * (stockPrices[inv.ticker_symbol] || 0)
+          currentPrice: pitchPrices[inv.pitch_id] || 0,
+          value: inv.current_value || ((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 0))
         }))
       };
     }) || [];
@@ -146,8 +153,8 @@ export async function GET(request: NextRequest) {
       rank: index + 1
     }));
 
-    // Find current user's position
-    const currentUserData = rankedLeaderboard.find(inv => inv.userId === user.id);
+    // Find current user's position (only if authenticated)
+    const currentUserData = user ? rankedLeaderboard.find(inv => inv.userId === user.id) : null;
     
     // Get top 7 AI investors
     const topAI = rankedLeaderboard.filter(inv => inv.isAI).slice(0, 7);
