@@ -7,9 +7,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 );
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Initialize OpenAI client lazily (only when needed)
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is not set');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // AI Investor personalities and strategies
 const AI_PERSONALITIES = {
@@ -244,6 +250,7 @@ Respond with JSON array of investments (empty array if no good opportunities):
 
 Be strategic and stay in character. You can choose 0-3 investments.`;
 
+  const openai = getOpenAIClient();
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
