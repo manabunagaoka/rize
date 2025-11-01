@@ -64,9 +64,9 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
               Account
             </Link>
             <Link 
-              href="/hm7"
+              href="/trade"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                pathname === '/hm7'
+                pathname === '/trade' || pathname === '/hm7'
                   ? 'bg-sky-400/20 text-sky-400 border-sky-400'
                   : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
               }`}
@@ -117,7 +117,7 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                       <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                         Account
                       </Link>
-                      <Link href="/hm7" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                      <Link href="/trade" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                         Trade
                       </Link>
                       <Link href="/leaderboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
