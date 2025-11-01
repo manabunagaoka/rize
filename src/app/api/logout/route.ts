@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
-  const response = NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'));
+export async function GET(request: NextRequest) {
+  // Use the request's origin to build the redirect URL
+  const redirectUrl = new URL('/', request.url);
+  const response = NextResponse.redirect(redirectUrl);
   
   // Clear SSO cookies
   response.cookies.delete('manaboodle_sso_token');
