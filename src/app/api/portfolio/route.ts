@@ -107,13 +107,30 @@ export async function GET(request: NextRequest) {
         
         if (ticker) {
           try {
-            // Use our internal stock API endpoint
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-            const priceResponse = await fetch(`${baseUrl}/api/stock/${ticker}`);
-            const priceData = await priceResponse.json();
+            // Fetch directly from Finnhub API
+            const apiKey = process.env.STOCK_API_KEY;
             
-            if (priceData.c && priceData.c > 0) {
-              currentPrice = priceData.c;
+            if (apiKey) {
+              const priceResponse = await fetch(
+                `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
+                { 
+                  next: { 
+                    revalidate: 300 // Cache for 5 minutes
+                  } 
+                }
+              );
+              const priceData = await priceResponse.json();
+              
+              if (priceData.c && priceData.c > 0) {
+                currentPrice = priceData.c;
+              }
+            } else {
+              // Mock data if no API key
+              const mockPrices: { [key: string]: number } = {
+                'META': 497.43, 'MSFT': 415.89, 'DBX': 24.67,
+                'AKAM': 89.32, 'RDDT': 52.18, 'WRBY': 15.23, 'BKNG': 3842.56
+              };
+              currentPrice = mockPrices[ticker] || 100;
             }
           } catch (error) {
             console.error(`Failed to fetch price for ${ticker}:`, error);
