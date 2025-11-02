@@ -55,8 +55,8 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       const data = await response.json();
       console.log('Market data response:', data);
       
-      // Find the market data for this specific company
-      const marketData = data.marketData?.find((item: any) => item.pitch_id === story.id);
+      // API returns 'companies' array
+      const marketData = data.companies?.find((item: any) => item.pitch_id === story.id);
       console.log(`Looking for pitch_id ${story.id}:`, marketData);
       
       if (marketData) {
