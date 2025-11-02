@@ -154,7 +154,6 @@ export default function TradingModal({
                   setShares(1);
                 }
               }}
-              placeholder="1"
               className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white text-lg font-semibold focus:outline-none focus:border-pink-500"
             />
             <div className="mt-2 text-sm text-gray-400">
