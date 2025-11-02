@@ -17,14 +17,30 @@ const APP_NAME = 'RIZE';
 // Paths that don't require authentication
 const PUBLIC_PATHS = [
   '/',              // Landing page with Top 10 startups
-  '/leaderboard',   // Public leaderboard
+  '/leaderboard',   // Public leaderboard (Compete page)
   '/api/health',    // Health check endpoint
   '/login',         // RIZE login page
   '/debug-auth',    // Debug authentication page
   '/api/debug-auth', // Debug API endpoint
   '/competitions',  // Competitions page (public viewing)
-  // '/account' removed - now requires authentication
   '/api/stock',     // Stock price API (public)
+  '/terms',         // Terms of service
+  '/privacy',       // Privacy policy
+  '/how-to-play',   // How to play page
+  // API routes that allow unauthenticated requests
+  '/api/leaderboard', // Leaderboard API (public)
+];
+
+// Paths that require authentication
+const PROTECTED_PATHS = [
+  '/account',       // User account page
+  '/portfolio',     // User portfolio page
+  '/trade',         // Trading page
+  '/hm7',           // HM7 trading page
+  '/dashboard',     // Dashboard
+  '/submit',        // Submit startup
+  '/vote',          // Vote on pitches
+  '/admin',         // Admin panel
   '/api/portfolio', // Portfolio API
   '/api/invest',    // Investment API
   '/api/sell',      // Sell API
@@ -163,6 +179,18 @@ export async function middleware(request: NextRequest) {
     // No token on public path, just continue
     return NextResponse.next();
   }
+  
+  // Check if this is a protected path that requires authentication
+  const isProtectedPath = PROTECTED_PATHS.some(path => pathname === path || pathname.startsWith(path));
+  
+  // If not a protected path and not a public path, allow it (e.g., _next, static files, etc.)
+  if (!isProtectedPath) {
+    console.log('[MIDDLEWARE] Unmatched path (allowing):', pathname);
+    return NextResponse.next();
+  }
+  
+  // Protected path - require authentication
+  console.log('[MIDDLEWARE] Protected path, checking authentication:', pathname);
   
   // No token? Redirect to Manaboodle Academic Portal login
   if (!token) {

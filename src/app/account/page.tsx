@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import AccountClient from './AccountClient';
 
 async function getUserFromToken() {
@@ -45,9 +44,27 @@ async function getUserFromToken() {
 export default async function AccountPage() {
   const user = await getUserFromToken();
 
-  // Server-side auth check - if no user, redirect to login
+  // Middleware handles auth redirect, but if we somehow get here without a user,
+  // show a message (this shouldn't normally happen due to middleware protection)
   if (!user) {
-    redirect('/login?redirect_to=/account');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+        <div className="container mx-auto px-4 py-20">
+          <div className="max-w-md mx-auto text-center">
+            <h1 className="text-3xl font-bold mb-4">Authentication Required</h1>
+            <p className="text-gray-400 mb-6">
+              Please sign in to access your account.
+            </p>
+            <a
+              href="/login?redirect_to=/account"
+              className="inline-block bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-8 rounded-lg transition"
+            >
+              Sign In
+            </a>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return <AccountClient user={user} />;
