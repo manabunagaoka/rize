@@ -35,7 +35,26 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+    // Always fetch current market price, even if not authenticated
+    fetchMarketPrice();
+  }, [isAuthenticated, story.id]);
+
+  const fetchMarketPrice = async () => {
+    try {
+      const response = await fetch(`/api/market-data`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      // Find the market data for this specific company
+      const marketData = data.marketData?.find((item: any) => item.pitch_id === story.id);
+      if (marketData) {
+        setCurrentPrice(marketData.current_price || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch market price:', error);
+    }
+  };
 
   const fetchPortfolioData = async () => {
     try {
@@ -47,7 +66,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       // Find investment for this company
       const investment = data.investments?.find((inv: any) => inv.pitch_id === story.id);
       setSharesOwned(investment?.shares_owned || 0);
-      setCurrentPrice(investment?.current_price || 0);
+      // Don't override currentPrice here - it's fetched from market data
       setBalance(data.balance?.available_tokens || 0);
     } catch (error) {
       console.error('Failed to fetch portfolio:', error);

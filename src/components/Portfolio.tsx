@@ -254,7 +254,7 @@ export default function Portfolio() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${isBuy ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        <span className={`px-3 py-1 rounded-md text-xs font-bold ${isBuy ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                           {tx.transaction_type}
                         </span>
                         <h4 className="text-base font-semibold text-white">{tx.company_name}</h4>
@@ -262,21 +262,19 @@ export default function Portfolio() {
                       </div>
                       <div className="flex items-center gap-6 text-sm text-gray-400">
                         <div>
-                          <span className="opacity-75">Shares: </span>
-                          <span className="text-white font-medium">{tx.shares.toLocaleString()}</span>
+                          <span className="text-white font-medium">
+                            {isBuy ? '+' : '-'}{tx.shares.toLocaleString()} shares
+                          </span>
+                          <span className="opacity-75"> at ${tx.price_per_share.toFixed(2)}</span>
                         </div>
-                        <div>
-                          <span className="opacity-75">Price: </span>
-                          <span className="text-white font-medium">${tx.price_per_share.toFixed(2)}</span>
-                        </div>
-                        <div>
-                          <span className="opacity-75">{date.toLocaleDateString()} {date.toLocaleTimeString()}</span>
+                        <div className="opacity-75">
+                          {date.toLocaleDateString()} {date.toLocaleTimeString()}
                         </div>
                       </div>
                     </div>
                     
                     <div className="text-right">
-                      <div className={`text-xl font-bold ${isBuy ? 'text-red-400' : 'text-green-400'}`}>
+                      <div className="text-xl font-bold text-white">
                         {isBuy ? '-' : '+'}${tx.total_amount.toLocaleString()}
                       </div>
                     </div>
