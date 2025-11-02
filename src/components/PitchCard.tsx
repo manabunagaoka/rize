@@ -42,28 +42,27 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
 
   const fetchMarketPrice = async () => {
     try {
-      const response = await fetch(`/api/market-data`, {
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        console.error('Market data fetch failed:', response.status);
-        setLoading(false);
-        return;
-      }
-      
-      const data = await response.json();
-      console.log('Market data response:', data);
-      
-      // API returns 'companies' array
-      const marketData = data.companies?.find((item: any) => item.pitch_id === story.id);
-      console.log(`Looking for pitch_id ${story.id}:`, marketData);
-      
-      if (marketData) {
-        setCurrentPrice(marketData.current_price || 0);
-        console.log(`Set current price for ${story.name}: $${marketData.current_price}`);
+      // If we have a ticker, fetch real-time price directly
+      if (story.ticker) {
+        const response = await fetch(`/api/stock/${story.ticker}`);
+        
+        if (!response.ok) {
+          console.error('Stock price fetch failed:', response.status);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log(`Stock price for ${story.ticker}:`, data);
+        
+        if (data.c && data.c > 0) {
+          setCurrentPrice(data.c);
+          console.log(`Set current price for ${story.name}: $${data.c}`);
+        } else {
+          console.warn(`No valid price for ${story.ticker}`);
+        }
       } else {
-        console.warn(`No market data found for pitch_id ${story.id}`);
+        // No ticker, set a default price (for non-public companies)
+        setCurrentPrice(100);
       }
     } catch (error) {
       console.error('Failed to fetch market price:', error);
