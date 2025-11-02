@@ -108,13 +108,15 @@ export default function Leaderboard({ competitionId, entries, onSelectEntry, sel
     });
 
   // Update previous rankings
+  const rankingKey = entries.map(e => e.voteCount).join(',');
+
   useEffect(() => {
-    const newRankings = new Map();
+    const newRankings = new Map<number, number>();
     rankedEntries.forEach((entry, index) => {
       newRankings.set(entry.id, index + 1);
     });
     setPreviousRankings(newRankings);
-  }, [entries.map(e => e.voteCount).join(',')]);
+  }, [rankingKey]);
 
   const getRankBadge = (rank: number) => {
     // No medals - just rank numbers

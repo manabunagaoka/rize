@@ -29,6 +29,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   const [showModal, setShowModal] = useState(false);
   const [tradeAction, setTradeAction] = useState<'BUY' | 'SELL'>('BUY');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Always fetch current market price first
     fetchMarketPrice();
