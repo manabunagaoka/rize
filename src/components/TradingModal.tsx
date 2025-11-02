@@ -43,8 +43,16 @@ export default function TradingModal({
   const totalCost = shares * company.currentPrice;
   const maxAffordable = Math.floor(balance / company.currentPrice);
   const maxSellable = sharesOwned;
+  
+  // Check if price data is loaded
+  const priceLoading = company.currentPrice === 0;
 
   const handleSubmit = async () => {
+    if (priceLoading) {
+      setError('Waiting for price data...');
+      return;
+    }
+    
     setError('');
     setLoading(true);
 
@@ -102,11 +110,18 @@ export default function TradingModal({
 
         {/* Body */}
         <div className="p-6 space-y-4">
+          {/* Price Loading Warning */}
+          {priceLoading && (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-sm text-yellow-400">
+              ⏳ Loading current price...
+            </div>
+          )}
+          
           {/* Current Price */}
           <div className="bg-gray-900/50 rounded-xl p-4">
             <div className="text-sm text-gray-400 mb-1">Current Price</div>
             <div className="text-2xl font-bold text-white">
-              ${company.currentPrice.toFixed(2)}
+              {priceLoading ? '...' : `$${company.currentPrice.toFixed(2)}`}
             </div>
           </div>
 
@@ -173,14 +188,14 @@ export default function TradingModal({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!isValid || loading}
+              disabled={!isValid || loading || priceLoading}
               className={`flex-1 font-semibold py-3 rounded-lg transition ${
                 action === 'BUY'
                   ? 'bg-green-500 hover:bg-green-600 text-white'
                   : 'bg-red-500 hover:bg-red-600 text-white'
-              } ${(!isValid || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {loading ? 'Processing...' : `Confirm ${action}`}
+              {loading ? 'Processing...' : priceLoading ? 'Loading...' : `${action} ${shares} Shares`}
             </button>
           </div>
         </div>
