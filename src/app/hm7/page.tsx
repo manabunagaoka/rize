@@ -39,6 +39,7 @@ const SUCCESS_STORIES = [
 export default function HM7Page() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     // Sync prices on page load
@@ -72,6 +73,11 @@ export default function HM7Page() {
     } catch (error) {
       console.log('Not authenticated');
     }
+  };
+
+  const handleTradeComplete = () => {
+    // Trigger refresh of all PitchCards
+    setRefreshKey(prev => prev + 1);
   };
 
   if (loading) {
@@ -113,10 +119,11 @@ export default function HM7Page() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {SUCCESS_STORIES.map((story, index) => (
             <PitchCard
-              key={story.id}
+              key={`${story.id}-${refreshKey}`}
               story={story}
               isAuthenticated={!!user}
               rank={index + 1}
+              onTradeComplete={handleTradeComplete}
             />
           ))}
         </div>
