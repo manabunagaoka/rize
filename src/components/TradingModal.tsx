@@ -131,26 +131,30 @@ export default function TradingModal({
               Number of Shares
             </label>
             <input
-              type="number"
-              min="1"
-              max={action === 'BUY' ? maxAffordable : maxSellable}
-              value={shares}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={shares === 0 ? '' : shares}
               onChange={(e) => {
                 const value = e.target.value;
                 // Allow empty input for easier editing
                 if (value === '') {
                   setShares(0);
                 } else {
-                  const parsed = parseInt(value);
-                  setShares(isNaN(parsed) ? 0 : Math.max(0, parsed));
+                  // Only allow numeric input
+                  const parsed = parseInt(value.replace(/[^0-9]/g, ''));
+                  if (!isNaN(parsed)) {
+                    setShares(parsed);
+                  }
                 }
               }}
-              onBlur={(e) => {
+              onBlur={() => {
                 // On blur, ensure at least 1 share
                 if (shares === 0 || isNaN(shares)) {
                   setShares(1);
                 }
               }}
+              placeholder="1"
               className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white text-lg font-semibold focus:outline-none focus:border-pink-500"
             />
             <div className="mt-2 text-sm text-gray-400">
