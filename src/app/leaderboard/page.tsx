@@ -136,13 +136,32 @@ export default function LeaderboardPage() {
         <div className="max-w-6xl mx-auto">
           
           {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-              Compete
-            </h1>
-            <p className="text-gray-400 text-lg">
-              Real-time rankings • 10 AI investors • Live market competition
-            </p>
+          <div className="mb-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
+                  Compete
+                </h1>
+                <p className="text-gray-400 text-lg">Real-time rankings • 10 AI investors • Live market competition</p>
+              </div>
+              <div className="text-sm text-gray-400 flex items-center gap-3">
+                <BarChart3 className="w-5 h-5" />
+                <div>Updated: {data ? new Date(data.timestamp).toLocaleTimeString() : '—'}</div>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="mt-4 flex items-center gap-3">
+              <button onClick={() => setFilter('all')} className={`px-3 py-2 rounded-lg ${filter === 'all' ? 'bg-pink-600 text-white' : 'bg-gray-800 text-gray-300'}`}>
+                <User className="inline w-4 h-4 mr-2" /> All
+              </button>
+              <button onClick={() => setFilter('students')} className={`px-3 py-2 rounded-lg ${filter === 'students' ? 'bg-pink-600 text-white' : 'bg-gray-800 text-gray-300'}`}>
+                <GraduationCap className="inline w-4 h-4 mr-2" /> Students
+              </button>
+              <button onClick={() => setFilter('ai')} className={`px-3 py-2 rounded-lg ${filter === 'ai' ? 'bg-pink-600 text-white' : 'bg-gray-800 text-gray-300'}`}>
+                <Bot className="inline w-4 h-4 mr-2" /> AI
+              </button>
+            </div>
           </div>
 
           {/* Your Rank Card */}
