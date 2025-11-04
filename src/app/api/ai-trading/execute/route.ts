@@ -74,21 +74,39 @@ async function getCurrentPrices() {
   return data || [];
 }
 
+// NEW: Fetch pitch content for AI analysis
+async function getPitchData() {
+  const { data, error } = await supabase
+    .from('ai_readable_pitches')
+    .select('pitch_id, company_name, ticker, elevator_pitch, fun_fact, founder_story, category, current_price, price_change_24h')
+    .not('ticker', 'is', null)  // Only HM7 companies with tickers
+    .order('pitch_id');
+  
+  if (error) {
+    console.error('Error fetching pitch data:', error);
+    return [];
+  }
+  return data || [];
+}
+
 async function getAITradeDecision(
   aiInvestor: any,
   portfolio: any[],
-  prices: any[]
+  pitches: any[]  // Changed from prices to pitches with full content
 ): Promise<AITradeDecision> {
   const portfolioSummary = portfolio.map(p => {
-    const pitch = HM7_PITCHES.find(hp => hp.id === p.pitch_id);
-    const price = prices.find(pr => pr.pitch_id === p.pitch_id);
-    return `${pitch?.name}: ${p.shares_owned} shares, invested ${p.total_invested} MTK, current value ${p.current_value} MTK`;
+    const pitch = pitches.find(hp => hp.pitch_id === p.pitch_id);
+    return `${pitch?.company_name}: ${p.shares_owned} shares @ $${pitch?.current_price}, invested ${p.total_invested} MTK, current value ${p.current_value} MTK`;
   }).join('\n');
 
-  const marketData = prices.map(p => {
-    const pitch = HM7_PITCHES.find(hp => hp.id === p.pitch_id);
-    return `${pitch?.name} (${pitch?.ticker}): $${p.current_price} (${p.price_change_24h >= 0 ? '+' : ''}${p.price_change_24h}% today)`;
-  }).join('\n');
+  // NEW: Include pitch analysis in market data
+  const marketData = pitches.map(p => {
+    return `${p.company_name} (${p.ticker}) - ${p.category}
+    Price: $${p.current_price} (${p.price_change_24h >= 0 ? '+' : ''}${p.price_change_24h}% today)
+    Pitch: "${p.elevator_pitch}"
+    Story: ${p.founder_story}
+    Fun Fact: ${p.fun_fact}`;
+  }).join('\n\n');
 
   const strategyLimits = getStrategyLimits(aiInvestor.ai_strategy, aiInvestor.available_tokens);
   
@@ -102,32 +120,40 @@ CURRENT STATUS:
 YOUR PORTFOLIO:
 ${portfolioSummary || 'No current holdings'}
 
-MARKET DATA (HM7 Index - Harvard Legends):
+INVESTMENT OPPORTUNITIES (HM7 Index - Harvard Legends):
 ${marketData}
 
 STRATEGY GUIDELINES for ${aiInvestor.ai_strategy}:
 ${getStrategyGuidelines(aiInvestor.ai_strategy)}
 
-Make ONE trade decision based on YOUR strategy. You must respond with valid JSON only:
+ANALYSIS FRAMEWORK:
+- Consider both the BUSINESS (pitch, founder story, category) AND the MARKET DATA (price, momentum)
+- ${aiInvestor.ai_strategy === 'TECH_ONLY' ? 'Focus on technology companies' : ''}
+- ${aiInvestor.ai_strategy === 'SAAS_ONLY' ? 'Focus on SaaS/software businesses' : ''}
+- ${aiInvestor.ai_strategy === 'MOMENTUM' ? 'Look for positive price momentum' : ''}
+- ${aiInvestor.ai_strategy === 'CONTRARIAN' ? 'Look for undervalued or declining stocks' : ''}
+- ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? 'Buy and hold quality businesses long-term' : ''}
+
+Make ONE trade decision combining business analysis + price trends. Respond with valid JSON:
 {
   "action": "BUY" | "SELL" | "HOLD",
   "pitch_id": number (1-7),
   "shares": number (if BUY, calculate based on budget ${strategyLimits.min}-${strategyLimits.max} MTK divided by stock price),
-  "reasoning": "Brief explanation in your personality"
+  "reasoning": "Brief explanation referencing both the business fundamentals AND price action"
 }
 
 Important: 
-- For BUY: Choose number of shares that costs between ${strategyLimits.min}-${strategyLimits.max} MTK at current price
-- For SELL: Specify number of shares you already own
+- For BUY: Choose shares costing ${strategyLimits.min}-${strategyLimits.max} MTK at current price
+- For SELL: Specify number of shares you own
 - ${aiInvestor.ai_strategy}: Typically invest ${strategyLimits.suggestion}
-- Stay in character - be bold or conservative as appropriate
-- If HOLD, set pitch_id to 1 and shares to 0`;
+- Reference specific details from the pitch/story in your reasoning
+- Stay in character - be bold or conservative as appropriate`;
 
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are an AI investor making trading decisions. Always respond with valid JSON only.' },
+        { role: 'system', content: 'You are an AI investor analyzing both business fundamentals and market data. Always respond with valid JSON only.' },
         { role: 'user', content: prompt }
       ],
       temperature: 0.8,
@@ -334,7 +360,7 @@ export async function POST(request: Request) {
     }
 
     const aiInvestors = await getAIInvestors();
-    const prices = await getCurrentPrices();
+    const pitches = await getPitchData();  // Changed from prices to pitches
     const results = [];
     
     // Cooldown period: 1 hour (3600000 ms)
@@ -361,7 +387,7 @@ export async function POST(request: Request) {
         }
 
         const portfolio = await getAIPortfolio(ai.user_id);
-        const decision = await getAITradeDecision(ai, portfolio, prices);
+        const decision = await getAITradeDecision(ai, portfolio, pitches);
         const result = await executeTrade(ai, decision);
         
         results.push({
