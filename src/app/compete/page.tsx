@@ -20,6 +20,9 @@ interface Investor {
   aiEmoji: string;
   aiStrategy?: string;
   aiCatchphrase?: string;
+  aiStatus?: string;
+  investorTier?: string;
+  founderTier?: string;
   cash: number;
   holdingsValue: number;
   portfolioValue: number;
@@ -94,6 +97,40 @@ export default function LeaderboardPage() {
     if (!data?.currentUser) return null;
     const percentile = ((data.totalInvestors - data.currentUser.rank + 1) / data.totalInvestors) * 100;
     return Math.round(percentile);
+  };
+
+  const getTierBadge = (tier?: string, status?: string) => {
+    if (!tier && !status) return null;
+    
+    const tierStyles: Record<string, string> = {
+      'TITAN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
+      'ORACLE': 'bg-gradient-to-r from-blue-500 to-cyan-500 text-transparent bg-clip-text',
+      'ALCHEMIST': 'bg-gradient-to-r from-pink-500 to-orange-500 text-transparent bg-clip-text',
+      'UNICORN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
+      'PHOENIX': 'bg-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text',
+      'DRAGON': 'bg-gradient-to-r from-red-500 to-pink-500 text-transparent bg-clip-text',
+    };
+
+    const statusStyles: Record<string, string> = {
+      'RETIRED': 'text-gray-500 opacity-70',
+      'LEGENDARY': 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-transparent bg-clip-text animate-pulse',
+      'PAUSED': 'text-gray-600',
+    };
+
+    return (
+      <div className="flex items-center gap-2 text-xs font-bold tracking-wider">
+        {tier && (
+          <span className={tierStyles[tier] || 'text-gray-400'}>
+            {tier}
+          </span>
+        )}
+        {status && status !== 'ACTIVE' && (
+          <span className={statusStyles[status] || 'text-gray-400'}>
+            • {status}
+          </span>
+        )}
+      </div>
+    );
   };
 
   const filteredLeaderboard = data?.leaderboard.filter(investor => {
@@ -306,8 +343,11 @@ export default function LeaderboardPage() {
                                 {investor.username}
                                 <span className="text-xs text-gray-500">ⓘ</span>
                               </div>
-                              <div className="text-sm text-gray-400">
-                                {investor.isAI ? 'AI Investor' : 'Student'}
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="text-sm text-gray-400">
+                                  {investor.isAI ? 'AI Investor' : 'Student'}
+                                </div>
+                                {getTierBadge(investor.investorTier, investor.aiStatus)}
                               </div>
                             </div>
                           </div>

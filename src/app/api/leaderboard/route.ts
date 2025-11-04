@@ -63,6 +63,9 @@ export async function GET(request: NextRequest) {
         ai_emoji,
         ai_strategy,
         ai_catchphrase,
+        ai_status,
+        investor_tier,
+        founder_tier,
         available_tokens,
         total_tokens
       `);
@@ -83,7 +86,8 @@ export async function GET(request: NextRequest) {
         pitch_id,
         shares_owned,
         current_value
-      `);
+      `)
+      .gt('shares_owned', 0); // Only fetch positions with actual shares
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -152,6 +156,9 @@ export async function GET(request: NextRequest) {
         aiEmoji: investor.ai_emoji || '',
         aiStrategy: investor.ai_strategy || undefined,
         aiCatchphrase: investor.ai_catchphrase || undefined,
+        aiStatus: investor.ai_status || 'ACTIVE',
+        investorTier: investor.investor_tier || undefined,
+        founderTier: investor.founder_tier || undefined,
         cash: investor.available_tokens || 0,
         holdingsValue,
         portfolioValue,

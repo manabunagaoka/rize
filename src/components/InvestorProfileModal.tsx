@@ -18,6 +18,9 @@ interface InvestorProfile {
   aiEmoji?: string;
   aiStrategy?: string;
   aiCatchphrase?: string;
+  aiStatus?: string;
+  investorTier?: string;
+  founderTier?: string;
   cash: number;
   holdingsValue: number;
   portfolioValue: number;
@@ -45,6 +48,27 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
   }, [onClose]);
 
   if (!investor) return null;
+
+  const getTierGradient = (tier: string) => {
+    const gradients: Record<string, string> = {
+      'TITAN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
+      'ORACLE': 'bg-gradient-to-r from-blue-500 to-cyan-500 text-transparent bg-clip-text',
+      'ALCHEMIST': 'bg-gradient-to-r from-pink-500 to-orange-500 text-transparent bg-clip-text',
+      'UNICORN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
+      'PHOENIX': 'bg-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text',
+      'DRAGON': 'bg-gradient-to-r from-red-500 to-pink-500 text-transparent bg-clip-text',
+    };
+    return gradients[tier] || 'text-gray-400';
+  };
+
+  const getStatusStyle = (status: string) => {
+    const styles: Record<string, string> = {
+      'RETIRED': 'text-gray-500 opacity-70',
+      'LEGENDARY': 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-transparent bg-clip-text',
+      'PAUSED': 'text-gray-600',
+    };
+    return styles[status] || 'text-gray-400';
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -123,9 +147,36 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
                 )}
                 <h2 className="text-2xl font-bold text-white">{investor.username}</h2>
               </div>
-              <p className="text-gray-400 text-sm mb-2">
-                {investor.isAI ? 'AI Investor' : 'Student Investor'}
-              </p>
+              <div className="flex items-center gap-3 mb-2">
+                <p className="text-gray-400 text-sm">
+                  {investor.isAI ? 'AI Investor' : 'Student Investor'}
+                </p>
+                {(investor.investorTier || investor.founderTier) && (
+                  <>
+                    <span className="text-gray-600">•</span>
+                    <div className="flex items-center gap-2">
+                      {investor.investorTier && (
+                        <span className={`text-xs font-bold tracking-wider ${getTierGradient(investor.investorTier)}`}>
+                          {investor.investorTier}
+                        </span>
+                      )}
+                      {investor.founderTier && (
+                        <span className={`text-xs font-bold tracking-wider ${getTierGradient(investor.founderTier)}`}>
+                          {investor.founderTier}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
+                {investor.aiStatus && investor.aiStatus !== 'ACTIVE' && (
+                  <>
+                    <span className="text-gray-600">•</span>
+                    <span className={`text-xs font-bold tracking-wider ${getStatusStyle(investor.aiStatus)}`}>
+                      {investor.aiStatus}
+                    </span>
+                  </>
+                )}
+              </div>
               {investor.isAI && investor.aiCatchphrase && (
                 <p className="text-purple-300 italic text-sm">&quot;{investor.aiCatchphrase}&quot;</p>
               )}
