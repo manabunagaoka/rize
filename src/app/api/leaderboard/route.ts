@@ -131,11 +131,11 @@ export async function GET(request: NextRequest) {
 
     // Calculate portfolio value for each investor
     const leaderboardData = investors?.map(investor => {
-      // Calculate holdings value
+      // Calculate holdings value using real-time prices
       const userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
       const holdingsValue = userInvestments.reduce((sum, inv) => {
-        // Use current_value from database if available, otherwise calculate
-        const value = inv.current_value || ((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 0));
+        // Always calculate from real-time prices, not database current_value
+        const value = (inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100);
         return sum + value;
       }, 0);
 
