@@ -96,22 +96,38 @@ export async function GET(request: NextRequest) {
     investments?.forEach(inv => pitchIdsSet.add(inv.pitch_id));
     const pitchIds = Array.from(pitchIdsSet);
     
-    // Fetch current pitch market data (prices)
-    const { data: pitchMarketData, error: marketError } = await supabase
-      .from('pitch_market_data')
-      .select('pitch_id, current_price')
-      .in('pitch_id', pitchIds);
-
-    if (marketError) {
-      console.error('Error fetching market data:', marketError);
-      // Continue anyway with empty market data
-    }
-
-    // Create a map of pitch_id to current price
+    // Ticker mapping for HM7 companies
+    const tickerMap: Record<number, string> = {
+      1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 
+      5: 'RDDT', 6: 'WRBY', 7: 'BKNG'
+    };
+    
+    // Fetch real-time prices from Finnhub
     const pitchPrices: Record<number, number> = {};
-    pitchMarketData?.forEach(pm => {
-      pitchPrices[pm.pitch_id] = pm.current_price || 0;
-    });
+    await Promise.all(
+      pitchIds.map(async (pitchId) => {
+        const ticker = tickerMap[pitchId];
+        if (ticker && process.env.STOCK_API_KEY) {
+          try {
+            const response = await fetch(
+              `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${process.env.STOCK_API_KEY}`,
+              { next: { revalidate: 60 } }
+            );
+            const data = await response.json();
+            if (data.c && data.c > 0) {
+              pitchPrices[pitchId] = data.c;
+            } else {
+              pitchPrices[pitchId] = 100;
+            }
+          } catch (error) {
+            console.error(`Error fetching price for ${ticker}:`, error);
+            pitchPrices[pitchId] = 100;
+          }
+        } else {
+          pitchPrices[pitchId] = 100;
+        }
+      })
+    );
 
     // Calculate portfolio value for each investor
     const leaderboardData = investors?.map(investor => {
