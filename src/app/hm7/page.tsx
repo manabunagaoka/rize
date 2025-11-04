@@ -40,11 +40,14 @@ export default function HM7Page() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [marketCaps, setMarketCaps] = useState<Record<string, any>>({});
+  const [storiesWithLiveData, setStoriesWithLiveData] = useState(SUCCESS_STORIES);
 
   useEffect(() => {
     // Sync prices on page load
     syncPrices();
     checkAuth();
+    fetchMarketCaps();
   }, []);
 
   const syncPrices = async () => {
@@ -58,6 +61,30 @@ export default function HM7Page() {
       console.error('⚠️ Price sync failed:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMarketCaps = async () => {
+    try {
+      const response = await fetch('/api/market-cap', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMarketCaps(data);
+        
+        // Update SUCCESS_STORIES with live market cap data
+        const updatedStories = SUCCESS_STORIES.map(story => ({
+          ...story,
+          marketCap: data[story.ticker]?.marketCap || story.marketCap,
+          valuation: data[story.ticker]?.valuationDisplay || story.valuation
+        }));
+        
+        setStoriesWithLiveData(updatedStories);
+      }
+    } catch (error) {
+      console.error('Failed to fetch market caps:', error);
     }
   };
 
@@ -117,7 +144,7 @@ export default function HM7Page() {
       {/* Pitch Cards */}
       <div className="container mx-auto px-4 pb-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SUCCESS_STORIES.map((story, index) => (
+          {storiesWithLiveData.map((story, index) => (
             <PitchCard
               key={`${story.id}-${refreshKey}`}
               story={story}

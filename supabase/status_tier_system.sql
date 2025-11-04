@@ -8,7 +8,8 @@
 ALTER TABLE user_token_balances 
 ADD COLUMN IF NOT EXISTS investor_tier TEXT,
 ADD COLUMN IF NOT EXISTS founder_tier TEXT,
-ADD COLUMN IF NOT EXISTS tier_earned_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS investor_tier_earned_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS founder_tier_earned_at TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS ai_status TEXT DEFAULT 'ACTIVE',
 ADD COLUMN IF NOT EXISTS ai_retirement_goal BIGINT,
 ADD COLUMN IF NOT EXISTS ai_retirement_date TIMESTAMPTZ,
@@ -61,9 +62,9 @@ BEGIN
       WHEN ri.rank = 3 THEN 'ALCHEMIST'
       ELSE NULL
     END,
-    tier_earned_at = CASE 
+    investor_tier_earned_at = CASE 
       WHEN ri.rank <= 3 AND utb.investor_tier IS NULL THEN NOW()
-      ELSE utb.tier_earned_at
+      ELSE utb.investor_tier_earned_at
     END
   FROM ranked_investors ri
   WHERE utb.user_id = ri.user_id AND ri.rank <= 3;
@@ -75,6 +76,8 @@ $$ LANGUAGE plpgsql;
 -- ============================================
 -- 3. FUNCTION: Auto-Award Founder Tiers
 -- ============================================
+-- Founder tiers based on STARTUP VALUATION (total capital raised)
+-- Investor tiers based on PERSONAL PORTFOLIO VALUE (net worth)
 
 CREATE OR REPLACE FUNCTION award_founder_tiers()
 RETURNS void AS $$
@@ -84,7 +87,10 @@ BEGIN
   SET founder_tier = NULL 
   WHERE founder_tier IS NOT NULL;
   
-  -- Award top 3 founders based on their startup's total investment
+  -- Award top 3 founders based on their startup's total investment raised
+  -- This measures startup valuation/success, not personal wealth
+  -- NOTE: This will work once H2026 launches with approved student projects
+  -- For now, no founder tiers will be awarded (no approved projects yet)
   WITH founder_rankings AS (
     SELECT 
       sp.user_id,
@@ -103,9 +109,9 @@ BEGIN
       WHEN fr.rank = 3 THEN 'DRAGON'
       ELSE NULL
     END,
-    tier_earned_at = CASE 
+    founder_tier_earned_at = CASE 
       WHEN fr.rank <= 3 AND utb.founder_tier IS NULL THEN NOW()
-      ELSE utb.tier_earned_at
+      ELSE utb.founder_tier_earned_at
     END
   FROM founder_rankings fr
   WHERE utb.user_id = fr.user_id AND fr.rank <= 3;
@@ -187,39 +193,40 @@ CREATE TRIGGER after_portfolio_update
 SELECT award_investor_tiers();
 SELECT award_founder_tiers();
 
--- Set default AI retirement goals
-UPDATE user_token_balances
-SET ai_retirement_goal = 10000000  -- $10M retirement goal
-WHERE is_ai_investor = true
-  AND ai_retirement_goal IS NULL
-  AND ai_strategy IN ('HOLD_FOREVER', 'DIVERSIFIED', 'CONSERVATIVE');
-
-UPDATE user_token_balances
-SET ai_retirement_goal = 50000000  -- $50M retirement goal for aggressive AI
-WHERE is_ai_investor = true
-  AND ai_retirement_goal IS NULL
-  AND ai_strategy IN ('ALL_IN', 'MOMENTUM', 'PERFECT_TIMING');
+-- NOTE: AI retirement goals are NULL by default
+-- Set them manually via admin interface when ready
 
 -- ============================================
 -- 7. VERIFICATION QUERIES
 -- ============================================
 
--- View current tier standings
+-- View current tier standings (Top 10 by portfolio value)
+-- Shows both investor and founder tiers since one person can have both
 SELECT 
-  username,
-  ai_nickname,
+  COALESCE(username, ai_nickname) as name,
+  CASE 
+    WHEN is_ai_investor THEN 'AI'
+    ELSE 'Human'
+  END as type,
   investor_tier,
+  CASE 
+    WHEN investor_tier IS NOT NULL AND investor_tier_earned_at IS NOT NULL
+    THEN EXTRACT(DAY FROM NOW() - investor_tier_earned_at)::integer 
+    ELSE NULL 
+  END as investor_days,
+  founder_tier,
+  CASE 
+    WHEN founder_tier IS NOT NULL AND founder_tier_earned_at IS NOT NULL
+    THEN EXTRACT(DAY FROM NOW() - founder_tier_earned_at)::integer 
+    ELSE NULL 
+  END as founder_days,
   ai_status,
-  portfolio_value,
-  tier_earned_at
+  portfolio_value
 FROM user_token_balances
-WHERE investor_tier IS NOT NULL
-ORDER BY 
-  CASE investor_tier
-    WHEN 'TITAN' THEN 1
-    WHEN 'ORACLE' THEN 2
-    WHEN 'ALCHEMIST' THEN 3
-  END;
+WHERE (is_ai_investor = true OR username IS NOT NULL)
+  AND (ai_status IN ('ACTIVE', 'LEGENDARY') OR ai_status IS NULL)
+ORDER BY portfolio_value DESC
+LIMIT 10;
 
 -- View AI retirement goals
 SELECT 
