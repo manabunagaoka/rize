@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     // Initialize Supabase client at runtime (not at module level)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_KEY!
     );
     
     console.log('🔄 Starting price sync...');

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/ai-trading/execute",
+      "schedule": "0 14,20,2 * * *"
+    }
+  ]
+}

@@ -51,36 +51,42 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
             </Link>
           </div>
 
-          {/* Index Navigation */}
+          {/* Index Navigation - Always show all tabs for visitors */}
           <nav className="hidden md:flex items-center gap-2">
-            {user && (
-              <>
-                <Link 
-                  href="/account"
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                    pathname === '/account'
-                      ? 'bg-sky-400/20 text-sky-400 border-sky-400'
-                      : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
-                  }`}
-                >
-                  Account
-                </Link>
-                <Link 
-                  href="/trade"
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                    pathname === '/trade' || pathname === '/hm7'
-                      ? 'bg-sky-400/20 text-sky-400 border-sky-400'
-                      : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
-                  }`}
-                >
-                  Trade
-                </Link>
-              </>
-            )}
             <Link 
-              href="/leaderboard"
+              href="/"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                pathname === '/leaderboard'
+                pathname === '/'
+                  ? 'bg-sky-400/20 text-sky-400 border-sky-400'
+                  : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
+              }`}
+            >
+              Home
+            </Link>
+            <Link 
+              href="/manage"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
+                pathname === '/manage'
+                  ? 'bg-sky-400/20 text-sky-400 border-sky-400'
+                  : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
+              }`}
+            >
+              Manage
+            </Link>
+            <Link 
+              href="/trade"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
+                pathname === '/trade' || pathname === '/hm7'
+                  ? 'bg-sky-400/20 text-sky-400 border-sky-400'
+                  : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
+              }`}
+            >
+              Trade
+            </Link>
+            <Link 
+              href="/compete"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
+                pathname === '/compete'
                   ? 'bg-sky-400/20 text-sky-400 border-sky-400'
                   : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
               }`}
@@ -90,10 +96,10 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
           </nav>
 
           <div className="flex items-center gap-3">
-            {!user && !showBack && (
+            {!user && (
               <Link 
                 href={`/login?redirect_to=${encodeURIComponent(getCurrentPath())}`}
-                className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-lg transition"
+                className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-lg transition whitespace-nowrap"
               >
                 Sign In
               </Link>
@@ -116,28 +122,21 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                       </div>
                     )}
 
-                    {/* Mobile Index Navigation */}
-                    {user && (
-                      <div className="md:hidden border-b border-gray-700">
-                        <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                          Account
-                        </Link>
-                        <Link href="/trade" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                          Trade
-                        </Link>
-                        <Link href="/leaderboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                          Compete
-                        </Link>
-                      </div>
-                    )}
-                    
-                    {!user && (
-                      <div className="md:hidden border-b border-gray-700">
-                        <Link href="/leaderboard" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                          Compete
-                        </Link>
-                      </div>
-                    )}
+                    {/* Mobile Index Navigation - Show all tabs */}
+                    <div className="md:hidden border-b border-gray-700">
+                      <Link href="/" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Home
+                      </Link>
+                      <Link href="/manage" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Manage
+                      </Link>
+                      <Link href="/trade" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Trade
+                      </Link>
+                      <Link href="/compete" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Compete
+                      </Link>
+                    </div>
 
                     <a href="https://www.manaboodle.com" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm hover:bg-gray-700 transition">
                       Manaboodle
@@ -150,8 +149,8 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                     )}
 
                     {user ? (
-                      <Link href="/account" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                        Account
+                      <Link href="/manage" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        My Account
                       </Link>
                     ) : (
                       <a href="https://www.manaboodle.com/signup" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm hover:bg-gray-700 transition">

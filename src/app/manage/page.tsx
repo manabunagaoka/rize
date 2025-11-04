@@ -56,7 +56,7 @@ export default async function AccountPage() {
               Please sign in to access your account.
             </p>
             <a
-              href="/login?redirect_to=/account"
+              href="/login?redirect_to=/manage"
               className="inline-block bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-8 rounded-lg transition"
             >
               Sign In

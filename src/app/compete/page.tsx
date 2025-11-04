@@ -142,7 +142,10 @@ export default function LeaderboardPage() {
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
                   Compete
                 </h1>
-                <p className="text-gray-400 text-base md:text-lg">Real-time rankings • 10 AI investors • Live market competition</p>
+                <p className="text-gray-400 text-base md:text-lg mb-2">Real-time rankings • 10 AI investors • Live market competition</p>
+                <p className="text-gray-500 text-sm md:text-base">
+                  Track your rank, view your performance, and compete against AI investors and fellow students. Can you beat the AI?
+                </p>
               </div>
               <div className="text-sm text-gray-400 flex items-center gap-3">
                 <BarChart3 className="w-5 h-5" />
@@ -240,76 +243,11 @@ export default function LeaderboardPage() {
               <h3 className="text-xl font-bold text-white mb-2">Sign in to compete</h3>
               <p className="text-gray-400 mb-4">Track your rank, view your performance, and compete against AI investors</p>
               <button 
-                onClick={() => window.location.href = '/login?redirect_to=/leaderboard'}
+                onClick={() => window.location.href = '/login?redirect_to=/compete'}
                 className="px-6 py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-lg transition-all shadow-lg shadow-pink-500/30"
               >
                 Sign In
               </button>
-            </div>
-          )}
-
-          {/* Top 3 Performers */}
-          {top3.length >= 3 && (
-            <div className="mb-8">
-              <h3 className="text-2xl font-bold text-white mb-4">Top Performers</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* #2 */}
-                <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 order-2 md:order-1 hover:border-blue-400 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <Trophy className="w-8 h-8 text-blue-400" />
-                    <div className="text-3xl font-bold text-gray-400">#2</div>
-                  </div>
-                  <h4 className="text-xl font-bold text-white mb-1">{top3[1].username}</h4>
-                  <div className="flex items-center gap-1 mb-2">
-                    {top3[1].isAI ? <Bot className="w-4 h-4 text-purple-400" /> : <User className="w-4 h-4 text-green-400" />}
-                    <span className="text-sm text-gray-400">{top3[1].isAI ? 'AI' : 'Student'}</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white mb-1">
-                    {formatCurrency(top3[1].portfolioValue)}
-                  </div>
-                  <div className={`text-lg font-semibold ${getPerformanceColor(top3[1].portfolioValue)}`}>
-                    {formatPercentage(top3[1].portfolioValue)}
-                  </div>
-                </div>
-
-                {/* #1 */}
-                <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-pink-500 rounded-2xl p-6 order-1 md:order-2 hover:border-pink-400 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/30 hover:scale-105">
-                  <div className="flex items-center justify-between mb-4">
-                    <Crown className="w-10 h-10 text-pink-400" />
-                    <div className="text-4xl font-bold text-pink-400">#1</div>
-                  </div>
-                  <h4 className="text-2xl font-bold text-white mb-1">{top3[0].username}</h4>
-                  <div className="flex items-center gap-1 mb-2">
-                    {top3[0].isAI ? <Bot className="w-4 h-4 text-purple-400" /> : <User className="w-4 h-4 text-green-400" />}
-                    <span className="text-sm text-gray-300">{top3[0].isAI ? 'AI' : 'Student'}</span>
-                  </div>
-                  <div className="text-4xl font-bold text-white mb-1">
-                    {formatCurrency(top3[0].portfolioValue)}
-                  </div>
-                  <div className={`text-xl font-semibold ${getPerformanceColor(top3[0].portfolioValue)}`}>
-                    {formatPercentage(top3[0].portfolioValue)}
-                  </div>
-                </div>
-
-                {/* #3 */}
-                <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 order-3 hover:border-sky-400 transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <Award className="w-8 h-8 text-sky-400" />
-                    <div className="text-3xl font-bold text-gray-400">#3</div>
-                  </div>
-                  <h4 className="text-xl font-bold text-white mb-1">{top3[2].username}</h4>
-                  <div className="flex items-center gap-1 mb-2">
-                    {top3[2].isAI ? <Bot className="w-4 h-4 text-purple-400" /> : <User className="w-4 h-4 text-green-400" />}
-                    <span className="text-sm text-gray-400">{top3[2].isAI ? 'AI' : 'Student'}</span>
-                  </div>
-                  <div className="text-3xl font-bold text-white mb-1">
-                    {formatCurrency(top3[2].portfolioValue)}
-                  </div>
-                  <div className={`text-lg font-semibold ${getPerformanceColor(top3[2].portfolioValue)}`}>
-                    {formatPercentage(top3[2].portfolioValue)}
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -370,7 +308,7 @@ export default function LeaderboardPage() {
                             {formatCurrency(investor.portfolioValue)}
                           </div>
                           <div className="text-sm text-gray-400">
-                            ${formatCurrency(investor.cash)} cash
+                            {formatCurrency(investor.cash)} cash
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">

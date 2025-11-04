@@ -94,7 +94,7 @@ export default function LandingPage({ user }: { user: any }) {
             
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Leaderboard Card */}
-                <Link href="/leaderboard" className="group bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-500/30 rounded-xl p-6 hover:border-blue-400/50 transition-all hover:scale-105">
+                <Link href="/compete" className="group bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-500/30 rounded-xl p-6 hover:border-blue-400/50 transition-all hover:scale-105">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-blue-400">Compete</h3>
                   <svg className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

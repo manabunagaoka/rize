@@ -129,7 +129,7 @@ export default async function VotePage() {
               ← Back to Dashboard
             </a>
             <a 
-              href="/leaderboard"
+              href="/compete"
               className="px-8 py-3 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition"
             >
               View Leaderboard →
