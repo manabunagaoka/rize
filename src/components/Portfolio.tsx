@@ -142,34 +142,32 @@ export default function Portfolio() {
             <div className="text-xs opacity-75 mt-1">Cash + Holdings</div>
           </div>
           
-          {/* Days Gain (placeholder - will need to track daily change) */}
+          {/* Performance (% gain from starting $1M) */}
           <div>
-            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Days Gain</div>
-            <div className="text-3xl font-bold text-gray-300">
-              $0
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Performance</div>
+            <div className={`text-3xl font-bold flex items-center gap-2 ${parseFloat(gainLossPercent) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+              {parseFloat(gainLossPercent) >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+              {parseFloat(gainLossPercent) >= 0 ? '+' : ''}{gainLossPercent}%
             </div>
-            <div className="text-xs opacity-75 mt-1">Today&apos;s change</div>
+            <div className="text-sm opacity-90 mt-1">vs starting balance</div>
           </div>
           
-          {/* Total Gain (All-Time P&L) */}
+          {/* Cash */}
           <div>
-            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Total Gain</div>
-            <div className={`text-3xl font-bold flex items-center gap-2 ${totalGainLoss >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-              {totalGainLoss >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-              {totalGainLoss >= 0 ? '+' : '-'}${Math.abs(totalGainLoss).toLocaleString()}
-            </div>
-            <div className="text-sm opacity-90 mt-1">
-              {totalGainLoss >= 0 ? '+' : '-'}{Math.abs(parseFloat(gainLossPercent)).toFixed(2)}%
-            </div>
-          </div>
-
-          {/* MTK Balance */}
-          <div>
-            <div className="text-sm font-semibold uppercase opacity-75 mb-1">MTK Balance</div>
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Cash</div>
             <div className="text-3xl font-bold">
               ${data.balance.available_tokens.toLocaleString()}
             </div>
             <div className="text-xs opacity-75 mt-1">Available to trade</div>
+          </div>
+
+          {/* Holdings */}
+          <div>
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Holdings</div>
+            <div className="text-3xl font-bold">
+              ${data.balance.portfolio_value.toLocaleString()}
+            </div>
+            <div className="text-xs opacity-75 mt-1">Invested value</div>
           </div>
         </div>
       </div>

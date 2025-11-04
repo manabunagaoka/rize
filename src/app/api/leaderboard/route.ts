@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
       const userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
       const holdingsValue = userInvestments.reduce((sum, inv) => {
         // Always calculate from real-time prices, not database current_value
-        const value = (inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100);
+        const value = Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100));
         return sum + value;
       }, 0);
 
