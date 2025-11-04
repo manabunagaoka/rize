@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
+import InvestorProfileModal from '@/components/InvestorProfileModal';
 import { Crown, Trophy, Award, TrendingUp, TrendingDown, User, Bot, GraduationCap, BarChart3 } from 'lucide-react';
 
 interface Holding {
@@ -17,6 +18,8 @@ interface Investor {
   username: string;
   isAI: boolean;
   aiEmoji: string;
+  aiStrategy?: string;
+  aiCatchphrase?: string;
   cash: number;
   holdingsValue: number;
   portfolioValue: number;
@@ -39,6 +42,7 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>('all');
+  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -149,7 +153,10 @@ export default function LeaderboardPage() {
               </div>
               <div className="text-sm text-gray-400 flex items-center gap-3">
                 <BarChart3 className="w-5 h-5" />
-                <div>Updated: {data ? new Date(data.timestamp).toLocaleTimeString() : '—'}</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>Live • Updated {data ? new Date(data.timestamp).toLocaleTimeString() : '—'}</span>
+                </div>
               </div>
             </div>
 
@@ -277,9 +284,10 @@ export default function LeaderboardPage() {
                     return (
                       <tr 
                         key={investor.userId}
+                        onClick={() => setSelectedInvestor(investor)}
                         className={`
                           ${isCurrentUser ? 'bg-blue-500/10 border-l-4 border-l-blue-500' : 'hover:bg-gray-700/30'}
-                          transition-colors
+                          transition-colors cursor-pointer
                         `}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -293,9 +301,10 @@ export default function LeaderboardPage() {
                               <User className="w-5 h-5 text-green-400" />
                             )}
                             <div>
-                              <div className="font-semibold text-white">
+                              <div className="font-semibold text-white flex items-center gap-2">
                                 {isCurrentUser && <span className="text-blue-400">● </span>}
                                 {investor.username}
+                                <span className="text-xs text-gray-500">ⓘ</span>
                               </div>
                               <div className="text-sm text-gray-400">
                                 {investor.isAI ? 'AI Investor' : 'Student'}
@@ -334,6 +343,11 @@ export default function LeaderboardPage() {
           {/* Footer Stats */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-400">
             <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span>Real-time prices</span>
+            </div>
+            <span>•</span>
+            <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               <span>{data?.totalInvestors} total investors</span>
             </div>
@@ -349,6 +363,12 @@ export default function LeaderboardPage() {
 
         </div>
       </div>
+
+      {/* Investor Profile Modal */}
+      <InvestorProfileModal 
+        investor={selectedInvestor} 
+        onClose={() => setSelectedInvestor(null)} 
+      />
     </div>
   );
 }

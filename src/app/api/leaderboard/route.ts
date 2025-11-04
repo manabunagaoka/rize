@@ -61,6 +61,8 @@ export async function GET(request: NextRequest) {
         is_ai_investor,
         ai_nickname,
         ai_emoji,
+        ai_strategy,
+        ai_catchphrase,
         available_tokens,
         total_tokens
       `);
@@ -148,6 +150,8 @@ export async function GET(request: NextRequest) {
         username: investor.username || investor.ai_nickname || investor.user_email,
         isAI: investor.is_ai_investor || false,
         aiEmoji: investor.ai_emoji || '',
+        aiStrategy: investor.ai_strategy || undefined,
+        aiCatchphrase: investor.ai_catchphrase || undefined,
         cash: investor.available_tokens || 0,
         holdingsValue,
         portfolioValue,
