@@ -15,18 +15,39 @@ ADD COLUMN IF NOT EXISTS ai_retirement_goal BIGINT,
 ADD COLUMN IF NOT EXISTS ai_retirement_date TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS ai_personality_prompt TEXT;
 
--- Add check constraints
-ALTER TABLE user_token_balances
-ADD CONSTRAINT check_investor_tier 
-  CHECK (investor_tier IN ('TITAN', 'ORACLE', 'ALCHEMIST', NULL));
+-- Add check constraints (drop first if exists)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'check_investor_tier'
+  ) THEN
+    ALTER TABLE user_token_balances
+    ADD CONSTRAINT check_investor_tier 
+      CHECK (investor_tier IN ('TITAN', 'ORACLE', 'ALCHEMIST', NULL));
+  END IF;
+END $$;
 
-ALTER TABLE user_token_balances
-ADD CONSTRAINT check_founder_tier 
-  CHECK (founder_tier IN ('UNICORN', 'PHOENIX', 'DRAGON', NULL));
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'check_founder_tier'
+  ) THEN
+    ALTER TABLE user_token_balances
+    ADD CONSTRAINT check_founder_tier 
+      CHECK (founder_tier IN ('UNICORN', 'PHOENIX', 'DRAGON', NULL));
+  END IF;
+END $$;
 
-ALTER TABLE user_token_balances
-ADD CONSTRAINT check_ai_status 
-  CHECK (ai_status IN ('ACTIVE', 'RETIRED', 'LEGENDARY', 'PAUSED'));
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'check_ai_status'
+  ) THEN
+    ALTER TABLE user_token_balances
+    ADD CONSTRAINT check_ai_status 
+      CHECK (ai_status IN ('ACTIVE', 'RETIRED', 'LEGENDARY', 'PAUSED'));
+  END IF;
+END $$;
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_investor_tier ON user_token_balances(investor_tier) WHERE investor_tier IS NOT NULL;
@@ -45,14 +66,18 @@ BEGIN
   WHERE investor_tier IS NOT NULL;
   
   -- Award top 3 based on portfolio value (AI + Human investors combined)
+  -- Tiebreaker: Earlier created_at wins if portfolio values are equal
   WITH ranked_investors AS (
     SELECT 
       user_id, 
       portfolio_value,
-      ROW_NUMBER() OVER (ORDER BY portfolio_value DESC) as rank
+      ROW_NUMBER() OVER (
+        ORDER BY portfolio_value DESC, created_at ASC
+      ) as rank
     FROM user_token_balances
     WHERE (is_ai_investor = true OR username IS NOT NULL)
-      AND ai_status IN ('ACTIVE', 'LEGENDARY') -- Exclude retired/paused
+      AND (ai_status IN ('ACTIVE', 'LEGENDARY') OR ai_status IS NULL)
+      AND portfolio_value > 0  -- Only rank investors with non-zero portfolios
   )
   UPDATE user_token_balances utb
   SET 
@@ -87,34 +112,9 @@ BEGIN
   SET founder_tier = NULL 
   WHERE founder_tier IS NOT NULL;
   
-  -- Award top 3 founders based on their startup's total investment raised
-  -- This measures startup valuation/success, not personal wealth
-  -- NOTE: This will work once H2026 launches with approved student projects
-  -- For now, no founder tiers will be awarded (no approved projects yet)
-  WITH founder_rankings AS (
-    SELECT 
-      sp.user_id,
-      SUM(ui.total_invested) as total_raised,
-      ROW_NUMBER() OVER (ORDER BY SUM(ui.total_invested) DESC) as rank
-    FROM student_projects sp
-    LEFT JOIN user_investments ui ON ui.pitch_id = sp.id::integer
-    WHERE sp.status = 'approved'
-    GROUP BY sp.user_id
-  )
-  UPDATE user_token_balances utb
-  SET 
-    founder_tier = CASE 
-      WHEN fr.rank = 1 THEN 'UNICORN'
-      WHEN fr.rank = 2 THEN 'PHOENIX'
-      WHEN fr.rank = 3 THEN 'DRAGON'
-      ELSE NULL
-    END,
-    founder_tier_earned_at = CASE 
-      WHEN fr.rank <= 3 AND utb.founder_tier IS NULL THEN NOW()
-      ELSE utb.founder_tier_earned_at
-    END
-  FROM founder_rankings fr
-  WHERE utb.user_id = fr.user_id AND fr.rank <= 3;
+  -- NOTE: Founder tier logic will be implemented when H2026 launches
+  -- For now, this is a placeholder that does nothing
+  -- Future: Will rank founders by total investment in their student_projects
   
   RAISE NOTICE 'Founder tiers awarded to top 3 startups';
 END;

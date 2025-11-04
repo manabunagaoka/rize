@@ -244,6 +244,15 @@ async function executeTrade(aiInvestor: any, decision: AITradeDecision) {
     const balanceBefore = aiInvestor.available_tokens;
     const balanceAfter = balanceBefore - totalCost;
     
+    // ⚠️ SAFETY CHECK: Prevent over-leveraging
+    if (balanceAfter < 0) {
+      console.warn(`🚫 ${aiInvestor.ai_nickname} tried to buy ${decision.shares} shares of pitch ${decision.pitch_id} for $${totalCost.toFixed(2)} but only has $${balanceBefore.toFixed(2)}. Trade rejected.`);
+      return { 
+        success: false, 
+        message: `Insufficient funds: needed $${totalCost.toFixed(2)}, available $${balanceBefore.toFixed(2)}` 
+      };
+    }
+    
     // Insert investment transaction
     const { error } = await supabase
       .from('investment_transactions')
