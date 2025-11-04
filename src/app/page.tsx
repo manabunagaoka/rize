@@ -45,9 +45,9 @@ async function getUserFromToken() {
 export default async function HomePage() {
   const user = await getUserFromToken();
 
-  // Redirect logged-in users to account
+  // Redirect logged-in users to manage page
   if (user) {
-    redirect('/account');
+    redirect('/manage');
   }
 
   return <LandingPage user={user} />;

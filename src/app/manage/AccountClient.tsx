@@ -16,7 +16,7 @@ export default function AccountClient({ user }: { user: User }) {
       <Header user={user} />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Account</h1>
+          <h1 className="text-4xl font-bold mb-2">Manage</h1>
           <p className="text-gray-400">{user.email}</p>
         </div>
         
