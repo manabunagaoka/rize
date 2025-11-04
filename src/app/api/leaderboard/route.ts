@@ -156,10 +156,10 @@ export async function GET(request: NextRequest) {
         holdingsValue,
         portfolioValue,
         holdings: userInvestments.map(inv => ({
-          ticker: `PITCH-${inv.pitch_id}`, // Show pitch ID as ticker
+          ticker: tickerMap[inv.pitch_id] || `PITCH-${inv.pitch_id}`, // Show real stock ticker
           shares: inv.shares_owned,
           currentPrice: pitchPrices[inv.pitch_id] || 0,
-          value: inv.current_value || ((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 0))
+          value: Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100))
         }))
       };
     }) || [];
