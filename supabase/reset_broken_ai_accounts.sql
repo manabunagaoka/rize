@@ -10,37 +10,34 @@
 -- Step 1: Find the broken AI accounts (portfolio_value < 0 or all_time_gain_loss < -900000)
 -- This query identifies AI with catastrophic losses indicating over-leveraging
 SELECT 
-  u.user_id,
-  u.full_name,
-  u.ai_nickname,
-  utb.available_tokens,
-  utb.total_invested,
-  utb.portfolio_value,
-  utb.all_time_gain_loss
-FROM users u
-JOIN user_token_balances utb ON u.user_id = utb.user_id
-WHERE u.ai_status = 'active'
-  AND (utb.portfolio_value < 0 OR utb.all_time_gain_loss < -900000)
-ORDER BY utb.portfolio_value ASC;
+  user_id,
+  user_email,
+  ai_nickname,
+  available_tokens,
+  total_invested,
+  portfolio_value,
+  all_time_gain_loss
+FROM user_token_balances
+WHERE is_ai_investor = true
+  AND (portfolio_value < 0 OR all_time_gain_loss < -900000)
+ORDER BY portfolio_value ASC;
 
 -- Step 2: Delete all investments and transactions for broken AI accounts
 -- This clears their trading history so they start fresh
 DELETE FROM user_investments
 WHERE user_id IN (
-  SELECT u.user_id
-  FROM users u
-  JOIN user_token_balances utb ON u.user_id = utb.user_id
-  WHERE u.ai_status = 'active'
-    AND (utb.portfolio_value < 0 OR utb.all_time_gain_loss < -900000)
+  SELECT user_id
+  FROM user_token_balances
+  WHERE is_ai_investor = true
+    AND (portfolio_value < 0 OR all_time_gain_loss < -900000)
 );
 
 DELETE FROM investment_transactions
 WHERE user_id IN (
-  SELECT u.user_id
-  FROM users u
-  JOIN user_token_balances utb ON u.user_id = utb.user_id
-  WHERE u.ai_status = 'active'
-    AND (utb.portfolio_value < 0 OR utb.all_time_gain_loss < -900000)
+  SELECT user_id
+  FROM user_token_balances
+  WHERE is_ai_investor = true
+    AND (portfolio_value < 0 OR all_time_gain_loss < -900000)
 );
 
 -- Step 3: Reset their balances to starting conditions ($1M ManaBoodle tokens)
@@ -50,43 +47,29 @@ SET
   total_invested = 0,
   portfolio_value = 1000000,
   all_time_gain_loss = 0,
-  updated_at = NOW()
-WHERE user_id IN (
-  SELECT u.user_id
-  FROM users u
-  JOIN user_token_balances utb ON u.user_id = utb.user_id
-  WHERE u.ai_status = 'active'
-    AND (utb.portfolio_value < 0 OR utb.all_time_gain_loss < -900000)
-);
-
--- Step 4: Remove any tier badges from reset accounts (they need to earn them back)
-UPDATE users
-SET 
   investor_tier = NULL,
   investor_tier_earned_at = NULL,
   updated_at = NOW()
 WHERE user_id IN (
-  SELECT u.user_id
-  FROM users u
-  JOIN user_token_balances utb ON u.user_id = utb.user_id
-  WHERE u.ai_status = 'active'
-    AND (utb.portfolio_value < 0 OR utb.all_time_gain_loss < -900000)
+  SELECT user_id
+  FROM user_token_balances
+  WHERE is_ai_investor = true
+    AND (portfolio_value < 0 OR all_time_gain_loss < -900000)
 );
 
--- Step 5: Verify the reset worked
+-- Step 4: Verify the reset worked
 SELECT 
-  u.user_id,
-  u.full_name,
-  u.ai_nickname,
-  u.investor_tier,
-  utb.available_tokens,
-  utb.total_invested,
-  utb.portfolio_value,
-  utb.all_time_gain_loss
-FROM users u
-JOIN user_token_balances utb ON u.user_id = utb.user_id
-WHERE u.ai_status = 'active'
-ORDER BY u.ai_nickname;
+  user_id,
+  user_email,
+  ai_nickname,
+  investor_tier,
+  available_tokens,
+  total_invested,
+  portfolio_value,
+  all_time_gain_loss
+FROM user_token_balances
+WHERE is_ai_investor = true
+ORDER BY ai_nickname;
 
 -- Expected Result:
 -- All AI investors should have:
@@ -98,8 +81,7 @@ ORDER BY u.ai_nickname;
 
 -- Manual Alternative (if you want to target specific AI by nickname):
 -- UPDATE user_token_balances
--- SET available_tokens = 1000000, total_invested = 0, portfolio_value = 1000000, all_time_gain_loss = 0
--- WHERE user_id IN (
---   SELECT user_id FROM users 
---   WHERE ai_nickname IN ('Diamond Hands', 'FOMO Master', 'Hype Train')
--- );
+-- SET available_tokens = 1000000, total_invested = 0, 
+--     portfolio_value = 1000000, all_time_gain_loss = 0,
+--     investor_tier = NULL, investor_tier_earned_at = NULL
+-- WHERE ai_nickname IN ('Diamond Hands', 'FOMO Master', 'Hype Train');
