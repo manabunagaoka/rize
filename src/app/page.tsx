@@ -45,10 +45,6 @@ async function getUserFromToken() {
 export default async function HomePage() {
   const user = await getUserFromToken();
 
-  // Redirect logged-in users to manage page
-  if (user) {
-    redirect('/manage');
-  }
-
+  // Show landing page for everyone (logged in or not)
   return <LandingPage user={user} />;
 }

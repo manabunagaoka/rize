@@ -125,18 +125,17 @@ export default function Portfolio() {
 
   const totalValue = data.balance.available_tokens + data.balance.portfolio_value;
   const totalGainLoss = data.balance.all_time_gain_loss;
-  const gainLossPercent = data.balance.total_invested > 0 
-    ? ((totalGainLoss / data.balance.total_invested) * 100).toFixed(2)
-    : '0.00';
+  // Calculate percentage gain from starting balance (1M MTK) to match Compete page
+  const gainLossPercent = ((totalValue - 1000000) / 1000000 * 100).toFixed(2);
 
   return (
     <div className="space-y-6">
       {/* Portfolio Summary */}
       <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-8 text-white">
         <div className="grid grid-cols-4 gap-6">
-          {/* Net Account Value (Total) */}
+          {/* Portfolio Value (Total) */}
           <div>
-            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Net Account Value</div>
+            <div className="text-sm font-semibold uppercase opacity-75 mb-1">Portfolio Value</div>
             <div className="text-3xl font-bold">
               ${totalValue.toLocaleString()}
             </div>
