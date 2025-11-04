@@ -347,8 +347,96 @@ async function executeTrade(aiInvestor: any, decision: AITradeDecision) {
     };
   }
 
-  // TODO: Implement SELL logic
-  return { success: false, message: 'SELL not yet implemented' };
+  if (decision.action === 'SELL' && decision.shares) {
+    // Execute sell
+    const pitch = HM7_PITCHES.find(p => p.id === decision.pitch_id);
+    
+    // Check current holdings
+    const { data: existingInvestment } = await supabase
+      .from('user_investments')
+      .select('*')
+      .eq('user_id', aiInvestor.user_id)
+      .eq('pitch_id', decision.pitch_id)
+      .single();
+
+    if (!existingInvestment || existingInvestment.shares_owned < decision.shares) {
+      return {
+        success: false,
+        message: `Insufficient shares: has ${existingInvestment?.shares_owned || 0}, tried to sell ${decision.shares}`
+      };
+    }
+
+    // Get current price
+    const { data: priceData } = await supabase
+      .from('pitch_market_data')
+      .select('current_price')
+      .eq('pitch_id', decision.pitch_id)
+      .single();
+
+    if (!priceData) throw new Error('Price not found');
+
+    const totalRevenue = decision.shares * priceData.current_price;
+    const balanceBefore = aiInvestor.available_tokens;
+    const balanceAfter = balanceBefore + totalRevenue;
+    
+    // Insert sell transaction
+    const { error } = await supabase
+      .from('investment_transactions')
+      .insert({
+        user_id: aiInvestor.user_id,
+        pitch_id: decision.pitch_id,
+        transaction_type: 'SELL',
+        shares: decision.shares,
+        price_per_share: priceData.current_price,
+        total_amount: totalRevenue,
+        balance_before: balanceBefore,
+        balance_after: balanceAfter,
+        timestamp: new Date().toISOString()
+      });
+
+    if (error) throw error;
+
+    // Update user_investments
+    const newShares = existingInvestment.shares_owned - decision.shares;
+    const soldPortion = decision.shares / existingInvestment.shares_owned;
+    const newInvested = existingInvestment.total_invested * (1 - soldPortion);
+
+    if (newShares > 0) {
+      await supabase
+        .from('user_investments')
+        .update({
+          shares_owned: newShares,
+          total_invested: newInvested,
+          current_value: newShares * priceData.current_price
+        })
+        .eq('user_id', aiInvestor.user_id)
+        .eq('pitch_id', decision.pitch_id);
+    } else {
+      // Sold all shares, delete the investment
+      await supabase
+        .from('user_investments')
+        .delete()
+        .eq('user_id', aiInvestor.user_id)
+        .eq('pitch_id', decision.pitch_id);
+    }
+
+    // Update user balance
+    const soldAmount = decision.shares * existingInvestment.avg_purchase_price;
+    await supabase
+      .from('user_token_balances')
+      .update({
+        available_tokens: balanceAfter,
+        total_invested: aiInvestor.total_invested - soldAmount
+      })
+      .eq('user_id', aiInvestor.user_id);
+
+    return {
+      success: true,
+      message: `${aiInvestor.ai_nickname} sold ${decision.shares.toFixed(2)} shares of ${pitch?.name} for ${totalRevenue.toFixed(2)} MTK`
+    };
+  }
+
+  return { success: false, message: 'Invalid action' };
 }
 
 export async function POST(request: Request) {
@@ -400,9 +488,10 @@ export async function POST(request: Request) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.error(`Error processing ${ai.ai_nickname}:`, error);
+        const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
         results.push({
           investor: ai.ai_nickname,
-          error: String(error)
+          error: errorMessage
         });
       }
     }
