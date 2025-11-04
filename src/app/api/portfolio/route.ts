@@ -99,56 +99,31 @@ export async function GET(request: NextRequest) {
       6: 'WRBY', 7: 'BKNG'
     };
 
-    // Get current market prices for all investments
-    const investmentsWithPrices = await Promise.all(
-      (investments || []).map(async (inv) => {
-        const ticker = tickerMap[inv.pitch_id];
-        let currentPrice = 100;
-        
-        if (ticker) {
-          try {
-            // Fetch directly from Finnhub API
-            const apiKey = process.env.STOCK_API_KEY;
-            
-            if (apiKey) {
-              const priceResponse = await fetch(
-                `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
-                { 
-                  next: { 
-                    revalidate: 300 // Cache for 5 minutes
-                  } 
-                }
-              );
-              const priceData = await priceResponse.json();
-              
-              if (priceData.c && priceData.c > 0) {
-                currentPrice = priceData.c;
-              }
-            } else {
-              // Mock data if no API key
-              const mockPrices: { [key: string]: number } = {
-                'META': 497.43, 'MSFT': 415.89, 'DBX': 24.67,
-                'AKAM': 89.32, 'RDDT': 52.18, 'WRBY': 15.23, 'BKNG': 3842.56
-              };
-              currentPrice = mockPrices[ticker] || 100;
-            }
-          } catch (error) {
-            console.error(`Failed to fetch price for ${ticker}:`, error);
-          }
-        }
+    // Get current market prices from pitch_market_data table (same source as leaderboard)
+    const pitchIds = (investments || []).map(inv => inv.pitch_id);
+    const { data: marketData } = await supabase
+      .from('pitch_market_data')
+      .select('pitch_id, current_price')
+      .in('pitch_id', pitchIds);
+    
+    const priceMap: { [key: number]: number } = {};
+    marketData?.forEach(pm => {
+      priceMap[pm.pitch_id] = pm.current_price || 100;
+    });
+    
+    const investmentsWithPrices = (investments || []).map(inv => {
+      const currentPrice = priceMap[inv.pitch_id] || 100;
+      const currentValue = Math.floor(parseFloat(inv.shares_owned) * currentPrice);
+      const unrealizedGainLoss = currentValue - inv.total_invested;
 
-        const currentValue = Math.floor(parseFloat(inv.shares_owned) * currentPrice);
-        const unrealizedGainLoss = currentValue - inv.total_invested;
-
-        return {
-          ...inv,
-          shares_owned: parseFloat(inv.shares_owned),
-          current_price: currentPrice,
-          current_value: currentValue,
-          unrealized_gain_loss: unrealizedGainLoss
-        };
-      })
-    );
+      return {
+        ...inv,
+        shares_owned: parseFloat(inv.shares_owned),
+        current_price: currentPrice,
+        current_value: currentValue,
+        unrealized_gain_loss: unrealizedGainLoss
+      };
+    });
 
     // Calculate total portfolio value
     const totalPortfolioValue = investmentsWithPrices.reduce((sum, inv) => sum + inv.current_value, 0);
