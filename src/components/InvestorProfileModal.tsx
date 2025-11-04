@@ -127,7 +127,7 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
                 {investor.isAI ? 'AI Investor' : 'Student Investor'}
               </p>
               {investor.isAI && investor.aiCatchphrase && (
-                <p className="text-purple-300 italic text-sm">"{investor.aiCatchphrase}"</p>
+                <p className="text-purple-300 italic text-sm">&quot;{investor.aiCatchphrase}&quot;</p>
               )}
               {!investor.isAI && investor.userBio && (
                 <p className="text-gray-300 text-sm">{investor.userBio}</p>
