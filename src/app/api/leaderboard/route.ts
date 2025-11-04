@@ -64,7 +64,11 @@ export async function GET(request: NextRequest) {
         ai_strategy,
         ai_catchphrase,
         available_tokens,
-        total_tokens
+        total_tokens,
+        investor_tier,
+        investor_tier_earned_at,
+        portfolio_value,
+        all_time_gain_loss
       `);
 
     if (investorsError) {
