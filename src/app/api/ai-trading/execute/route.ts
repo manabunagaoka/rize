@@ -128,11 +128,14 @@ ${getStrategyGuidelines(aiInvestor.ai_strategy)}
 
 ANALYSIS FRAMEWORK:
 - Consider both the BUSINESS (pitch, founder story, category) AND the MARKET DATA (price, momentum)
+- SELL if you have holdings that are declining, overvalued, or don't fit your strategy
+- BUY if you see undervalued opportunities that match your strategy
 - ${aiInvestor.ai_strategy === 'TECH_ONLY' ? 'Focus on technology companies' : ''}
 - ${aiInvestor.ai_strategy === 'SAAS_ONLY' ? 'Focus on SaaS/software businesses' : ''}
-- ${aiInvestor.ai_strategy === 'MOMENTUM' ? 'Look for positive price momentum' : ''}
-- ${aiInvestor.ai_strategy === 'CONTRARIAN' ? 'Look for undervalued or declining stocks' : ''}
-- ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? 'Buy and hold quality businesses long-term' : ''}
+- ${aiInvestor.ai_strategy === 'MOMENTUM' ? 'SELL losers quickly, BUY stocks with positive momentum' : ''}
+- ${aiInvestor.ai_strategy === 'CONTRARIAN' ? 'SELL when others are buying (peaks), BUY when declining' : ''}
+- ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? 'Buy and hold quality businesses long-term, rarely sell' : ''}
+- ${aiInvestor.ai_strategy === 'PERFECT_TIMING' ? 'SELL at peaks, BUY at dips - focus on timing' : ''}
 
 Make ONE trade decision combining business analysis + price trends. Respond with valid JSON:
 {
@@ -451,8 +454,8 @@ export async function POST(request: Request) {
     const pitches = await getPitchData();  // Changed from prices to pitches
     const results = [];
     
-    // Cooldown period: 1 hour (3600000 ms)
-    const COOLDOWN_MS = 60 * 60 * 1000;
+    // Cooldown period: 5 minutes for testing (300000 ms)
+    const COOLDOWN_MS = 5 * 60 * 1000;
 
     for (const ai of aiInvestors) {
       try {
