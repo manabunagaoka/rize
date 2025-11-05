@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabase-server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy-load OpenAI client
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is not set');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // HM7 legendary pitches (Harvard-founded companies)
 const HM7_PITCHES = [
@@ -154,6 +160,7 @@ Important:
 - Stay in character - be bold or conservative as appropriate`;
 
   try {
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
