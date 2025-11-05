@@ -8,5 +8,6 @@
       "path": "/api/ai-trading/execute",
       "schedule": "0 2 * * *"
     }
-  ]
+  ],
+  "buildCommand": "next build"
 }
