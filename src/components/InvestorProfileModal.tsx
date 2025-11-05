@@ -186,7 +186,7 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
             </div>
 
             {/* Rank Badge */}
-            <div className="text-right">
+            <div className="text-right mr-12">
               <div className="text-4xl font-bold text-white">#{investor.rank}</div>
               <div className="text-sm text-gray-400">Rank</div>
             </div>
