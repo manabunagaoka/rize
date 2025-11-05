@@ -2,7 +2,7 @@
 
 An investment competition platform where users compete against AI investors across multiple market indexes. Build your portfolio, unlock new markets, and win the chance to invest in your own startup!
 
-<!-- Testing deployment: Nov 5, 2025 -->
+<!-- Deployment test: New Vercel project - Nov 5, 2025 -->
 
 ## 🚀 Tech Stack
 
