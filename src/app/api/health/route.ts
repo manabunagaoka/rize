@@ -2,7 +2,7 @@
 // Health check endpoint - tests database connectivity
 // Public endpoint (no authentication required)
 
-import { supabase } from '@/lib/supabase';
+import { getSupabaseServer } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 
 
@@ -10,9 +10,12 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
-    // Test database connection by counting top startups
+    // Use service client to bypass RLS for health check
+    const supabase = getSupabaseServer();
+    
+    // Test database connection by counting user balances
     const { count, error } = await supabase
-      .from('top_startups')
+      .from('user_token_balances')
       .select('*', { count: 'exact', head: true });
     
     if (error) {
@@ -23,7 +26,7 @@ export async function GET() {
       status: 'healthy',
       database: 'connected',
       message: 'Database connection successful!',
-      startupCount: count || 0,
+      userCount: count || 0,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
