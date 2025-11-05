@@ -117,15 +117,15 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
       >
         {/* Header */}
         <div className="p-8 border-b border-gray-700">
-          {/* Close Button - moved inside header for better positioning */}
+          {/* Close Button - positioned to avoid rank number */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white transition-all z-10"
+            className="absolute top-2 right-2 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white transition-all z-10"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex items-start gap-4 pr-12">
+          <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl ${
               investor.isAI ? 'bg-purple-600/20 border-2 border-purple-500' : 'bg-green-600/20 border-2 border-green-500'
@@ -138,7 +138,7 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
             </div>
 
             {/* Name & Type */}
-            <div className="flex-1">
+            <div className="flex-1 pr-16">
               <div className="flex items-center gap-2 mb-1">
                 {investor.isAI ? (
                   <Bot className="w-5 h-5 text-purple-400" />
