@@ -115,17 +115,17 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
         className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl border border-gray-700 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         {/* Header */}
         <div className="p-8 border-b border-gray-700">
-          <div className="flex items-start gap-4">
+          {/* Close Button - moved inside header for better positioning */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 text-gray-400 hover:text-white transition-all z-10"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-start gap-4 pr-12">
             {/* Avatar */}
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl ${
               investor.isAI ? 'bg-purple-600/20 border-2 border-purple-500' : 'bg-green-600/20 border-2 border-green-500'
