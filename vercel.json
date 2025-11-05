@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/sync-prices",
+      "schedule": "0 * * * *"
+    },
+    {
       "path": "/api/ai-trading/execute",
       "schedule": "0 2 * * *"
     }
