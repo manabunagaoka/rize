@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies, headers } from 'next/headers';
 import { getUser } from '@/lib/auth';
 
+
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const user = await getUser();
   const cookieStore = cookies();

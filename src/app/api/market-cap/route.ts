@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
 // Market cap data fetched from Finnhub API
 // Returns real-time market capitalization for HM7 companies
 

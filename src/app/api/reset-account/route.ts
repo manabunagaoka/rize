@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
 // Create Supabase client only when needed
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

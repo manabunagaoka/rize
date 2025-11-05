@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const ssoToken = request.nextUrl.searchParams.get('sso_token');
   const ssoRefresh = request.nextUrl.searchParams.get('sso_refresh');

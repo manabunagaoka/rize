@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
 // Mapping of pitch IDs to ticker symbols (only publicly traded companies)
 const PITCH_TICKERS: Record<number, string | null> = {
   1: 'META',      // Facebook

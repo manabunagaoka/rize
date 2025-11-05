@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabase-server';
 
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
+
 // Verify user from Manaboodle SSO token
 async function verifyUser(request: NextRequest) {
   const token = request.cookies.get('manaboodle_sso_token')?.value;

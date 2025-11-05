@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabase-server';
 import OpenAI from 'openai';
 
+
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
 // Lazy-load OpenAI client
 function getOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
