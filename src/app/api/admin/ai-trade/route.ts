@@ -2,10 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+// Initialize Supabase client lazily (only when needed, not at module load)
+function getSupabaseClient() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    throw new Error('Supabase environment variables are not set');
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY
+  );
+}
 
 // Initialize OpenAI client lazily (only when needed)
 function getOpenAIClient() {
@@ -155,6 +161,8 @@ export async function POST(request: NextRequest) {
 }
 
 async function executeAITrade(aiUserId: string, personality: any) {
+  const supabase = getSupabaseClient();
+  
   // 1. Get AI's current portfolio
   const { data: balance } = await supabase
     .from('user_token_balances')
