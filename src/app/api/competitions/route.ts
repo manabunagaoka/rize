@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 export async function GET(request: NextRequest) {
+  const supabase = getSupabaseServer();
   try {
     // Fetch investment leaderboard (AI + real users)
     const { data: leaderboard, error: leaderboardError } = await supabase

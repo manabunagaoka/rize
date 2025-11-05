@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase-server';
 import OpenAI from 'openai';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -31,6 +26,7 @@ interface AITradeDecision {
 }
 
 async function getAIInvestors() {
+  const supabase = getSupabaseServer();
   const { data, error } = await supabase
     .from('user_token_balances')
     .select('*')
@@ -41,6 +37,7 @@ async function getAIInvestors() {
 }
 
 async function getLastTradeTime(userId: string): Promise<Date | null> {
+  const supabase = getSupabaseServer();
   const { data, error } = await supabase
     .from('investment_transactions')
     .select('timestamp')
@@ -53,7 +50,9 @@ async function getLastTradeTime(userId: string): Promise<Date | null> {
   return new Date(data.timestamp);
 }
 
+
 async function getAIPortfolio(userId: string) {
+  const supabase = getSupabaseServer();
   const { data, error } = await supabase
     .from('user_investments')
     .select('pitch_id, shares_owned, total_invested, current_value')
@@ -65,6 +64,7 @@ async function getAIPortfolio(userId: string) {
 }
 
 async function getCurrentPrices() {
+  const supabase = getSupabaseServer();
   const { data, error } = await supabase
     .from('pitch_market_data')
     .select('pitch_id, current_price, price_change_24h')
@@ -76,6 +76,7 @@ async function getCurrentPrices() {
 
 // NEW: Fetch pitch content for AI analysis
 async function getPitchData() {
+  const supabase = getSupabaseServer();
   const { data, error } = await supabase
     .from('ai_readable_pitches')
     .select('pitch_id, company_name, ticker, elevator_pitch, fun_fact, founder_story, category, current_price, price_change_24h')
@@ -253,6 +254,8 @@ function getStrategyGuidelines(strategy: string): string {
 }
 
 async function executeTrade(aiInvestor: any, decision: AITradeDecision) {
+  const supabase = getSupabaseServer();
+  
   if (decision.action === 'HOLD') {
     console.log(`${aiInvestor.ai_nickname} decided to HOLD`);
     return { success: true, message: 'Holding position' };

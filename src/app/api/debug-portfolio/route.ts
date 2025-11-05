@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 async function verifyUser(request: NextRequest) {
   const token = request.cookies.get('manaboodle_sso_token')?.value;
@@ -38,6 +34,7 @@ async function verifyUser(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const supabase = getSupabaseServer();
   try {
     const user = await verifyUser(request);
     

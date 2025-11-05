@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 // Verify user from Manaboodle SSO
 async function verifyUser(request: NextRequest) {
@@ -40,6 +36,7 @@ async function verifyUser(request: NextRequest) {
 
 // POST - Buy shares
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseServer();
   try {
     const user = await verifyUser(request);
     

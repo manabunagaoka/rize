@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 // Verify user from Manaboodle SSO token
 async function verifyUser(request: NextRequest) {
@@ -75,6 +71,7 @@ async function verifyUser(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseServer();
   try {
     const body = await request.json();
     const { pitchId } = body;
@@ -191,6 +188,7 @@ export async function POST(request: NextRequest) {
 
 // GET endpoint to fetch user's votes and vote counts
 export async function GET(request: NextRequest) {
+  const supabase = getSupabaseServer();
   try {
     // Verify user directly from SSO token
     const user = await verifyUser(request);
