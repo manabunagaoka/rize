@@ -3,13 +3,21 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+// Initialize Supabase client lazily (only when needed, not at module load)
+function getSupabaseClient() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    throw new Error('Supabase environment variables are not set');
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
     // Read the SQL file
     const sqlPath = path.join(process.cwd(), 'supabase', 'competitions_system.sql');
     const sql = fs.readFileSync(sqlPath, 'utf8');
