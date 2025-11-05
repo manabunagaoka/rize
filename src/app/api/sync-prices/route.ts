@@ -64,11 +64,21 @@ export async function POST(request: Request) {
       }
     }
 
+    // Recalculate investor tiers with updated prices
+    console.log('🏆 Recalculating investor tiers...');
+    const { error: tierError } = await supabase.rpc('award_investor_tiers');
+    
+    if (tierError) {
+      console.error('❌ Error recalculating tiers:', tierError);
+    } else {
+      console.log('✅ Tiers recalculated with real-time prices');
+    }
+
     console.log('✅ Price sync complete!');
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Prices synced successfully',
+      message: 'Prices synced and tiers recalculated',
       updates: priceUpdates
     });
   } catch (error) {
