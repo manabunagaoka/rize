@@ -60,13 +60,13 @@ export async function GET(request: NextRequest) {
       .eq('user_id', balance.user_id)
       .order('pitch_id');
 
-    // Get recent transactions
+    // Get ALL transactions for this user (not just recent 10)
     const { data: transactions } = await supabase
       .from('investment_transactions')
       .select('*')
       .eq('user_id', balance.user_id)
-      .order('id', { ascending: false })
-      .limit(10);
+      .eq('pitch_id', 3)  // Only Dropbox
+      .order('timestamp', { ascending: false });
 
     return NextResponse.json({
       user: {
