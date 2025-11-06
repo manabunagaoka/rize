@@ -89,6 +89,12 @@ export async function GET(request: NextRequest) {
         current_value
       `)
       .gt('shares_owned', 0); // Only fetch positions with actual shares
+    
+    console.log('[Leaderboard] Total investments fetched:', investments?.length);
+    console.log('[Leaderboard] ManaMana investments:', 
+      investments?.filter(inv => inv.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85')
+        .map(inv => ({ pitch_id: inv.pitch_id, shares: inv.shares_owned }))
+    );
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
