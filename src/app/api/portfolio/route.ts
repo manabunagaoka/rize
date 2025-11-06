@@ -39,17 +39,26 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's portfolio
 export async function GET(request: NextRequest) {
+  // VERSION: 2025-11-06-v2 - Force fresh Supabase client
   // Create fresh Supabase client to avoid caching issues
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
-    { auth: { persistSession: false } }
+    { 
+      auth: { persistSession: false },
+      global: {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      }
+    }
   );
   
   try {
     const user = await verifyUser(request);
     
-    console.log('[Portfolio API] Verified user:', user);
+    console.log('[Portfolio API v2] Verified user:', user);
     
     if (!user) {
       return NextResponse.json(
