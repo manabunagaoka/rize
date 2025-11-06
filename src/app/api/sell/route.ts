@@ -43,7 +43,17 @@ export async function POST(request: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
-    { auth: { persistSession: false } }
+    { 
+      auth: { persistSession: false },
+      db: { schema: 'public' },
+      global: {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'x-supabase-api-version': '2024-01-01'
+        }
+      }
+    }
   );
 
   try {
@@ -65,13 +75,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's current investment
-    const { data: investment, error: investmentError } = await supabase
-      .from('user_investments')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('pitch_id', pitchId)
-      .single();
+    // Get user's current investment with retry logic
+    let investment = null;
+    let investmentError = null;
+    
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await supabase
+        .from('user_investments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('pitch_id', pitchId)
+        .maybeSingle();
+      
+      investment = result.data;
+      investmentError = result.error;
+      
+      if (investment) break;
+      
+      // Wait 500ms before retry
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log(`[Sell API] Retry ${attempt + 1} - refetching investment`);
+      }
+    }
 
     if (investmentError || !investment) {
       return NextResponse.json(
