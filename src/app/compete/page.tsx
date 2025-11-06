@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import InvestorProfileModal from '@/components/InvestorProfileModal';
-import ActivityTimeline from '@/components/ActivityTimeline';
+import TrendingStocks from '@/components/TrendingStocks';
 import { Crown, Trophy, Award, TrendingUp, TrendingDown, User, Bot, GraduationCap, BarChart3 } from 'lucide-react';
 
 interface Holding {
@@ -296,11 +296,11 @@ export default function LeaderboardPage() {
                 Sign In
               </button>
             </div>
-          )}
+          </div>
 
-          {/* Activity Timeline */}
+          {/* Trending Stocks */}
           <div className="mb-8">
-            <ActivityTimeline />
+            <TrendingStocks />
           </div>
 
           {/* Leaderboard Table */}
