@@ -48,6 +48,11 @@ export default function TradingModal({
   const priceLoading = company.currentPrice === 0;
 
   const handleSubmit = async () => {
+    console.log('[TradingModal] handleSubmit called');
+    console.log('[TradingModal] priceLoading:', priceLoading);
+    console.log('[TradingModal] shares:', shares);
+    console.log('[TradingModal] action:', action);
+    
     if (priceLoading) {
       setError('Waiting for price data...');
       return;
@@ -58,6 +63,9 @@ export default function TradingModal({
 
     try {
       const endpoint = action === 'BUY' ? '/api/invest' : '/api/sell';
+      console.log('[TradingModal] Calling endpoint:', endpoint);
+      console.log('[TradingModal] Payload:', { pitchId: company.id, shares });
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -68,15 +76,20 @@ export default function TradingModal({
         })
       });
 
+      console.log('[TradingModal] Response status:', response.status);
       const data = await response.json();
+      console.log('[TradingModal] Response data:', data);
 
       if (response.ok && data.success) {
+        console.log('[TradingModal] Trade successful, calling onSuccess');
         onSuccess();
         onClose();
       } else {
+        console.error('[TradingModal] Trade failed:', data.error);
         setError(data.error || 'Transaction failed');
       }
     } catch (err) {
+      console.error('[TradingModal] Network error:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
