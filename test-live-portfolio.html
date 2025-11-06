@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Live Portfolio API</title>
+</head>
+<body>
+    <h1>Testing LIVE Portfolio API</h1>
+    <button onclick="testBoth()">Compare Both APIs</button>
+    <h2>Portfolio API Response:</h2>
+    <pre id="portfolio"></pre>
+    <h2>Debug Query API Response:</h2>
+    <pre id="debug"></pre>
+
+    <script>
+        async function testBoth() {
+            const timestamp = Date.now();
+            
+            // Test portfolio API
+            document.getElementById('portfolio').textContent = 'Loading portfolio...';
+            try {
+                const portfolioResponse = await fetch(`https://unicorn-six-pi.vercel.app/api/portfolio?t=${timestamp}`, {
+                    credentials: 'include',
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                const portfolioData = await portfolioResponse.json();
+                document.getElementById('portfolio').textContent = JSON.stringify(portfolioData, null, 2);
+            } catch (error) {
+                document.getElementById('portfolio').textContent = 'Error: ' + error.message;
+            }
+            
+            // Test debug query API
+            document.getElementById('debug').textContent = 'Loading debug...';
+            try {
+                const debugResponse = await fetch(`https://unicorn-six-pi.vercel.app/api/debug-portfolio-query`, {
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
+                const debugData = await debugResponse.json();
+                document.getElementById('debug').textContent = JSON.stringify(debugData, null, 2);
+            } catch (error) {
+                document.getElementById('debug').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Auto-run on load
+        window.onload = testBoth;
+    </script>
+</body>
+</html>

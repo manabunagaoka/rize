@@ -39,7 +39,10 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's portfolio
 export async function GET(request: NextRequest) {
-  // VERSION: 2025-11-06-v4 - Force primary database reads
+  console.log('[Portfolio API] VERSION: 2025-11-06-v6 - FORCING NEW DEPLOYMENT');
+  console.log('[Portfolio API] Request URL:', request.url);
+  console.log('[Portfolio API] Request timestamp:', new Date().toISOString());
+  
   // Create fresh Supabase client with service role key that reads from primary
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -177,8 +180,9 @@ export async function GET(request: NextRequest) {
         total_invested: balance.total_invested
       },
       investments: investmentsWithPrices,
-      _version: '2025-11-06-v5', // Force cache invalidation
-      _timestamp: new Date().toISOString()
+      _version: '2025-11-06-v6', // Force cache invalidation
+      _timestamp: new Date().toISOString(),
+      _deploymentCheck: 'NEW_CODE_RUNNING'
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
