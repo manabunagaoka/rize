@@ -31,17 +31,18 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_KEY!
     );
 
-    // Get user info from our database
-    const { data: user } = await supabase
-      .from('users')
+    // Check user_token_balances (main table)
+    const { data: balance } = await supabase
+      .from('user_token_balances')
       .select('*')
-      .eq('email', ssoUser.email)
+      .eq('user_email', ssoUser.email)
       .single();
 
-    if (!user) {
+    if (!balance) {
       return NextResponse.json({ 
-        error: 'User not found in database',
-        ssoEmail: ssoUser.email 
+        error: 'User not found in user_token_balances',
+        ssoEmail: ssoUser.email,
+        hint: 'Have you made any trades yet? User is created on first investment.'
       }, { status: 404 });
     }
 
@@ -49,31 +50,25 @@ export async function GET(request: NextRequest) {
     const { data: investments } = await supabase
       .from('user_investments')
       .select('*')
-      .eq('user_id', user.id);
-
-    // Get user's balance
-    const { data: balance } = await supabase
-      .from('user_token_balances')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', balance.user_id);
 
     // Get recent transactions
     const { data: transactions } = await supabase
       .from('investment_transactions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', balance.user_id)
       .order('id', { ascending: false })
       .limit(10);
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        email: user.email,
-        username: user.username
+        id: balance.user_id,
+        email: balance.user_email,
+        username: balance.username
       },
       balance,
       investments,
+      investment_count: investments?.length || 0,
       recentTransactions: transactions
     });
 
