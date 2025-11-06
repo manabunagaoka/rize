@@ -256,8 +256,7 @@ export default function Portfolio() {
                         <span className={`px-3 py-1 rounded-md text-xs font-bold ${isBuy ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                           {tx.transaction_type}
                         </span>
-                        <h4 className="text-base font-semibold text-white">{tx.company_name}</h4>
-                        <span className="text-sm text-gray-400">{tx.ticker}</span>
+                        <h4 className="text-base font-semibold text-white">{tx.ticker}</h4>
                       </div>
                       <div className="flex items-center gap-6 text-sm text-gray-400">
                         <div>
