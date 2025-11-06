@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
 
 
 // Force dynamic rendering - don't pre-render at build time
@@ -39,7 +39,13 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's portfolio
 export async function GET(request: NextRequest) {
-  const supabase = getSupabaseServer();
+  // Create fresh Supabase client to avoid caching issues
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
+    { auth: { persistSession: false } }
+  );
+  
   try {
     const user = await verifyUser(request);
     
@@ -156,6 +162,12 @@ export async function GET(request: NextRequest) {
         total_invested: balance.total_invested
       },
       investments: investmentsWithPrices
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
 
   } catch (error) {
