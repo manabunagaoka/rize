@@ -39,18 +39,21 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's portfolio
 export async function GET(request: NextRequest) {
-  // VERSION: 2025-11-06-v3 - Use Manaboodle SSO auth
-  // Create fresh Supabase client to avoid caching issues
+  // VERSION: 2025-11-06-v4 - Force primary database reads
+  // Create fresh Supabase client with service role key that reads from primary
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
     { 
       auth: { persistSession: false },
-      db: { schema: 'public' },
+      db: { 
+        schema: 'public'
+      },
       global: {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
+          'Prefer': 'return=representation', // Force full object return
           'x-supabase-api-version': '2024-01-01'
         }
       }
@@ -94,32 +97,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get user's investments - force fresh read from primary
+    // Get user's investments directly - service role key should read from primary
     console.log('[Portfolio API] Fetching investments for user:', user.id);
-    
-    // Multiple attempts with delays to handle replication lag
-    let investments = null;
-    let investError = null;
-    
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const result = await supabase
-        .from('user_investments')
-        .select('*')
-        .eq('user_id', user.id)
-        .gt('shares_owned', 0)
-        .order('updated_at', { ascending: false }); // Order by updated_at for freshest data
-      
-      investments = result.data;
-      investError = result.error;
-      
-      if (investments && investments.length > 0) break;
-      
-      // Wait 500ms before retry
-      if (attempt < 2) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        console.log(`[Portfolio API] Retry ${attempt + 1} - refetching investments`);
-      }
-    }
+    const { data: investments, error: investError } = await supabase
+      .from('user_investments')
+      .select('*')
+      .eq('user_id', user.id)
+      .gt('shares_owned', 0)
+      .order('updated_at', { ascending: false });
 
     console.log('[Portfolio API] Query result - investments:', investments);
     console.log('[Portfolio API] Query result - error:', investError);

@@ -105,10 +105,10 @@ export default function HM7Page() {
   const handleTradeComplete = () => {
     // Trigger refresh of all PitchCards by incrementing key
     setRefreshKey(prev => prev + 1);
-    // Wait longer for database replication before reload
+    // Minimal delay before reload - service role key should read from primary
     setTimeout(() => {
       window.location.href = window.location.href.split('?')[0] + '?_=' + Date.now();
-    }, 2000); // Increased from 500ms to 2000ms
+    }, 1000);
   };
 
   if (loading) {
