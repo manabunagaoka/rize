@@ -1,0 +1,94 @@
+import { NextResponse } from 'next/server';
+import { getSupabaseServer } from '@/lib/supabase-server';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  const supabase = getSupabaseServer();
+  
+  try {
+    // Get recent trades (last 50)
+    const { data: recentTrades, error: tradesError } = await supabase
+      .from('investment_transactions')
+      .select(`
+        id,
+        user_id,
+        pitch_id,
+        transaction_type,
+        shares,
+        price_per_share,
+        total_amount
+      `)
+      .order('id', { ascending: false })
+      .limit(50);
+
+    if (tradesError) throw tradesError;
+
+    // Get user details for those trades
+    const userIds = Array.from(new Set(recentTrades?.map(t => t.user_id) || []));
+    const { data: users, error: usersError } = await supabase
+      .from('user_token_balances')
+      .select('user_id, username, ai_nickname, is_ai_investor, ai_emoji')
+      .in('user_id', userIds);
+
+    if (usersError) throw usersError;
+
+    // Get pitch details
+    const pitchIds = Array.from(new Set(recentTrades?.map(t => t.pitch_id) || []));
+    const { data: pitches, error: pitchesError } = await supabase
+      .from('pitch_market_data')
+      .select('pitch_id, ticker, company_name')
+      .in('pitch_id', pitchIds);
+
+    if (pitchesError) throw pitchesError;
+
+    // Combine data
+    const enrichedTrades = recentTrades?.map(trade => {
+      const user = users?.find(u => u.user_id === trade.user_id);
+      const pitch = pitches?.find(p => p.pitch_id === trade.pitch_id);
+      
+      return {
+        id: trade.id,
+        type: trade.transaction_type,
+        investorName: user?.is_ai_investor 
+          ? `${user.ai_emoji || '🤖'} ${user.ai_nickname}` 
+          : user?.username || 'Unknown',
+        isAI: user?.is_ai_investor || false,
+        ticker: pitch?.ticker || `PITCH-${trade.pitch_id}`,
+        companyName: pitch?.company_name || 'Unknown',
+        shares: trade.shares,
+        pricePerShare: trade.price_per_share,
+        totalAmount: trade.total_amount,
+        timestamp: new Date().toISOString() // We'll add created_at column later
+      };
+    }) || [];
+
+    // Get portfolio snapshots for the last 7 days (we'll build this feature next)
+    // For now, return current portfolio values
+    const { data: currentPortfolios, error: portfolioError } = await supabase
+      .from('user_token_balances')
+      .select('user_id, username, ai_nickname, is_ai_investor, available_tokens, portfolio_value')
+      .order('portfolio_value', { ascending: false })
+      .limit(10);
+
+    if (portfolioError) throw portfolioError;
+
+    return NextResponse.json({
+      recentActivity: enrichedTrades.slice(0, 20), // Last 20 trades
+      topInvestors: currentPortfolios?.map(inv => ({
+        name: inv.is_ai_investor ? inv.ai_nickname : inv.username,
+        isAI: inv.is_ai_investor,
+        portfolioValue: inv.portfolio_value,
+        cash: inv.available_tokens
+      })) || [],
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Trading activity API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch trading activity' },
+      { status: 500 }
+    );
+  }
+}

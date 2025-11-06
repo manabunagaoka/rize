@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import InvestorProfileModal from '@/components/InvestorProfileModal';
+import ActivityTimeline from '@/components/ActivityTimeline';
 import { Crown, Trophy, Award, TrendingUp, TrendingDown, User, Bot, GraduationCap, BarChart3 } from 'lucide-react';
 
 interface Holding {
@@ -294,6 +295,11 @@ export default function LeaderboardPage() {
               </button>
             </div>
           )}
+
+          {/* Activity Timeline */}
+          <div className="mb-8">
+            <ActivityTimeline />
+          </div>
 
           {/* Leaderboard Table */}
           <div className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
