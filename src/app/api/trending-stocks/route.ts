@@ -78,11 +78,12 @@ export async function GET() {
 
     // Convert to array and sort by total volume
     const trending = Array.from(stockActivity.values())
-      .sort((a, b) => b.totalVolume - a.totalVolume)
-      .slice(0, 5); // Top 5
+      .sort((a, b) => b.totalVolume - a.totalVolume);
+      // Show all stocks, not just top 5
 
     return NextResponse.json({
       trending,
+      lastUpdated: new Date().toISOString(),
       timestamp: new Date().toISOString()
     }, {
       headers: {

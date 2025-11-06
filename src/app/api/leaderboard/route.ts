@@ -115,6 +115,9 @@ export async function GET(request: NextRequest) {
     console.log('[Leaderboard] ManaMana investments:', JSON.stringify(
       manaManaInvestments.map(inv => ({ pitch_id: inv.pitch_id, shares: inv.shares_owned }))
     ));
+    console.log('[Leaderboard] ALL investments sample:', JSON.stringify(
+      investments?.slice(0, 10).map(inv => ({ user_id: inv.user_id.substring(0, 8), pitch_id: inv.pitch_id, shares: inv.shares_owned }))
+    ));
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);

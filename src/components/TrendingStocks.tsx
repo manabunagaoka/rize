@@ -14,8 +14,13 @@ interface StockActivity {
   tradeCount: number;
 }
 
+interface TrendingResponse {
+  trending: StockActivity[];
+  lastUpdated: string;
+}
+
 export default function TrendingStocks() {
-  const [trending, setTrending] = useState<StockActivity[]>([]);
+  const [data, setData] = useState<TrendingResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,8 +32,8 @@ export default function TrendingStocks() {
   const fetchTrendingStocks = async () => {
     try {
       const response = await fetch(`/api/trending-stocks?t=${Date.now()}`);
-      const data = await response.json();
-      setTrending(data.trending || []);
+      const result = await response.json();
+      setData(result);
     } catch (error) {
       console.error('Error fetching trending stocks:', error);
     } finally {
@@ -36,41 +41,52 @@ export default function TrendingStocks() {
     }
   };
 
+  const getTimeAgo = (isoString: string) => {
+    const seconds = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
+  };
+
   if (loading) {
     return (
-      <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-purple-500/20 p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-800 rounded w-1/3"></div>
-          <div className="space-y-2">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 bg-gray-800 rounded"></div>
-            ))}
-          </div>
-        </div>
+      <div className="text-center py-8 text-gray-400">
+        Loading trending stocks...
       </div>
     );
   }
+
+  const trending = data?.trending || [];
 
   if (!trending || trending.length === 0) {
     return (
-      <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-purple-500/20 p-8 text-center">
-        <Activity className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-        <p className="text-gray-400">No trading activity yet today</p>
+      <div className="text-center py-8 text-gray-400">
+        No trading activity yet
       </div>
     );
   }
 
-  const maxVolume = Math.max(...trending.map(s => s.totalVolume));
+  const maxVolume = Math.max(...trending.map((s: StockActivity) => s.totalVolume));
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-purple-500/20 p-6">
+    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">🔥 Trending Stocks</h2>
-        <div className="text-sm text-gray-400">Last 7 days</div>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🔥</span>
+          <h2 className="text-xl font-bold text-white">Trending Stocks</h2>
+        </div>
+        {data?.lastUpdated && (
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span>Updated {getTimeAgo(data.lastUpdated)}</span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
-        {trending.map((stock, index) => {
+        {trending.map((stock: StockActivity, index: number) => {
           const barWidth = (stock.totalVolume / maxVolume) * 100;
           const netDirection = stock.netVolume > 0 ? 'buy' : stock.netVolume < 0 ? 'sell' : 'neutral';
           
