@@ -140,8 +140,18 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   };
 
   const handleTradeSuccess = async () => {
-    // Immediately fetch updated portfolio data with cache bypass
-    await fetchPortfolioData();
+    // Poll for updated data with retries to handle replication lag
+    const pollForUpdate = async (maxAttempts = 8) => {
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between attempts
+        await fetchPortfolioData();
+        
+        // If this was a buy and we now have shares, or sell and shares decreased, we're done
+        if (i > 2) break; // After 3 attempts (1.5s), let the page reload handle it
+      }
+    };
+    
+    await pollForUpdate();
     
     // Refresh the price too
     await fetchMarketPrice();
@@ -149,7 +159,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
     if (onTradeComplete) {
       onTradeComplete();
     }
-    
+  };
     // Don't do full page reload - we already updated the data above
   };
 
