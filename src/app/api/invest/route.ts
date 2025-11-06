@@ -165,14 +165,15 @@ export async function POST(request: NextRequest) {
       })
       .eq('pitch_id', pitchId);
 
-    // Get or create user investment
+    // Get or create user investment - force read from primary
     console.log('[Invest API] Checking existing investment for user:', user.id, 'pitch:', pitchId);
     const { data: existingInvestment, error: fetchError } = await supabase
       .from('user_investments')
       .select('*')
       .eq('user_id', user.id)
       .eq('pitch_id', pitchId)
-      .single();
+      .order('created_at', { ascending: false })
+      .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
     console.log('[Invest API] Existing investment:', existingInvestment);
     console.log('[Invest API] Fetch error:', fetchError);
@@ -201,10 +202,11 @@ export async function POST(request: NextRequest) {
         console.error('[Invest API] Update error:', updateError);
         throw new Error(`Failed to update investment: ${updateError.message}`);
       }
+      console.log('[Invest API] Investment updated successfully');
     } else {
       // Create new investment
       console.log('[Invest API] Creating new investment - shares:', shares, 'total:', totalCost);
-      const { error: insertError } = await supabase
+      const { data: newInvestment, error: insertError } = await supabase
         .from('user_investments')
         .insert({
           user_id: user.id,
@@ -214,13 +216,15 @@ export async function POST(request: NextRequest) {
           avg_purchase_price: currentPrice,
           current_value: totalCost, // Initial value equals amount invested
           unrealized_gain_loss: 0 // No gain/loss initially
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) {
         console.error('[Invest API] Insert error:', insertError);
         throw new Error(`Failed to create investment: ${insertError.message}`);
       }
-      console.log('[Invest API] Investment created successfully');
+      console.log('[Invest API] Investment created successfully:', newInvestment);
     }
 
     // Record transaction
