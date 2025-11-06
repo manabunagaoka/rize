@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
 
 
 // Force dynamic rendering - don't pre-render at build time
@@ -39,7 +39,13 @@ async function verifyUser(request: NextRequest) {
 
 // POST - Buy shares
 export async function POST(request: NextRequest) {
-  const supabase = getSupabaseServer();
+  // Create fresh Supabase client to avoid caching issues
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
+    { auth: { persistSession: false } }
+  );
+  
   try {
     const user = await verifyUser(request);
     
