@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
 
 
 // Force dynamic rendering - don't pre-render at build time
@@ -39,7 +39,15 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch leaderboard with all investors ranked by portfolio value
 export async function GET(request: NextRequest) {
-  const supabase = getSupabaseServer();
+  // Create fresh Supabase client to avoid caching issues
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
+    {
+      auth: { persistSession: false }
+    }
+  );
+  
   try {
     const user = await verifyUser(request);
     
@@ -80,7 +88,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all user investments (pitch holdings)
-    const { data: investments, error: investmentsError } = await supabase
+    const { data: investments, error: investmentsError} = await supabase
       .from('user_investments')
       .select(`
         user_id,
@@ -88,7 +96,7 @@ export async function GET(request: NextRequest) {
         shares_owned,
         current_value
       `)
-      .gt('shares_owned', 0); // Only fetch positions with actual shares
+      .gt('shares_owned', 0);
     
     // Debug logging
     const manaManaInvestments = investments?.filter(inv => inv.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') || [];
