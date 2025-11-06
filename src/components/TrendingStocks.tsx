@@ -73,7 +73,10 @@ export default function TrendingStocks() {
   return (
     <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-white">Trending Stocks</h2>
+        <div>
+          <h2 className="text-xl font-bold text-white">Trending Stocks</h2>
+          <p className="text-xs text-gray-500 mt-1">Trading volume from last 7 days • Auto-refreshes every 60s</p>
+        </div>
         {data?.lastUpdated && (
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>

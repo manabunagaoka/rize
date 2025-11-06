@@ -54,19 +54,24 @@ export default function StockPrice({ ticker }: StockPriceProps) {
   const isPositive = data.change >= 0;
 
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <span className="font-bold text-white">
-        ${data.price.toFixed(2)}
-      </span>
-      <div className={`flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-        {isPositive ? (
-          <TrendingUp className="w-3 h-3" />
-        ) : (
-          <TrendingDown className="w-3 h-3" />
-        )}
-        <span className="font-semibold text-xs">
-          {isPositive ? '+' : ''}{data.changePercent.toFixed(2)}%
+    <div>
+      <div className="flex items-center gap-2 text-sm">
+        <span className="font-bold text-white">
+          ${data.price.toFixed(2)}
         </span>
+        <div className={`flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+          {isPositive ? (
+            <TrendingUp className="w-3 h-3" />
+          ) : (
+            <TrendingDown className="w-3 h-3" />
+          )}
+          <span className="font-semibold text-xs">
+            {isPositive ? '+' : ''}{data.changePercent.toFixed(2)}%
+          </span>
+        </div>
+      </div>
+      <div className="text-[10px] text-gray-500 mt-0.5">
+        Delayed 15 min
       </div>
     </div>
   );

@@ -202,6 +202,9 @@ export default function LeaderboardPage() {
                 <p className="text-gray-500 text-sm md:text-base">
                   Track your rank, view your performance, and compete against AI investors and fellow students. Can you beat the AI?
                 </p>
+                <p className="text-xs text-gray-600 mt-2">
+                  AI investors trade every 6 hours (2-3 trades each) • Prices delayed 15 min
+                </p>
               </div>
               <div className="text-sm text-gray-400 flex items-center gap-3">
                 <BarChart3 className="w-5 h-5" />
@@ -261,6 +264,7 @@ export default function LeaderboardPage() {
                     </div>
                   </div>
                   <p className="text-gray-300">@{data.currentUser.username}</p>
+                  <p className="text-xs text-gray-500 mt-1">Rankings auto-refresh every 60s • Prices delayed 15 min</p>
                 </div>
                 <div className="text-right">
                   <div className="text-4xl font-bold text-white mb-1">
