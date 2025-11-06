@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Portfolio API</title>
+</head>
+<body>
+    <h1>Testing Portfolio API</h1>
+    <button onclick="testAPI()">Fetch Portfolio</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            const timestamp = Date.now();
+            const url = `https://unicorn-six-pi.vercel.app/api/portfolio?t=${timestamp}`;
+            
+            document.getElementById('result').textContent = 'Loading...';
+            
+            try {
+                const response = await fetch(url, {
+                    credentials: 'include',
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

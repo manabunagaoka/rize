@@ -50,7 +50,15 @@ export async function GET(request: NextRequest) {
     const { data: investments } = await supabase
       .from('user_investments')
       .select('*')
-      .eq('user_id', balance.user_id);
+      .eq('user_id', balance.user_id)
+      .order('pitch_id');
+    
+    // Get ALL investments including zero shares (to find duplicates)
+    const { data: allInvestments } = await supabase
+      .from('user_investments')
+      .select('*')
+      .eq('user_id', balance.user_id)
+      .order('pitch_id');
 
     // Get recent transactions
     const { data: transactions } = await supabase
@@ -68,7 +76,9 @@ export async function GET(request: NextRequest) {
       },
       balance,
       investments,
+      allInvestments,
       investment_count: investments?.length || 0,
+      all_investment_count: allInvestments?.length || 0,
       recentTransactions: transactions
     });
 
