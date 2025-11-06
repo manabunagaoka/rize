@@ -66,7 +66,7 @@ export default function TrendingStocks() {
     <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-purple-500/20 p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white">🔥 Trending Stocks</h2>
-        <div className="text-sm text-gray-400">Last 24 hours</div>
+        <div className="text-sm text-gray-400">Last 7 days</div>
       </div>
 
       <div className="space-y-4">

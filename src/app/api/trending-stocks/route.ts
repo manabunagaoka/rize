@@ -11,22 +11,26 @@ export async function GET() {
   );
   
   try {
-    // Get all trades from last 24 hours
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Get all trades from last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     
     const { data: recentTrades, error: tradesError } = await supabase
       .from('investment_transactions')
       .select('pitch_id, transaction_type, shares, price_per_share')
-      .gte('timestamp', twentyFourHoursAgo);
+      .gte('timestamp', sevenDaysAgo);
 
     if (tradesError) throw tradesError;
 
-    // Get pitch details
-    const { data: pitches, error: pitchesError } = await supabase
-      .from('student_projects')
-      .select('id, ticker, company_name');
-
-    if (pitchesError) throw pitchesError;
+    // Get pitch details with ticker mapping
+    const tickerMap: Record<number, { ticker: string; name: string }> = {
+      1: { ticker: 'META', name: 'Meta Platforms' },
+      2: { ticker: 'MSFT', name: 'Microsoft' },
+      3: { ticker: 'DBX', name: 'Dropbox' },
+      4: { ticker: 'AKAM', name: 'Akamai' },
+      5: { ticker: 'RDDT', name: 'Reddit' },
+      6: { ticker: 'WRBY', name: 'Warby Parker' },
+      7: { ticker: 'BKNG', name: 'Booking.com' }
+    };
 
     // Calculate volume by stock
     const stockActivity = new Map<number, {
@@ -41,12 +45,12 @@ export async function GET() {
     }>();
 
     recentTrades?.forEach(trade => {
-      const pitch = pitches?.find(p => p.id === trade.pitch_id);
-      if (!pitch) return;
+      const pitchInfo = tickerMap[trade.pitch_id];
+      if (!pitchInfo) return;
 
       const existing = stockActivity.get(trade.pitch_id) || {
-        ticker: pitch.ticker,
-        companyName: pitch.company_name,
+        ticker: pitchInfo.ticker,
+        companyName: pitchInfo.name,
         buyVolume: 0,
         sellVolume: 0,
         totalVolume: 0,
