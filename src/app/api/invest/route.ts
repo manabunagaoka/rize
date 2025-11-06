@@ -66,7 +66,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('[Invest API] ===== NEW TRADE REQUEST =====');
+    console.log('[Invest API] User ID:', user.id);
+    console.log('[Invest API] User Email:', user.email);
+
     const { pitchId, shares } = await request.json();
+    
+    console.log('[Invest API] Pitch ID:', pitchId, 'Shares:', shares);
 
     if (!pitchId || !shares || shares <= 0) {
       return NextResponse.json(
@@ -183,10 +189,15 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .eq('pitch_id', pitchId)
       .order('created_at', { ascending: false })
-      .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
+      .maybeSingle();
 
     console.log('[Invest API] Existing investment:', existingInvestment);
     console.log('[Invest API] Fetch error:', fetchError);
+    
+    if (fetchError) {
+      console.error('[Invest API] CRITICAL: Failed to fetch investment:', fetchError);
+      throw new Error(`Failed to check existing investment: ${fetchError.message}`);
+    }
 
     if (existingInvestment) {
       // Update existing investment
