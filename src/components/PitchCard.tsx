@@ -109,8 +109,15 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       
       const data = await response.json();
       
+      console.log('[PitchCard] Portfolio data received:', data);
+      console.log('[PitchCard] Looking for pitch_id:', story.id);
+      console.log('[PitchCard] All pitch_ids in investments:', data.investments?.map((inv: any) => inv.pitch_id));
+      
       // Find investment for this company
       const investment = data.investments?.find((inv: any) => inv.pitch_id === story.id);
+      console.log('[PitchCard] Found investment:', investment);
+      console.log('[PitchCard] Setting sharesOwned to:', investment?.shares_owned || 0);
+      
       setSharesOwned(investment?.shares_owned || 0);
       // Don't override currentPrice here - it's fetched from market data
       setBalance(data.balance?.available_tokens || 0);
