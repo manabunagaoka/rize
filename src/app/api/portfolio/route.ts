@@ -92,13 +92,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get user's investments
+    // Get user's investments - force fresh read from primary
     console.log('[Portfolio API] Fetching investments for user:', user.id);
     const { data: investments, error: investError } = await supabase
       .from('user_investments')
       .select('*')
       .eq('user_id', user.id)
-      .gt('shares_owned', 0);
+      .gt('shares_owned', 0)
+      .order('created_at', { ascending: false }); // Adding order forces fresh read
 
     console.log('[Portfolio API] Query result - investments:', investments);
     console.log('[Portfolio API] Query result - error:', investError);
