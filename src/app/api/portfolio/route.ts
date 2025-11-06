@@ -176,12 +176,15 @@ export async function GET(request: NextRequest) {
         all_time_gain_loss: totalGainLoss,
         total_invested: balance.total_invested
       },
-      investments: investmentsWithPrices
+      investments: investmentsWithPrices,
+      _version: '2025-11-06-v5', // Force cache invalidation
+      _timestamp: new Date().toISOString()
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-API-Version': '2025-11-06-v5'
       }
     });
 
