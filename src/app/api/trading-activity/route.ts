@@ -22,25 +22,43 @@ export async function GET() {
       .order('id', { ascending: false })
       .limit(50);
 
-    if (tradesError) throw tradesError;
+    if (tradesError) {
+      console.error('Error fetching trades:', tradesError);
+      throw tradesError;
+    }
+
+    // If no trades, return empty data
+    if (!recentTrades || recentTrades.length === 0) {
+      return NextResponse.json({
+        recentActivity: [],
+        topInvestors: [],
+        timestamp: new Date().toISOString()
+      });
+    }
 
     // Get user details for those trades
-    const userIds = Array.from(new Set(recentTrades?.map(t => t.user_id) || []));
+    const userIds = Array.from(new Set(recentTrades.map(t => t.user_id)));
     const { data: users, error: usersError } = await supabase
       .from('user_token_balances')
       .select('user_id, username, ai_nickname, is_ai_investor, ai_emoji')
       .in('user_id', userIds);
 
-    if (usersError) throw usersError;
+    if (usersError) {
+      console.error('Error fetching users:', usersError);
+      throw usersError;
+    }
 
     // Get pitch details
-    const pitchIds = Array.from(new Set(recentTrades?.map(t => t.pitch_id) || []));
-    const { data: pitches, error: pitchesError } = await supabase
+    const pitchIds = Array.from(new Set(recentTrades.map(t => t.pitch_id)));
+    const { data: pitches, error: pitchesError} = await supabase
       .from('pitch_market_data')
       .select('pitch_id, ticker, company_name')
       .in('pitch_id', pitchIds);
 
-    if (pitchesError) throw pitchesError;
+    if (pitchesError) {
+      console.error('Error fetching pitches:', pitchesError);
+      throw pitchesError;
+    }
 
     // Combine data
     const enrichedTrades = recentTrades?.map(trade => {
