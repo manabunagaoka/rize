@@ -107,15 +107,16 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
     setShowModal(true);
   };
 
-  const handleTradeSuccess = () => {
-    fetchPortfolioData();
+  const handleTradeSuccess = async () => {
+    // Immediately fetch updated portfolio data
+    await fetchPortfolioData();
+    
     if (onTradeComplete) {
       onTradeComplete();
     }
-    // Refresh page to show updated portfolio
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+    
+    // Force page refresh to ensure all UI updates
+    window.location.reload();
   };
 
   return (
