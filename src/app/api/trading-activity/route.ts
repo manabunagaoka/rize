@@ -26,6 +26,12 @@ export async function GET() {
       `)
       .order('id', { ascending: false })
       .limit(50);
+    
+    console.log('[Trading Activity] Query result:', {
+      tradesCount: recentTrades?.length,
+      hasError: !!tradesError,
+      errorMessage: tradesError?.message
+    });
 
     if (tradesError) {
       console.error('Error fetching trades:', tradesError);
