@@ -95,8 +95,10 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
 
   const fetchPortfolioData = async () => {
     try {
-      const response = await fetch('/api/portfolio', {
-        credentials: 'include'
+      // Add timestamp to bypass cache
+      const response = await fetch(`/api/portfolio?t=${Date.now()}`, {
+        credentials: 'include',
+        cache: 'no-store'
       });
       const data = await response.json();
       
@@ -131,15 +133,17 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   };
 
   const handleTradeSuccess = async () => {
-    // Immediately fetch updated portfolio data
+    // Immediately fetch updated portfolio data with cache bypass
     await fetchPortfolioData();
+    
+    // Refresh the price too
+    await fetchMarketPrice();
     
     if (onTradeComplete) {
       onTradeComplete();
     }
     
-    // Force page refresh to ensure all UI updates
-    window.location.reload();
+    // Don't do full page reload - we already updated the data above
   };
 
   return (

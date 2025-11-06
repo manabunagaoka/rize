@@ -70,8 +70,9 @@ export default function Portfolio() {
 
   async function fetchPortfolio() {
     try {
-      const response = await fetch('/api/portfolio', {
-        credentials: 'include'
+      const response = await fetch(`/api/portfolio?t=${Date.now()}`, {
+        credentials: 'include',
+        cache: 'no-store'
       });
       const portfolioData = await response.json();
       setData(portfolioData);
@@ -84,8 +85,9 @@ export default function Portfolio() {
 
   async function fetchTransactions() {
     try {
-      const response = await fetch('/api/transactions', {
-        credentials: 'include'
+      const response = await fetch(`/api/transactions?t=${Date.now()}`, {
+        credentials: 'include',
+        cache: 'no-store'
       });
       const result = await response.json();
       setTransactions(result.transactions || []);
