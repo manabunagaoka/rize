@@ -105,9 +105,9 @@ export default function HM7Page() {
   const handleTradeComplete = () => {
     // Trigger refresh of all PitchCards by incrementing key
     setRefreshKey(prev => prev + 1);
-    // Also force a page reload to clear any browser cache
+    // Force a hard reload that bypasses ALL caches
     setTimeout(() => {
-      window.location.reload();
+      window.location.href = window.location.href.split('?')[0] + '?_=' + Date.now();
     }, 500);
   };
 
