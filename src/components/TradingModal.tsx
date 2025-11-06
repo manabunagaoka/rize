@@ -100,6 +100,17 @@ export default function TradingModal({
     ? shares > 0 && shares <= maxAffordable
     : shares > 0 && shares <= maxSellable;
 
+  console.log('[TradingModal] Render state:', {
+    isValid,
+    loading,
+    priceLoading,
+    shares,
+    maxAffordable,
+    maxSellable,
+    currentPrice: company.currentPrice,
+    buttonDisabled: !isValid || loading || priceLoading
+  });
+
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-2xl max-w-md w-full border border-gray-700 shadow-2xl">
