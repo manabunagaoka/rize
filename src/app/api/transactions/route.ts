@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabase-server';
+import { createClient } from '@supabase/supabase-js';
 
 
 // Force dynamic rendering - don't pre-render at build time
@@ -39,7 +39,13 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's transaction history
 export async function GET(request: NextRequest) {
-  const supabase = getSupabaseServer();
+  // Create fresh Supabase client to avoid caching
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
+    { auth: { persistSession: false } }
+  );
+  
   try {
     const user = await verifyUser(request);
     
@@ -50,13 +56,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get transactions ordered by most recent
+    // Get ALL transactions (removed limit) ordered by most recent
     const { data: transactions, error } = await supabase
       .from('investment_transactions')
       .select('*')
       .eq('user_id', user.id)
-      .order('timestamp', { ascending: false })
-      .limit(50);
+      .order('timestamp', { ascending: false });
 
     if (error) {
       console.error('Transaction fetch error:', error);
@@ -87,6 +92,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       transactions: enrichedTransactions
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
 
   } catch (error) {
