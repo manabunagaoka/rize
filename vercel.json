@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/ai-trading/execute",
-      "schedule": "0 */6 * * *"
+      "schedule": "30 14,17,20 * * 1-5"
     }
   ],
   "buildCommand": "next build",
