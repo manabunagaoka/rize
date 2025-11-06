@@ -46,10 +46,12 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_KEY!,
     { 
       auth: { persistSession: false },
+      db: { schema: 'public' },
       global: {
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'x-supabase-api-version': '2024-01-01'
         }
       }
     }
@@ -94,12 +96,30 @@ export async function GET(request: NextRequest) {
 
     // Get user's investments - force fresh read from primary
     console.log('[Portfolio API] Fetching investments for user:', user.id);
-    const { data: investments, error: investError } = await supabase
-      .from('user_investments')
-      .select('*')
-      .eq('user_id', user.id)
-      .gt('shares_owned', 0)
-      .order('created_at', { ascending: false }); // Adding order forces fresh read
+    
+    // Multiple attempts with delays to handle replication lag
+    let investments = null;
+    let investError = null;
+    
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await supabase
+        .from('user_investments')
+        .select('*')
+        .eq('user_id', user.id)
+        .gt('shares_owned', 0)
+        .order('updated_at', { ascending: false }); // Order by updated_at for freshest data
+      
+      investments = result.data;
+      investError = result.error;
+      
+      if (investments && investments.length > 0) break;
+      
+      // Wait 500ms before retry
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log(`[Portfolio API] Retry ${attempt + 1} - refetching investments`);
+      }
+    }
 
     console.log('[Portfolio API] Query result - investments:', investments);
     console.log('[Portfolio API] Query result - error:', investError);
