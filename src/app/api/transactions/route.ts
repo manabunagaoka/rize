@@ -45,10 +45,12 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_KEY!,
     { 
       auth: { persistSession: false },
+      db: { schema: 'public' },
       global: {
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'x-supabase-api-version': '2024-01-01'
         }
       }
     }
@@ -65,11 +67,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Get ALL transactions (removed limit) ordered by most recent
-    const { data: transactions, error } = await supabase
-      .from('investment_transactions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('timestamp', { ascending: false });
+    // Multiple attempts with delays to handle replication lag
+    let transactions = null;
+    let error = null;
+    
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await supabase
+        .from('investment_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('timestamp', { ascending: false });
+      
+      transactions = result.data;
+      error = result.error;
+      
+      if (transactions && transactions.length > 0) break;
+      
+      // Wait 500ms before retry
+      if (attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log(`[Transactions API] Retry ${attempt + 1} - refetching transactions`);
+      }
+    }
 
     if (error) {
       console.error('Transaction fetch error:', error);
