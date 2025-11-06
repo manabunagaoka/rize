@@ -47,7 +47,10 @@ export default function TradingModal({
   // Check if price data is loaded
   const priceLoading = company.currentPrice === 0;
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    console.log('[TradingModal] ===== handleSubmit FIRED =====');
     console.log('[TradingModal] handleSubmit called');
     console.log('[TradingModal] priceLoading:', priceLoading);
     console.log('[TradingModal] shares:', shares);
@@ -229,7 +232,10 @@ export default function TradingModal({
               Cancel
             </button>
             <button
-              onClick={handleSubmit}
+              onClick={(e) => {
+                console.log('[TradingModal] Button clicked!', e);
+                handleSubmit(e);
+              }}
               disabled={!isValid || loading || priceLoading}
               className={`flex-1 font-semibold py-3 rounded-lg transition ${
                 action === 'BUY'
