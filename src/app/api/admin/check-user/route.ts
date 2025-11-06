@@ -15,23 +15,20 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_KEY!
     );
 
-    // Get user info
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: 'User not found', details: userError }, { status: 404 });
-    }
-
-    // Get user's balance
+    // Get user balance (which has user info too)
     const { data: balance, error: balanceError } = await supabase
       .from('user_token_balances')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_email', email)
       .single();
+
+    if (balanceError || !balance) {
+      return NextResponse.json({ 
+        error: 'User not found', 
+        details: balanceError,
+        attemptedEmail: email 
+      }, { status: 404 });
+    }
 
     // Get user's investments
     const { data: investments, error: investError } = await supabase
@@ -40,22 +37,22 @@ export async function POST(request: NextRequest) {
         *,
         student_projects (ticker, company_name)
       `)
-      .eq('user_id', user.id);
+      .eq('user_id', balance.user_id);
 
     // Get recent transactions
     const { data: transactions, error: transError } = await supabase
       .from('investment_transactions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', balance.user_id)
       .order('id', { ascending: false })
       .limit(20);
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        created_at: user.created_at
+        id: balance.user_id,
+        email: balance.user_email,
+        username: balance.username,
+        created_at: balance.created_at
       },
       balance,
       investments: investments?.map(inv => ({
@@ -65,7 +62,6 @@ export async function POST(request: NextRequest) {
       })),
       recentTransactions: transactions,
       errors: {
-        balanceError,
         investError,
         transError
       }
