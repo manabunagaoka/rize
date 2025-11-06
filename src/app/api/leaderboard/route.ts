@@ -200,7 +200,14 @@ export async function GET(request: NextRequest) {
       currentUser: currentUserData,
       topAI,
       totalInvestors: rankedLeaderboard.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      debug: {
+        manaManaInvestmentsCount: manaManaInvestments.length,
+        manaManaInvestments: manaManaInvestments.map(inv => ({ 
+          pitch_id: inv.pitch_id, 
+          shares: inv.shares_owned 
+        }))
+      }
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
