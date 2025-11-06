@@ -30,6 +30,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   const [showModal, setShowModal] = useState(false);
   const [tradeAction, setTradeAction] = useState<'BUY' | 'SELL'>('BUY');
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -52,6 +53,8 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
         const data = await response.json();
         if (data.c && data.c > 0) {
           setCurrentPrice(data.c);
+          // Increment refresh key to force StockPrice component to re-fetch
+          setRefreshKey(prev => prev + 1);
         }
       }
     } catch (error) {
@@ -163,7 +166,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-pink-500">{story.valuation}</p>
-            {story.ticker && <StockPrice ticker={story.ticker} />}
+            {story.ticker && <StockPrice key={refreshKey} ticker={story.ticker} />}
           </div>
         </div>
         

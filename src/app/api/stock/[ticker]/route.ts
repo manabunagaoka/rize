@@ -9,6 +9,10 @@ export async function GET(
 ) {
   const ticker = params.ticker;
   const apiKey = process.env.STOCK_API_KEY;
+  
+  // Check if this is a manual refresh request (has timestamp param)
+  const { searchParams } = new URL(request.url);
+  const isManualRefresh = searchParams.has('t');
 
   // If no API key, return mock data
   if (!apiKey) {
@@ -22,12 +26,15 @@ export async function GET(
   }
 
   try {
-    // Fetch from Finnhub API with 5-minute cache
+    // Fetch from Finnhub API
+    // Use cache for normal requests, bypass for manual refresh
     const response = await fetch(
       `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
-      { 
+      isManualRefresh ? { 
+        cache: 'no-store' // Bypass cache for manual refresh
+      } : { 
         next: { 
-          revalidate: 300 // Cache for 5 minutes
+          revalidate: 300 // Cache for 5 minutes for normal requests
         } 
       }
     );
@@ -39,11 +46,24 @@ export async function GET(
     const data = await response.json();
 
     // Finnhub returns: { c: current, d: change, dp: changePercent }
-    return NextResponse.json({
+    const result = {
       c: data.c,   // current price
       d: data.d,   // change
       dp: data.dp  // change percent
-    });
+    };
+    
+    // Add no-cache headers for manual refresh
+    if (isManualRefresh) {
+      return NextResponse.json(result, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+    }
+    
+    return NextResponse.json(result);
 
   } catch (error) {
     console.error(`Error fetching stock price for ${ticker}:`, error);

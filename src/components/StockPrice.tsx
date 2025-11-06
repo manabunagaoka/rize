@@ -20,7 +20,8 @@ export default function StockPrice({ ticker }: StockPriceProps) {
   useEffect(() => {
     async function fetchPrice() {
       try {
-        const response = await fetch(`/api/stock/${ticker}`);
+        // Add timestamp to bypass cache on refresh
+        const response = await fetch(`/api/stock/${ticker}?t=${Date.now()}`);
         const apiData = await response.json();
         
         // Transform Finnhub response to our format
