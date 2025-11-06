@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     //   );
     // }
 
-    // Fetch all investors with their balances and holdings
+    // Fetch all investors with their balances and holdings - force fresh data
     const { data: investors, error: investorsError } = await supabase
       .from('user_token_balances')
       .select(`
@@ -75,7 +75,8 @@ export async function GET(request: NextRequest) {
         investor_tier_earned_at,
         portfolio_value,
         all_time_gain_loss
-      `);
+      `)
+      .order('user_id', { ascending: true }); // Force fresh query
 
     if (investorsError) {
       console.error('Error fetching investors:', investorsError);
