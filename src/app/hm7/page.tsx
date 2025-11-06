@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import PitchCard from '@/components/PitchCard';
+import TradeLoadingOverlay from '@/components/TradeLoadingOverlay';
 import Link from 'next/link';
 
 const SUCCESS_STORIES = [
@@ -42,6 +43,7 @@ export default function HM7Page() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [marketCaps, setMarketCaps] = useState<Record<string, any>>({});
   const [storiesWithLiveData, setStoriesWithLiveData] = useState(SUCCESS_STORIES);
+  const [showTradeLoading, setShowTradeLoading] = useState(false);
 
   useEffect(() => {
     // Sync prices on page load
@@ -103,8 +105,12 @@ export default function HM7Page() {
   };
 
   const handleTradeComplete = () => {
+    // Show loading overlay
+    setShowTradeLoading(true);
+    
     // Trigger refresh of all PitchCards by incrementing key
     setRefreshKey(prev => prev + 1);
+    
     // Wait 3 seconds for database to fully replicate
     setTimeout(() => {
       window.location.href = window.location.href.split('?')[0] + '?_=' + Date.now();
@@ -178,6 +184,9 @@ export default function HM7Page() {
           </p>
         </div>
       </div>
+
+      {/* Trade Loading Overlay */}
+      <TradeLoadingOverlay isVisible={showTradeLoading} message="Processing your trade" />
     </div>
   );
 }
