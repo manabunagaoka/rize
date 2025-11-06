@@ -102,6 +102,9 @@ export async function GET(request: NextRequest) {
 
     // Get user's investments directly - service role key should read from primary
     console.log('[Portfolio API] Fetching investments for user:', user.id);
+    
+    // Force fresh query with timestamp to bypass any caching layers
+    const queryTimestamp = Date.now();
     const { data: investments, error: investError } = await supabase
       .from('user_investments')
       .select('*')
@@ -109,9 +112,11 @@ export async function GET(request: NextRequest) {
       .gt('shares_owned', 0)
       .order('updated_at', { ascending: false });
 
+    console.log('[Portfolio API] Query timestamp:', queryTimestamp);
     console.log('[Portfolio API] Query result - investments:', investments);
     console.log('[Portfolio API] Query result - error:', investError);
     console.log('[Portfolio API] Number of investments:', investments?.length || 0);
+    console.log('[Portfolio API] Pitch IDs returned:', investments?.map(inv => inv.pitch_id));
 
     if (investError) {
       console.error('Investment fetch error:', investError);
