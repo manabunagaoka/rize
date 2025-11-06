@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 import StockPrice from '@/components/StockPrice';
 import TradingModal from '@/components/TradingModal';
 
@@ -28,6 +29,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [tradeAction, setTradeAction] = useState<'BUY' | 'SELL'>('BUY');
+  const [refreshing, setRefreshing] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -40,6 +42,24 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       setLoading(false);
     }
   }, [isAuthenticated, story.id]);
+
+  const handleManualRefresh = async () => {
+    if (!story.ticker || refreshing) return;
+    setRefreshing(true);
+    try {
+      const response = await fetch(`/api/stock/${story.ticker}?t=${Date.now()}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.c && data.c > 0) {
+          setCurrentPrice(data.c);
+        }
+      }
+    } catch (error) {
+      console.error('Manual refresh failed:', error);
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
+    }
+  };
 
   const fetchMarketPrice = async () => {
     try {
@@ -126,7 +146,17 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
         <div className="flex justify-between items-start mb-4">
           <div>
             {story.ticker && (
-              <h2 className="text-3xl font-bold mb-1">{story.ticker}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-3xl font-bold mb-1">{story.ticker}</h2>
+                <button
+                  onClick={handleManualRefresh}
+                  disabled={refreshing}
+                  className="p-1.5 hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50"
+                  title="Refresh price"
+                >
+                  <RefreshCw className={`w-4 h-4 text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
             )}
             <h3 className="text-base text-gray-300 mb-2">{story.name}</h3>
             <p className="text-gray-400 text-sm">{story.founder} • {story.year}</p>

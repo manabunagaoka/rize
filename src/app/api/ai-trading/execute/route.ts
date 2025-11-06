@@ -138,14 +138,18 @@ ${getStrategyGuidelines(aiInvestor.ai_strategy)}
 
 ANALYSIS FRAMEWORK:
 - Consider both the BUSINESS (pitch, founder story, category) AND the MARKET DATA (price, momentum)
+- You are called every 6 hours - BE ACTIVE, make moves!
 - SELL if you have holdings that are declining, overvalued, or don't fit your strategy
 - BUY if you see undervalued opportunities that match your strategy
+- DON'T HOLD unless you truly have no good move - staying active keeps the game interesting
 - ${aiInvestor.ai_strategy === 'TECH_ONLY' ? 'Focus on technology companies' : ''}
 - ${aiInvestor.ai_strategy === 'SAAS_ONLY' ? 'Focus on SaaS/software businesses' : ''}
 - ${aiInvestor.ai_strategy === 'MOMENTUM' ? 'SELL losers quickly, BUY stocks with positive momentum' : ''}
 - ${aiInvestor.ai_strategy === 'CONTRARIAN' ? 'SELL when others are buying (peaks), BUY when declining' : ''}
-- ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? 'Buy and hold quality businesses long-term, rarely sell' : ''}
+- ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? 'Buy quality businesses but still trade occasionally' : ''}
 - ${aiInvestor.ai_strategy === 'PERFECT_TIMING' ? 'SELL at peaks, BUY at dips - focus on timing' : ''}
+- ${aiInvestor.ai_strategy === 'ALL_IN' ? 'Take big swings! Go all-in on your convictions' : ''}
+- ${aiInvestor.ai_strategy === 'DIVERSIFIED' ? 'Spread risk across multiple positions' : ''}
 
 Make ONE trade decision combining business analysis + price trends. Respond with valid JSON:
 {
@@ -467,37 +471,47 @@ export async function POST(request: Request) {
     const pitches = await getPitchData();  // Changed from prices to pitches
     const results = [];
     
-    // Cooldown period: 5 minutes for testing (300000 ms)
-    const COOLDOWN_MS = 5 * 60 * 1000;
+    // NO COOLDOWN - AI should trade every time cron runs (every 6 hours)
+    // Each AI makes 2-3 decisions per run for more activity
 
     for (const ai of aiInvestors) {
+      const aiResults = [];
       try {
-        // Check cooldown
-        const lastTradeTime = await getLastTradeTime(ai.user_id);
-        if (lastTradeTime) {
-          const timeSinceLastTrade = Date.now() - lastTradeTime.getTime();
-          if (timeSinceLastTrade < COOLDOWN_MS) {
-            results.push({
-              investor: ai.ai_nickname,
-              decision: {
-                action: 'HOLD',
-                pitch_id: 1,
-                reasoning: `On cooldown (${Math.round((COOLDOWN_MS - timeSinceLastTrade) / 60000)} min remaining)`
-              },
-              result: { success: true, message: 'Cooldown active' }
+        const portfolio = await getAIPortfolio(ai.user_id);
+        
+        // Make 2-3 trading decisions per AI investor per run
+        const numTrades = Math.floor(Math.random() * 2) + 2; // 2-3 trades
+        
+        for (let i = 0; i < numTrades; i++) {
+          try {
+            const decision = await getAITradeDecision(ai, portfolio, pitches);
+            
+            // Skip if AI decided to HOLD
+            if (decision.action === 'HOLD') {
+              aiResults.push({
+                decision,
+                result: { success: true, message: 'Holding position' }
+              });
+              continue;
+            }
+            
+            const result = await executeTrade(ai, decision);
+            aiResults.push({ decision, result });
+            
+            // Small delay between trades
+            await new Promise(resolve => setTimeout(resolve, 500));
+          } catch (tradeError) {
+            console.error(`Trade ${i+1} error for ${ai.ai_nickname}:`, tradeError);
+            aiResults.push({
+              decision: { action: 'HOLD', pitch_id: 1, reasoning: 'Trade error' },
+              result: { success: false, message: String(tradeError) }
             });
-            continue;
           }
         }
-
-        const portfolio = await getAIPortfolio(ai.user_id);
-        const decision = await getAITradeDecision(ai, portfolio, pitches);
-        const result = await executeTrade(ai, decision);
         
         results.push({
           investor: ai.ai_nickname,
-          decision,
-          result
+          trades: aiResults
         });
 
         // Small delay to avoid rate limits
