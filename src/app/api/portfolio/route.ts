@@ -43,21 +43,20 @@ export async function GET(request: NextRequest) {
   console.log('[Portfolio API] Request URL:', request.url);
   console.log('[Portfolio API] Request timestamp:', new Date().toISOString());
   
-  // Create fresh Supabase client with service role key that reads from primary
+  // Create fresh Supabase client - match debug endpoint config exactly
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
-    { 
-      auth: { persistSession: false },
-      db: { 
+    {
+      auth: {
+        persistSession: false
+      },
+      db: {
         schema: 'public'
       },
       global: {
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Prefer': 'return=representation', // Force full object return
-          'x-supabase-api-version': '2024-01-01'
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
         }
       }
     }
