@@ -165,17 +165,22 @@ export async function POST(request: NextRequest) {
     
     if (newShares <= 0) {
       // Delete investment if no shares left
-      await supabase
+      const { error: deleteError } = await supabase
         .from('user_investments')
         .delete()
         .eq('user_id', user.id)
         .eq('pitch_id', pitchId);
+      
+      if (deleteError) {
+        console.error('Failed to delete investment:', deleteError);
+        throw new Error(`Failed to delete investment: ${deleteError.message}`);
+      }
     } else {
       // Update investment - reduce shares and cost basis proportionally
       const newCurrentValue = Math.floor(newShares * currentPrice);
       const newUnrealizedGainLoss = newCurrentValue - newTotalInvested;
       
-      await supabase
+      const { error: updateError } = await supabase
         .from('user_investments')
         .update({
           shares_owned: newShares,
@@ -187,12 +192,17 @@ export async function POST(request: NextRequest) {
         })
         .eq('user_id', user.id)
         .eq('pitch_id', pitchId);
+      
+      if (updateError) {
+        console.error('Failed to update investment:', updateError);
+        throw new Error(`Failed to update investment: ${updateError.message}`);
+      }
     }
 
     // Record transaction
     const realizedGainLoss = totalProceeds - costBasisSold;
     
-    await supabase
+    const { error: transactionError } = await supabase
       .from('investment_transactions')
       .insert({
         user_id: user.id,
@@ -204,6 +214,11 @@ export async function POST(request: NextRequest) {
         balance_before: balance.available_tokens,
         balance_after: balance.available_tokens + totalProceeds
       });
+    
+    if (transactionError) {
+      console.error('Failed to record transaction:', transactionError);
+      throw new Error(`Failed to record transaction: ${transactionError.message}`);
+    }
 
     // Update user balance - reduce total_invested by cost basis, not proceeds
     const { data: newPortfolioValue } = await supabase
@@ -213,7 +228,7 @@ export async function POST(request: NextRequest) {
     
     const totalPortfolioValue = (newPortfolioValue || []).reduce((sum, inv) => sum + inv.current_value, 0);
 
-    await supabase
+    const { error: updateBalanceError } = await supabase
       .from('user_token_balances')
       .update({
         available_tokens: balance.available_tokens + totalProceeds,
@@ -222,6 +237,11 @@ export async function POST(request: NextRequest) {
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id);
+    
+    if (updateBalanceError) {
+      console.error('Failed to update balance:', updateBalanceError);
+      throw new Error(`Failed to update balance: ${updateBalanceError.message}`);
+    }
 
     // Update unique investors count
     const { count } = await supabase
