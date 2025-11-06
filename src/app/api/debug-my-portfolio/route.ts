@@ -3,26 +3,46 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from session
-    const ssoToken = request.cookies.get('ssoToken')?.value;
-    if (!ssoToken) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    // Get user from Manaboodle SSO
+    const token = request.cookies.get('manaboodle_sso_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ 
+        error: 'Not authenticated',
+        hint: 'manaboodle_sso_token cookie not found',
+        cookies: request.cookies.getAll().map(c => c.name)
+      }, { status: 401 });
     }
+
+    // Verify with Manaboodle
+    const response = await fetch('https://www.manaboodle.com/api/sso/verify', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'SSO verification failed' }, { status: 401 });
+    }
+
+    const data = await response.json();
+    const ssoUser = data.user || data;
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_KEY!
     );
 
-    // Get user info
+    // Get user info from our database
     const { data: user } = await supabase
       .from('users')
       .select('*')
-      .eq('sso_token', ssoToken)
+      .eq('email', ssoUser.email)
       .single();
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'User not found in database',
+        ssoEmail: ssoUser.email 
+      }, { status: 404 });
     }
 
     // Get user's investments
