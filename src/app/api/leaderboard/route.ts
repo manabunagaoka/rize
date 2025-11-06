@@ -44,9 +44,13 @@ export async function GET(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
     {
-      auth: { persistSession: false }
+      auth: { persistSession: false },
+      db: { schema: 'public' }
     }
   );
+  
+  console.log('[Leaderboard] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('[Leaderboard] Service key length:', process.env.SUPABASE_SERVICE_KEY?.length);
   
   try {
     const user = await verifyUser(request);
@@ -88,15 +92,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all user investments (pitch holdings)
+    // Add timestamp to force fresh query
     const { data: investments, error: investmentsError} = await supabase
       .from('user_investments')
       .select(`
         user_id,
         pitch_id,
         shares_owned,
-        current_value
+        current_value,
+        updated_at
       `)
-      .gt('shares_owned', 0);
+      .gt('shares_owned', 0)
+      .order('updated_at', { ascending: false });
+    
+    console.log('[Leaderboard] Raw query returned:', investments?.length, 'investments');
+    console.log('[Leaderboard] Query timestamp:', new Date().toISOString());
     
     // Debug logging
     const manaManaInvestments = investments?.filter(inv => inv.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') || [];
