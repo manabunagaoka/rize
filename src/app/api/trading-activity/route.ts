@@ -68,8 +68,13 @@ export async function GET() {
 
     if (pitchesError) {
       console.error('Error fetching pitches:', pitchesError);
-      throw pitchesError;
+      // Don't throw - continue with empty pitches
     }
+    
+    console.log('[Trading Activity] Pitches:', {
+      pitchesCount: pitches?.length,
+      pitchIds: pitchIds.length
+    });
 
     // Combine data
     const enrichedTrades = recentTrades?.map(trade => {
