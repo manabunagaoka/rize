@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all user investments (pitch holdings) - force fresh query
-    // Add timestamp filter to prevent client-side caching
+    // Add multiple filters to prevent any form of caching
     const veryOldDate = new Date('2020-01-01').toISOString();
     const { data: investments, error: investmentsError} = await supabase
       .from('user_investments')
@@ -94,10 +94,12 @@ export async function GET(request: NextRequest) {
         user_id,
         pitch_id,
         shares_owned,
-        current_value
+        current_value,
+        updated_at
       `)
       .gt('shares_owned', 0) // Only fetch positions with actual shares
-      .gte('created_at', veryOldDate); // Force fresh query by adding filter
+      .gte('created_at', veryOldDate) // Force fresh query by adding filter
+      .order('updated_at', { ascending: false }); // Order by latest updates first
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
