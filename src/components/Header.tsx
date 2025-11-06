@@ -64,14 +64,14 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
               Home
             </Link>
             <Link 
-              href="/manage"
+              href="/compete"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                pathname === '/manage'
+                pathname === '/compete'
                   ? 'bg-sky-400/20 text-sky-400 border-sky-400'
                   : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
               }`}
             >
-              Manage
+              Compete
             </Link>
             <Link 
               href="/trade"
@@ -84,14 +84,14 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
               Trade
             </Link>
             <Link 
-              href="/compete"
+              href="/manage"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition border ${
-                pathname === '/compete'
+                pathname === '/manage'
                   ? 'bg-sky-400/20 text-sky-400 border-sky-400'
                   : 'text-gray-300 border-gray-700 hover:text-sky-400 hover:bg-sky-400/10 hover:border-sky-400'
               }`}
             >
-              Compete
+              Manage
             </Link>
           </nav>
 
@@ -127,14 +127,14 @@ export default function Header({ user, showBack }: { user?: any; showBack?: bool
                       <Link href="/" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                         Home
                       </Link>
-                      <Link href="/manage" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                        Manage
+                      <Link href="/compete" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Compete
                       </Link>
                       <Link href="/trade" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
                         Trade
                       </Link>
-                      <Link href="/compete" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
-                        Compete
+                      <Link href="/manage" className="block px-4 py-2 text-sm hover:bg-gray-700 transition" onClick={() => setShowMenu(false)}>
+                        Manage
                       </Link>
                     </div>
 
