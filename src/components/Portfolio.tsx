@@ -194,8 +194,7 @@ export default function Portfolio() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-lg font-semibold text-white">{company?.name || `Company #${inv.pitch_id}`}</h4>
-                        <span className="text-sm text-gray-400">{company?.ticker}</span>
+                        <h4 className="text-lg font-semibold text-white">{company?.ticker || `PITCH${inv.pitch_id}`}</h4>
                       </div>
                       <div className="flex items-center gap-6 text-sm text-gray-400">
                         <div>
