@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import InvestorProfileModal from '@/components/InvestorProfileModal';
-import TrendingStocks from '@/components/TrendingStocks';
 import { Crown, Trophy, Award, TrendingUp, TrendingDown, User, Bot, GraduationCap, BarChart3 } from 'lucide-react';
 
 interface Holding {
@@ -55,9 +54,7 @@ export default function LeaderboardPage() {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/leaderboard?t=${Date.now()}`, {
-        cache: 'no-store'
-      });
+      const response = await fetch('/api/leaderboard');
       
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');
@@ -297,11 +294,6 @@ export default function LeaderboardPage() {
               </button>
             </div>
           )}
-
-          {/* Trending Stocks */}
-          <div className="mb-8">
-            <TrendingStocks />
-          </div>
 
           {/* Leaderboard Table */}
           <div className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">

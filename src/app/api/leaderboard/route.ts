@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
 
 // Force dynamic rendering - don't pre-render at build time
@@ -39,19 +39,7 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch leaderboard with all investors ranked by portfolio value
 export async function GET(request: NextRequest) {
-  // Create fresh Supabase client to avoid caching issues
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_KEY!,
-    {
-      auth: { persistSession: false },
-      db: { schema: 'public' }
-    }
-  );
-  
-  console.log('[Leaderboard] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('[Leaderboard] Service key length:', process.env.SUPABASE_SERVICE_KEY?.length);
-  
+  const supabase = getSupabaseServer();
   try {
     const user = await verifyUser(request);
     
@@ -92,32 +80,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all user investments (pitch holdings)
-    // Add timestamp to force fresh query
-    const { data: investments, error: investmentsError} = await supabase
+    const { data: investments, error: investmentsError } = await supabase
       .from('user_investments')
       .select(`
         user_id,
         pitch_id,
         shares_owned,
-        current_value,
-        updated_at
+        current_value
       `)
-      .gt('shares_owned', 0)
-      .order('updated_at', { ascending: false });
-    
-    console.log('[Leaderboard] Raw query returned:', investments?.length, 'investments');
-    console.log('[Leaderboard] Query timestamp:', new Date().toISOString());
-    
-    // Debug logging
-    const manaManaInvestments = investments?.filter(inv => inv.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') || [];
-    console.log('[Leaderboard] Total investments fetched:', investments?.length);
-    console.log('[Leaderboard] ManaMana investment count:', manaManaInvestments.length);
-    console.log('[Leaderboard] ManaMana investments:', JSON.stringify(
-      manaManaInvestments.map(inv => ({ pitch_id: inv.pitch_id, shares: inv.shares_owned }))
-    ));
-    console.log('[Leaderboard] ALL investments sample:', JSON.stringify(
-      investments?.slice(0, 10).map(inv => ({ user_id: inv.user_id.substring(0, 8), pitch_id: inv.pitch_id, shares: inv.shares_owned }))
-    ));
+      .gt('shares_owned', 0); // Only fetch positions with actual shares
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -221,20 +192,7 @@ export async function GET(request: NextRequest) {
       currentUser: currentUserData,
       topAI,
       totalInvestors: rankedLeaderboard.length,
-      timestamp: new Date().toISOString(),
-      debug: {
-        manaManaInvestmentsCount: manaManaInvestments.length,
-        manaManaInvestments: manaManaInvestments.map(inv => ({ 
-          pitch_id: inv.pitch_id, 
-          shares: inv.shares_owned 
-        }))
-      }
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {

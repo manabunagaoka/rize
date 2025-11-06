@@ -122,10 +122,13 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   return (
     <>
       <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-pink-500 transition-all duration-300 relative">
-        {/* Header with Name and Valuation */}
+        {/* Header with Ticker/Name and Valuation */}
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h3 className="text-2xl font-bold mb-1">{story.name}</h3>
+            {story.ticker && (
+              <h2 className="text-3xl font-bold mb-1">{story.ticker}</h2>
+            )}
+            <h3 className="text-base text-gray-300 mb-2">{story.name}</h3>
             <p className="text-gray-400 text-sm">{story.founder} • {story.year}</p>
           </div>
           <div className="text-right">

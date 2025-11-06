@@ -73,10 +73,7 @@ export default function TrendingStocks() {
   return (
     <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🔥</span>
-          <h2 className="text-xl font-bold text-white">Trending Stocks</h2>
-        </div>
+        <h2 className="text-xl font-bold text-white">Trending Stocks</h2>
         {data?.lastUpdated && (
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -97,11 +94,11 @@ export default function TrendingStocks() {
                   <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-bold text-white">{stock.ticker}</span>
+                      <span className="text-2xl font-bold text-white">{stock.ticker}</span>
                       {netDirection === 'buy' && <TrendingUp className="w-5 h-5 text-green-400" />}
                       {netDirection === 'sell' && <TrendingDown className="w-5 h-5 text-red-400" />}
                     </div>
-                    <div className="text-sm text-gray-400">{stock.companyName}</div>
+                    <div className="text-xs text-gray-400">{stock.companyName}</div>
                   </div>
                 </div>
                 <div className="text-right">

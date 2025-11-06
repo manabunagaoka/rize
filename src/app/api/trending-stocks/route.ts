@@ -23,13 +23,13 @@ export async function GET() {
 
     // Get pitch details with ticker mapping
     const tickerMap: Record<number, { ticker: string; name: string }> = {
-      1: { ticker: 'META', name: 'Meta Platforms' },
-      2: { ticker: 'MSFT', name: 'Microsoft' },
-      3: { ticker: 'DBX', name: 'Dropbox' },
-      4: { ticker: 'AKAM', name: 'Akamai' },
-      5: { ticker: 'RDDT', name: 'Reddit' },
-      6: { ticker: 'WRBY', name: 'Warby Parker' },
-      7: { ticker: 'BKNG', name: 'Booking.com' }
+      1: { ticker: 'META', name: 'Meta Platforms, Inc.' },
+      2: { ticker: 'MSFT', name: 'Microsoft Corporation' },
+      3: { ticker: 'DBX', name: 'Dropbox, Inc.' },
+      4: { ticker: 'AKAM', name: 'Akamai Technologies, Inc.' },
+      5: { ticker: 'RDDT', name: 'Reddit, Inc.' },
+      6: { ticker: 'WRBY', name: 'Warby Parker Inc.' },
+      7: { ticker: 'BKNG', name: 'Booking Holdings Inc.' }
     };
 
     // Calculate volume by stock

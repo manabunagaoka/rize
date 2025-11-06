@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Header from '@/components/Header';
+import TrendingStocks from '@/components/TrendingStocks';
 
 export default function LandingPage({ user }: { user: any }) {
   return (
@@ -86,6 +87,11 @@ export default function LandingPage({ user }: { user: any }) {
                 Compete against 10 AI investors and fellow Harvard students to earn your title.
               </p>
             </div>
+          </div>
+
+          {/* Trending Stocks */}
+          <div className="mt-12">
+            <TrendingStocks />
           </div>
 
           {/* Featured Indexes */}
