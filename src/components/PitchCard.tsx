@@ -112,6 +112,10 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
     if (onTradeComplete) {
       onTradeComplete();
     }
+    // Refresh page to show updated portfolio
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   return (
