@@ -55,7 +55,9 @@ export default function LeaderboardPage() {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/leaderboard');
+      const response = await fetch(`/api/leaderboard?t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');
