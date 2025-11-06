@@ -160,8 +160,6 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       onTradeComplete();
     }
   };
-    // Don't do full page reload - we already updated the data above
-  };
 
   return (
     <>
