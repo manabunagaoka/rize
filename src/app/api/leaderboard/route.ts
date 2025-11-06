@@ -90,11 +90,13 @@ export async function GET(request: NextRequest) {
       `)
       .gt('shares_owned', 0); // Only fetch positions with actual shares
     
+    // Debug logging
+    const manaManaInvestments = investments?.filter(inv => inv.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') || [];
     console.log('[Leaderboard] Total investments fetched:', investments?.length);
-    console.log('[Leaderboard] ManaMana investments:', 
-      investments?.filter(inv => inv.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85')
-        .map(inv => ({ pitch_id: inv.pitch_id, shares: inv.shares_owned }))
-    );
+    console.log('[Leaderboard] ManaMana investment count:', manaManaInvestments.length);
+    console.log('[Leaderboard] ManaMana investments:', JSON.stringify(
+      manaManaInvestments.map(inv => ({ pitch_id: inv.pitch_id, shares: inv.shares_owned }))
+    ));
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
