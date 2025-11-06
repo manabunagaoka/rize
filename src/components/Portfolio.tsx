@@ -21,7 +21,6 @@ interface Transaction {
   price_per_share: number;
   total_amount: number;
   timestamp: string;
-  company_name: string;
   ticker: string;
 }
 
