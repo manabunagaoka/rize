@@ -296,7 +296,7 @@ export default function LeaderboardPage() {
                 Sign In
               </button>
             </div>
-          </div>
+          )}
 
           {/* Trending Stocks */}
           <div className="mb-8">
