@@ -129,12 +129,18 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   };
 
   const handleBuy = () => {
+    console.log('[PitchCard] handleBuy called');
+    console.log('[PitchCard] isAuthenticated:', isAuthenticated);
+    
     if (!isAuthenticated) {
       window.location.href = '/login?redirect_to=/hm7';
       return;
     }
+    
+    console.log('[PitchCard] Setting trade action to BUY and showing modal');
     setTradeAction('BUY');
     setShowModal(true);
+    console.log('[PitchCard] showModal state set to true');
   };
 
   const handleSell = () => {
