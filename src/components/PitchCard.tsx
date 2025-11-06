@@ -100,6 +100,13 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
         credentials: 'include',
         cache: 'no-store'
       });
+      
+      if (!response.ok) {
+        console.warn('Portfolio API returned error:', response.status);
+        setLoading(false);
+        return;
+      }
+      
       const data = await response.json();
       
       // Find investment for this company
