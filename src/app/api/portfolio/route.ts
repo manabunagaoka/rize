@@ -184,15 +184,16 @@ export async function GET(request: NextRequest) {
         total_invested: balance.total_invested
       },
       investments: investmentsWithPrices,
-      _version: '2025-11-06-v6', // Force cache invalidation
+      _version: '2025-11-07-v7', // Force cache invalidation
       _timestamp: new Date().toISOString(),
-      _deploymentCheck: 'NEW_CODE_RUNNING'
+      _deploymentCheck: 'CACHE_FIX_NOV7'
     }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
-        'X-API-Version': '2025-11-06-v5'
+        'Surrogate-Control': 'no-store',
+        'X-API-Version': '2025-11-07-v7'
       }
     });
 
