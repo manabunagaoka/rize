@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
 interface Investment {
   pitch_id: number;
@@ -60,6 +60,7 @@ export default function Portfolio() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [news, setNews] = useState<NewsPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchPortfolio();
@@ -74,12 +75,20 @@ export default function Portfolio() {
         cache: 'no-store'
       });
       const portfolioData = await response.json();
+      console.log('[Portfolio] Fetched portfolio data:', portfolioData);
       setData(portfolioData);
     } catch (error) {
       console.error('Failed to fetch portfolio:', error);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await fetchPortfolio();
+    await fetchTransactions();
+    setTimeout(() => setRefreshing(false), 500);
   }
 
   async function fetchTransactions() {
@@ -133,6 +142,18 @@ export default function Portfolio() {
     <div className="space-y-6">
       {/* Portfolio Summary */}
       <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-8 text-white">
+        <div className="flex justify-between items-start mb-6">
+          <h2 className="text-2xl font-bold">Your Portfolio</h2>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh portfolio"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <span className="text-sm font-semibold">Refresh</span>
+          </button>
+        </div>
         <div className="grid grid-cols-4 gap-6">
           {/* Portfolio Value (Total) */}
           <div>

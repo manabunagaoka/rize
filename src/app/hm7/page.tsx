@@ -105,16 +105,12 @@ export default function HM7Page() {
   };
 
   const handleTradeComplete = () => {
-    // Show loading overlay
-    setShowTradeLoading(true);
+    console.log('[HM7] Trade completed, refreshing page data');
     
     // Trigger refresh of all PitchCards by incrementing key
     setRefreshKey(prev => prev + 1);
     
-    // Wait 3 seconds for database to fully replicate
-    setTimeout(() => {
-      window.location.href = window.location.href.split('?')[0] + '?_=' + Date.now();
-    }, 3000);
+    // No need for page reload - the PitchCard already refreshed with API delay
   };
 
   if (loading) {

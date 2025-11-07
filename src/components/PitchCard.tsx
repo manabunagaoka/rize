@@ -153,25 +153,26 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
   };
 
   const handleTradeSuccess = async () => {
-    // Poll for updated data with retries to handle replication lag
-    const pollForUpdate = async (maxAttempts = 8) => {
-      for (let i = 0; i < maxAttempts; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between attempts
-        await fetchPortfolioData();
-        
-        // If this was a buy and we now have shares, or sell and shares decreased, we're done
-        if (i > 2) break; // After 3 attempts (1.5s), let the page reload handle it
-      }
-    };
+    console.log('[PitchCard] Trade success - refreshing portfolio data');
     
-    await pollForUpdate();
+    // Close modal immediately
+    setShowModal(false);
+    
+    // Wait 600ms (API has 500ms delay, give it extra 100ms buffer)
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // Fetch fresh portfolio data
+    await fetchPortfolioData();
     
     // Refresh the price too
     await fetchMarketPrice();
     
+    // Trigger parent refresh if provided
     if (onTradeComplete) {
       onTradeComplete();
     }
+    
+    console.log('[PitchCard] Portfolio data refreshed, shares owned:', sharesOwned);
   };
 
   return (
