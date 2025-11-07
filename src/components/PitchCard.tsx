@@ -103,7 +103,11 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       
       const response = await fetch(url, {
         credentials: 'include',
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       console.log('[PitchCard] API response status:', response.status);
@@ -117,6 +121,7 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
       const data = await response.json();
       
       console.log('[PitchCard] Portfolio data received:', data);
+      console.log('[PitchCard] API Version:', data._version, 'Timestamp:', data._timestamp);
       console.log('[PitchCard] Looking for pitch_id:', story.id);
       console.log('[PitchCard] All pitch_ids in investments:', data.investments?.map((inv: any) => inv.pitch_id));
       
