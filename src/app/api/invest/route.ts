@@ -39,6 +39,9 @@ async function verifyUser(request: NextRequest) {
 
 // POST - Buy shares
 export async function POST(request: NextRequest) {
+  console.log('=== INVEST API CALLED ===');
+  console.log('Timestamp:', new Date().toISOString());
+  
   // Create fresh Supabase client to avoid caching issues
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -58,6 +61,7 @@ export async function POST(request: NextRequest) {
   
   try {
     const user = await verifyUser(request);
+    console.log('User verified:', user ? user.id : 'NONE');
     
     if (!user) {
       return NextResponse.json(
@@ -66,13 +70,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[Invest API] ===== NEW TRADE REQUEST =====');
-    console.log('[Invest API] User ID:', user.id);
-    console.log('[Invest API] User Email:', user.email);
-
     const { pitchId, shares } = await request.json();
     
-    console.log('[Invest API] Pitch ID:', pitchId, 'Shares:', shares);
+    console.log('=== TRADE REQUEST ===');
+    console.log('User ID:', user.id);
+    console.log('Pitch ID:', pitchId, 'Shares:', shares);
 
     if (!pitchId || !shares || shares <= 0) {
       return NextResponse.json(
@@ -182,7 +184,7 @@ export async function POST(request: NextRequest) {
       .eq('pitch_id', pitchId);
 
     // Get or create user investment - force read from primary
-    console.log('[Invest API] Checking existing investment for user:', user.id, 'pitch:', pitchId);
+    console.log('Checking existing investment...');
     const { data: existingInvestment, error: fetchError } = await supabase
       .from('user_investments')
       .select('*')
@@ -191,11 +193,10 @@ export async function POST(request: NextRequest) {
       .order('created_at', { ascending: false })
       .maybeSingle();
 
-    console.log('[Invest API] Existing investment:', existingInvestment);
-    console.log('[Invest API] Fetch error:', fetchError);
+    console.log('Existing investment:', existingInvestment ? `${existingInvestment.shares_owned} shares` : 'NONE');
     
     if (fetchError) {
-      console.error('[Invest API] CRITICAL: Failed to fetch investment:', fetchError);
+      console.error('CRITICAL: Failed to fetch investment:', fetchError);
       throw new Error(`Failed to check existing investment: ${fetchError.message}`);
     }
 
@@ -205,7 +206,7 @@ export async function POST(request: NextRequest) {
       const newTotalInvested = existingInvestment.total_invested + totalCost;
       const newAvgPrice = newTotalInvested / newShares;
 
-      console.log('[Invest API] Updating investment - new shares:', newShares, 'new total:', newTotalInvested);
+      console.log('UPDATING investment - new shares:', newShares);
       const { error: updateError } = await supabase
         .from('user_investments')
         .update({
@@ -220,13 +221,13 @@ export async function POST(request: NextRequest) {
         .eq('pitch_id', pitchId);
 
       if (updateError) {
-        console.error('[Invest API] Update error:', updateError);
+        console.error('Update error:', updateError);
         throw new Error(`Failed to update investment: ${updateError.message}`);
       }
-      console.log('[Invest API] Investment updated successfully');
+      console.log('✓ Investment updated successfully');
     } else {
       // Create new investment
-      console.log('[Invest API] Creating new investment - shares:', shares, 'total:', totalCost);
+      console.log('CREATING new investment - shares:', shares);
       const { data: newInvestment, error: insertError } = await supabase
         .from('user_investments')
         .insert({
@@ -235,17 +236,17 @@ export async function POST(request: NextRequest) {
           shares_owned: shares,
           total_invested: totalCost,
           avg_purchase_price: currentPrice,
-          current_value: totalCost, // Initial value equals amount invested
-          unrealized_gain_loss: 0 // No gain/loss initially
+          current_value: totalCost,
+          unrealized_gain_loss: 0
         })
         .select()
         .single();
 
       if (insertError) {
-        console.error('[Invest API] Insert error:', insertError);
+        console.error('Insert error:', insertError);
         throw new Error(`Failed to create investment: ${insertError.message}`);
       }
-      console.log('[Invest API] Investment created successfully:', newInvestment);
+      console.log('✓ Investment created successfully:', newInvestment);
     }
 
     // Record transaction
