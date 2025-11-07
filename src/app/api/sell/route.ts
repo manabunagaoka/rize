@@ -39,6 +39,9 @@ async function verifyUser(request: NextRequest) {
 
 // POST - Sell shares
 export async function POST(request: NextRequest) {
+  console.log('=== SELL API CALLED ===');
+  console.log('Timestamp:', new Date().toISOString());
+  
   // Create fresh Supabase client to avoid caching issues
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -58,6 +61,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const user = await verifyUser(request);
+    console.log('User verified:', user ? user.id : 'NONE');
     
     if (!user) {
       return NextResponse.json(
@@ -67,6 +71,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { pitchId, shares } = await request.json();
+    
+    console.log('=== SELL REQUEST ===');
+    console.log('User ID:', user.id);
+    console.log('Pitch ID:', pitchId, 'Shares:', shares);
 
     if (!pitchId || !shares || shares <= 0) {
       return NextResponse.json(
@@ -76,10 +84,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's current investment with retry logic
+    console.log('Looking for investment...');
     let investment = null;
     let investmentError = null;
     
     for (let attempt = 0; attempt < 3; attempt++) {
+      console.log(`Attempt ${attempt + 1} - querying user_investments`);
       const result = await supabase
         .from('user_investments')
         .select('*')
@@ -90,21 +100,32 @@ export async function POST(request: NextRequest) {
       investment = result.data;
       investmentError = result.error;
       
+      console.log(`Attempt ${attempt + 1} result:`, {
+        found: !!investment,
+        shares: investment?.shares_owned,
+        error: investmentError
+      });
+      
       if (investment) break;
       
       // Wait 500ms before retry
       if (attempt < 2) {
         await new Promise(resolve => setTimeout(resolve, 500));
-        console.log(`[Sell API] Retry ${attempt + 1} - refetching investment`);
+        console.log(`Retry ${attempt + 1} - refetching investment`);
       }
     }
 
     if (investmentError || !investment) {
+      console.error('FAILED to find investment after 3 attempts');
+      console.error('Final error:', investmentError);
+      console.error('User ID:', user.id, 'Pitch ID:', pitchId);
       return NextResponse.json(
         { error: 'No investment found for this company' },
         { status: 404 }
       );
     }
+    
+    console.log('✓ Found investment:', investment.shares_owned, 'shares');
 
     if (parseFloat(investment.shares_owned) < shares) {
       return NextResponse.json(
