@@ -294,20 +294,34 @@ export async function POST(request: NextRequest) {
       })
       .eq('pitch_id', pitchId);
 
+    // Wait for database replication (500ms delay for read-after-write consistency)
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Fetch fresh portfolio data to return
+    const { data: updatedInvestment } = await supabase
+      .from('user_investments')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('pitch_id', pitchId)
+      .single();
+
     return NextResponse.json({
       success: true,
       investment: {
         shares: shares,
         price: currentPrice,
         totalCost: totalCost,
-        newBalance: balance.available_tokens - totalCost
+        newBalance: balance.available_tokens - totalCost,
+        currentShares: updatedInvestment?.shares_owned || shares,
+        totalInvested: updatedInvestment?.total_invested || totalCost
       }
     });
 
   } catch (error) {
     console.error('Investment error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to process investment';
     return NextResponse.json(
-      { error: 'Failed to process investment' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

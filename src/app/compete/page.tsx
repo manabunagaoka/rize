@@ -114,16 +114,21 @@ export default function LeaderboardPage() {
     return Math.round(percentile);
   };
 
-  const getTierBadge = (tier?: string, status?: string) => {
-    if (!tier && !status) return null;
+  const getTierBadge = (investorTier?: string, founderTier?: string, status?: string) => {
+    if (!investorTier && !founderTier && !status) return null;
     
-    const tierStyles: Record<string, string> = {
-      'TITAN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
-      'ORACLE': 'bg-gradient-to-r from-blue-500 to-cyan-500 text-transparent bg-clip-text',
-      'ALCHEMIST': 'bg-gradient-to-r from-pink-500 to-orange-500 text-transparent bg-clip-text',
-      'UNICORN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
-      'PHOENIX': 'bg-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text',
-      'DRAGON': 'bg-gradient-to-r from-red-500 to-pink-500 text-transparent bg-clip-text',
+    // Investor tiers - performance-based (portfolio value)
+    const investorTierStyles: Record<string, string> = {
+      'TITAN': 'bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text',
+      'ORACLE': 'bg-gradient-to-r from-blue-600 to-cyan-500 text-transparent bg-clip-text',
+      'ALCHEMIST': 'bg-gradient-to-r from-pink-600 to-orange-500 text-transparent bg-clip-text',
+    };
+
+    // Founder tiers - startup success-based (distinct colors)
+    const founderTierStyles: Record<string, string> = {
+      'UNICORN': 'bg-gradient-to-r from-indigo-500 to-purple-400 text-transparent bg-clip-text',
+      'PHOENIX': 'bg-gradient-to-r from-orange-600 to-amber-500 text-transparent bg-clip-text',
+      'DRAGON': 'bg-gradient-to-r from-red-600 to-rose-500 text-transparent bg-clip-text',
     };
 
     const statusStyles: Record<string, string> = {
@@ -134,9 +139,14 @@ export default function LeaderboardPage() {
 
     return (
       <div className="flex items-center gap-2 text-xs font-bold tracking-wider">
-        {tier && (
-          <span className={tierStyles[tier] || 'text-gray-400'}>
-            {tier}
+        {investorTier && (
+          <span className={investorTierStyles[investorTier] || 'text-gray-400'} title="Investor Tier (Portfolio Performance)">
+            📊 {investorTier}
+          </span>
+        )}
+        {founderTier && (
+          <span className={founderTierStyles[founderTier] || 'text-gray-400'} title="Founder Tier (Startup Success)">
+            🚀 {founderTier}
           </span>
         )}
         {status && status !== 'ACTIVE' && (
@@ -370,7 +380,7 @@ export default function LeaderboardPage() {
                                 <div className="text-sm text-gray-400">
                                   {investor.isAI ? 'AI Investor' : 'Student'}
                                 </div>
-                                {getTierBadge(investor.investorTier, investor.aiStatus)}
+                                {getTierBadge(investor.investorTier, investor.founderTier, investor.aiStatus)}
                               </div>
                             </div>
                           </div>

@@ -123,6 +123,8 @@ async function getAITradeDecision(
   const prompt = `You are "${aiInvestor.ai_nickname}", an AI investor with the ${aiInvestor.ai_strategy} strategy.
 Your catchphrase: "${aiInvestor.ai_catchphrase}"
 
+⚡ CRITICAL: STAY IN CHARACTER! Be EXTREME and TRUE to your personality!
+
 CURRENT STATUS:
 - Available Balance: ${aiInvestor.available_tokens} MTK
 - Total Portfolio Value: ${aiInvestor.portfolio_value} MTK
@@ -133,38 +135,34 @@ ${portfolioSummary || 'No current holdings'}
 INVESTMENT OPPORTUNITIES (HM7 Index - Harvard Legends):
 ${marketData}
 
-STRATEGY GUIDELINES for ${aiInvestor.ai_strategy}:
+🎭 YOUR PERSONALITY - ${aiInvestor.ai_strategy}:
 ${getStrategyGuidelines(aiInvestor.ai_strategy)}
 
-ANALYSIS FRAMEWORK:
-- Consider both the BUSINESS (pitch, founder story, category) AND the MARKET DATA (price, momentum)
-- You are called every 6 hours - BE ACTIVE, make moves!
-- SELL if you have holdings that are declining, overvalued, or don't fit your strategy
-- BUY if you see undervalued opportunities that match your strategy
-- DON'T HOLD unless you truly have no good move - staying active keeps the game interesting
-- ${aiInvestor.ai_strategy === 'TECH_ONLY' ? 'Focus on technology companies' : ''}
-- ${aiInvestor.ai_strategy === 'SAAS_ONLY' ? 'Focus on SaaS/software businesses' : ''}
-- ${aiInvestor.ai_strategy === 'MOMENTUM' ? 'SELL losers quickly, BUY stocks with positive momentum' : ''}
-- ${aiInvestor.ai_strategy === 'CONTRARIAN' ? 'SELL when others are buying (peaks), BUY when declining' : ''}
-- ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? 'Buy quality businesses but still trade occasionally' : ''}
-- ${aiInvestor.ai_strategy === 'PERFECT_TIMING' ? 'SELL at peaks, BUY at dips - focus on timing' : ''}
-- ${aiInvestor.ai_strategy === 'ALL_IN' ? 'Take big swings! Go all-in on your convictions' : ''}
-- ${aiInvestor.ai_strategy === 'DIVERSIFIED' ? 'Spread risk across multiple positions' : ''}
+💰 TRADING RULES FOR YOU:
+- Trade sizes: ${strategyLimits.suggestion}
+- Budget for this trade: $${strategyLimits.min.toLocaleString()} - $${strategyLimits.max.toLocaleString()} MTK
+- You are called every 6 hours - BE ACTIVE! Make bold moves!
+- SELL if holdings are declining/overvalued/wrong for your strategy
+- BUY if you see opportunities that match YOUR strategy
+- Stay in character - be as extreme as your personality demands!
 
-Make ONE trade decision combining business analysis + price trends. Respond with valid JSON:
+${aiInvestor.ai_strategy === 'MOMENTUM' ? '🚨 FOMO MASTER SPECIAL RULES: Stock up 3%+ today? BUY NOW! Stock down 2%+? PANIC SELL! You HATE missing opportunities!' : ''}
+${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? '💎 DIAMOND HANDS RULE: You can BUY but NEVER SELL. Selling is for paper hands!' : ''}
+${aiInvestor.ai_strategy === 'ALL_IN' ? '🎲 YOLO KID RULE: Go BIG (80-95% of balance) or go home! No small positions!' : ''}
+${aiInvestor.ai_strategy === 'CONTRARIAN' ? '🔄 CONTRARIAN RULE: Stock rising? Consider SELLING. Stock falling? Time to BUY!' : ''}
+
+Make ONE bold trade decision. Respond with valid JSON only:
 {
   "action": "BUY" | "SELL" | "HOLD",
   "pitch_id": number (1-7),
-  "shares": number (if BUY, calculate based on budget ${strategyLimits.min}-${strategyLimits.max} MTK divided by stock price),
-  "reasoning": "Brief explanation referencing both the business fundamentals AND price action"
+  "shares": number (calculate from your budget / stock price),
+  "reasoning": "Brief explanation showing your personality and referencing specific pitch details or price action"
 }
 
 Important: 
-- For BUY: Choose shares costing ${strategyLimits.min}-${strategyLimits.max} MTK at current price
-- For SELL: Specify number of shares you own
-- ${aiInvestor.ai_strategy}: Typically invest ${strategyLimits.suggestion}
-- Reference specific details from the pitch/story in your reasoning
-- Stay in character - be bold or conservative as appropriate`;
+- Calculate shares: (your budget) / (current stock price)
+- Reference the pitch content or founder story in your reasoning
+- Show your personality in the reasoning - make it CLEAR you're ${aiInvestor.ai_nickname}!`;
 
   try {
     const openai = getOpenAIClient();
@@ -204,44 +202,44 @@ function getStrategyLimits(strategy: string, availableTokens: number) {
       suggestion: '15-25% per trade (balanced approach)'
     },
     'ALL_IN': { 
-      min: Math.floor(availableTokens * 0.70), 
+      min: Math.floor(availableTokens * 0.80), 
       max: Math.floor(availableTokens * 0.95),
-      suggestion: '70-95% all at once (go big or go home!)'
+      suggestion: '80-95% all at once (GO BIG!)'
     },
     'HOLD_FOREVER': { 
       min: Math.floor(availableTokens * 0.30), 
       max: Math.floor(availableTokens * 0.50),
-      suggestion: '30-50% when buying (then hold forever)'
+      suggestion: '30-50% when buying (then NEVER sell)'
     },
     'TECH_ONLY': { 
-      min: Math.floor(availableTokens * 0.20), 
-      max: Math.floor(availableTokens * 0.40),
-      suggestion: '20-40% per tech stock'
-    },
-    'SAAS_ONLY': { 
       min: Math.floor(availableTokens * 0.25), 
       max: Math.floor(availableTokens * 0.45),
-      suggestion: '25-45% per SaaS play'
+      suggestion: '25-45% per tech stock'
+    },
+    'SAAS_ONLY': { 
+      min: Math.floor(availableTokens * 0.30), 
+      max: Math.floor(availableTokens * 0.50),
+      suggestion: '30-50% per SaaS play'
     },
     'MOMENTUM': { 
-      min: Math.floor(availableTokens * 0.30), 
-      max: Math.floor(availableTokens * 0.60),
-      suggestion: '30-60% chase the trend'
+      min: Math.floor(availableTokens * 0.40), 
+      max: Math.floor(availableTokens * 0.80),
+      suggestion: '40-80% FOMO HARD - can\'t miss this!'
     },
     'TREND_FOLLOW': { 
-      min: Math.floor(availableTokens * 0.25), 
-      max: Math.floor(availableTokens * 0.55),
-      suggestion: '25-55% follow the momentum'
+      min: Math.floor(availableTokens * 0.30), 
+      max: Math.floor(availableTokens * 0.60),
+      suggestion: '30-60% follow the momentum'
     },
     'CONTRARIAN': { 
-      min: Math.floor(availableTokens * 0.20), 
-      max: Math.floor(availableTokens * 0.50),
-      suggestion: '20-50% buy the dip'
+      min: Math.floor(availableTokens * 0.25), 
+      max: Math.floor(availableTokens * 0.55),
+      suggestion: '25-55% buy the dip aggressively'
     },
     'PERFECT_TIMING': { 
-      min: Math.floor(availableTokens * 0.15), 
-      max: Math.floor(availableTokens * 0.40),
-      suggestion: '15-40% precise entries/exits'
+      min: Math.floor(availableTokens * 0.20), 
+      max: Math.floor(availableTokens * 0.45),
+      suggestion: '20-45% precise entries/exits'
     }
   };
   return limits[strategy] || { 
@@ -253,16 +251,16 @@ function getStrategyLimits(strategy: string, availableTokens: number) {
 
 function getStrategyGuidelines(strategy: string): string {
   const guidelines: Record<string, string> = {
-    'CONSERVATIVE': 'Focus on established, stable companies like Microsoft and Facebook. Small position sizes. Prefer holding over frequent trading.',
-    'DIVERSIFIED': 'Spread investments across multiple companies. Balance between growth and stability. Regular rebalancing.',
-    'ALL_IN': 'Pick one stock you believe in and go big. High risk, high reward. Bold moves.',
-    'HOLD_FOREVER': 'Buy quality companies and never sell. Long-term value investing. Ignore short-term volatility.',
-    'TECH_ONLY': 'Only invest in pure tech companies. Favor software over hardware. Growth over value.',
-    'SAAS_ONLY': 'Focus on software-as-a-service businesses. Recurring revenue models. Dropbox, Microsoft.',
-    'MOMENTUM': 'Buy stocks that are rising. Follow trends. Sell losers quickly.',
-    'TREND_FOLLOW': 'Identify and ride trends. Buy strength, sell weakness. Watch price changes.',
-    'CONTRARIAN': 'Buy what others are selling. Sell what others are buying. Go against the herd.',
-    'PERFECT_TIMING': 'Try to buy low, sell high. Look for oversold opportunities and overbought exits.'
+    'CONSERVATIVE': 'The Boomer: ONLY invest in proven companies like Microsoft and Facebook. Small positions. Prefer holding over frequent trading. You lived through dot-com crash - never again!',
+    'DIVERSIFIED': 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.',
+    'ALL_IN': 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!',
+    'HOLD_FOREVER': 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌',
+    'TECH_ONLY': 'Silicon Brain: ONLY pure tech companies (Facebook, Microsoft, Dropbox). NO non-tech. Growth over everything. Code is eating the world.',
+    'SAAS_ONLY': 'Cloud Surfer: ONLY software-as-a-service businesses with recurring revenue. Dropbox, Microsoft yes. Hardware? NO WAY.',
+    'MOMENTUM': 'FOMO Master: You HATE missing gains! Buy stocks rising 3%+. Multiple stocks rising? Buy the HOTTEST one. Stock falling 2%+? PANIC SELL immediately! Sitting on >40% cash is UNACCEPTABLE.',
+    'TREND_FOLLOW': 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!',
+    'CONTRARIAN': 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.',
+    'PERFECT_TIMING': 'The Oracle: Buy low, sell high. Look for oversold opportunities (down 5%+). Exit overbought peaks (up 8%+). Precision timing wins.'
   };
   return guidelines[strategy] || 'Follow your instincts.';
 }

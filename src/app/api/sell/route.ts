@@ -289,6 +289,17 @@ export async function POST(request: NextRequest) {
       })
       .eq('pitch_id', pitchId);
 
+    // Wait for database replication (500ms delay for read-after-write consistency)
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Fetch fresh portfolio data to return
+    const { data: updatedInvestment } = await supabase
+      .from('user_investments')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('pitch_id', pitchId)
+      .maybeSingle();
+
     return NextResponse.json({
       success: true,
       transaction: {
@@ -297,7 +308,8 @@ export async function POST(request: NextRequest) {
         totalProceeds: totalProceeds,
         costBasis: costBasisSold,
         realizedGainLoss: realizedGainLoss,
-        newBalance: balance.available_tokens + totalProceeds
+        newBalance: balance.available_tokens + totalProceeds,
+        remainingShares: updatedInvestment?.shares_owned || 0
       }
     });
 
