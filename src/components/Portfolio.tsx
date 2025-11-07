@@ -95,9 +95,14 @@ export default function Portfolio() {
     try {
       const response = await fetch(`/api/transactions?t=${Date.now()}`, {
         credentials: 'include',
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       const result = await response.json();
+      console.log('[Portfolio] Transactions fetched:', result.transactions?.length || 0);
       setTransactions(result.transactions || []);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);

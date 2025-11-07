@@ -39,18 +39,25 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's transaction history
 export async function GET(request: NextRequest) {
+  console.log('[Transactions API] Called at:', new Date().toISOString());
+  
   // Create fresh Supabase client to avoid caching
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
     { 
-      auth: { persistSession: false },
+      auth: { 
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      },
       db: { schema: 'public' },
       global: {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'x-supabase-api-version': '2024-01-01'
+          'x-supabase-api-version': '2024-01-01',
+          'apikey': process.env.SUPABASE_SERVICE_KEY!
         }
       }
     }
@@ -58,6 +65,7 @@ export async function GET(request: NextRequest) {
   
   try {
     const user = await verifyUser(request);
+    console.log('[Transactions API] User:', user?.id);
     
     if (!user) {
       return NextResponse.json(
@@ -66,32 +74,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get ALL transactions (removed limit) ordered by most recent
-    // Multiple attempts with delays to handle replication lag
-    let transactions = null;
-    let error = null;
+    // Get transactions - no retry logic needed, just fetch fresh
+    console.log('[Transactions API] Fetching transactions for user:', user.id);
+    const { data: transactions, error } = await supabase
+      .from('investment_transactions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('timestamp', { ascending: false });
     
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const result = await supabase
-        .from('investment_transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('timestamp', { ascending: false });
-      
-      transactions = result.data;
-      error = result.error;
-      
-      if (transactions && transactions.length > 0) break;
-      
-      // Wait 500ms before retry
-      if (attempt < 2) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        console.log(`[Transactions API] Retry ${attempt + 1} - refetching transactions`);
-      }
-    }
+    console.log('[Transactions API] Found', transactions?.length || 0, 'transactions');
 
     if (error) {
-      console.error('Transaction fetch error:', error);
+      console.error('[Transactions API] Error:', error);
       return NextResponse.json(
         { error: 'Failed to fetch transactions' },
         { status: 500 }
@@ -115,12 +109,15 @@ export async function GET(request: NextRequest) {
     })) || [];
 
     return NextResponse.json({
-      transactions: enrichedTransactions
+      transactions: enrichedTransactions,
+      _version: '2025-11-07-v2',
+      _timestamp: new Date().toISOString()
     }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'Surrogate-Control': 'no-store'
       }
     });
 
