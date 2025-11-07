@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await verifyUser(request);
     console.log('User verified:', user ? user.id : 'NONE');
+    console.log('Full user object:', JSON.stringify(user));
     
     if (!user) {
       return NextResponse.json(
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
     
     console.log('=== SELL REQUEST ===');
     console.log('User ID:', user.id);
+    console.log('User ID type:', typeof user.id);
     console.log('Pitch ID:', pitchId, 'Shares:', shares);
 
     if (!pitchId || !shares || shares <= 0) {

@@ -74,6 +74,8 @@ export async function POST(request: NextRequest) {
     
     console.log('=== TRADE REQUEST ===');
     console.log('User ID:', user.id);
+    console.log('User ID type:', typeof user.id);
+    console.log('Full user:', JSON.stringify(user));
     console.log('Pitch ID:', pitchId, 'Shares:', shares);
 
     if (!pitchId || !shares || shares <= 0) {

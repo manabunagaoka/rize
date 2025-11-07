@@ -43,20 +43,25 @@ export async function GET(request: NextRequest) {
   console.log('[Portfolio API] Request URL:', request.url);
   console.log('[Portfolio API] Request timestamp:', new Date().toISOString());
   
-  // Create fresh Supabase client - match debug endpoint config exactly
+  // Create fresh Supabase client - FORCE PRIMARY READ
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
     {
       auth: {
-        persistSession: false
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
       },
       db: {
         schema: 'public'
       },
       global: {
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'x-client-info': `supabase-js-node`,
+          'apikey': process.env.SUPABASE_SERVICE_KEY!
         }
       }
     }
@@ -99,11 +104,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get user's investments directly - service role key should read from primary
+    // Get user's investments directly - FORCE NO CACHE
     console.log('[Portfolio API] Fetching investments for user:', user.id);
     
-    // Force fresh query with timestamp to bypass any caching layers
-    const queryTimestamp = Date.now();
     const { data: investments, error: investError } = await supabase
       .from('user_investments')
       .select('*')
@@ -111,7 +114,6 @@ export async function GET(request: NextRequest) {
       .gt('shares_owned', 0)
       .order('updated_at', { ascending: false });
 
-    console.log('[Portfolio API] Query timestamp:', queryTimestamp);
     console.log('[Portfolio API] Query result - investments:', investments);
     console.log('[Portfolio API] Query result - error:', investError);
     console.log('[Portfolio API] Number of investments:', investments?.length || 0);

@@ -95,11 +95,18 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
 
   const fetchPortfolioData = async () => {
     try {
+      console.log('[PitchCard] fetchPortfolioData called - about to fetch from API');
+      
       // Add timestamp to bypass cache
-      const response = await fetch(`/api/portfolio?t=${Date.now()}`, {
+      const url = `/api/portfolio?t=${Date.now()}`;
+      console.log('[PitchCard] Fetching from:', url);
+      
+      const response = await fetch(url, {
         credentials: 'include',
         cache: 'no-store'
       });
+      
+      console.log('[PitchCard] API response status:', response.status);
       
       if (!response.ok) {
         console.warn('Portfolio API returned error:', response.status);
