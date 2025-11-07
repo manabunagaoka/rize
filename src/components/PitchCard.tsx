@@ -164,27 +164,15 @@ export default function PitchCard({ story, isAuthenticated, rank, onTradeComplet
     setShowModal(true);
   };
 
-  const handleTradeSuccess = async () => {
-    console.log('[PitchCard] Trade success - refreshing portfolio data');
-    
-    // Close modal immediately
+    const handleTradeSuccess = async () => {
+    console.log('[PitchCard] Trade successful! Refreshing data...');
     setShowModal(false);
     
     // Wait 600ms (API has 500ms delay, give it extra 100ms buffer)
     await new Promise(resolve => setTimeout(resolve, 600));
     
-    // Fetch fresh portfolio data
-    await fetchPortfolioData();
-    
-    // Refresh the price too
-    await fetchMarketPrice();
-    
-    // Trigger parent refresh if provided
-    if (onTradeComplete) {
-      onTradeComplete();
-    }
-    
-    console.log('[PitchCard] Portfolio data refreshed, shares owned:', sharesOwned);
+    // FORCE full page reload to bypass ALL caches
+    window.location.reload();
   };
 
   return (

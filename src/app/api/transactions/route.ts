@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Force dynamic rendering - don't pre-render at build time
 export const dynamic = 'force-dynamic';
+export const revalidate = 0; // Never cache
+export const fetchCache = 'force-no-store';
 
 // Verify user from Manaboodle SSO
 async function verifyUser(request: NextRequest) {
