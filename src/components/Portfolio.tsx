@@ -64,6 +64,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   useEffect(() => {
     fetchPortfolio();
@@ -72,14 +73,15 @@ export default function Portfolio() {
     setIsInitialLoad(false);
   }, []);
 
-  // Refresh when pathname changes (but skip initial load)
+  // Refresh when pathname changes (but skip initial load and only if pathname actually changed)
   useEffect(() => {
-    if (!isInitialLoad) {
-      console.log('[Portfolio] Pathname changed to:', pathname);
+    if (!isInitialLoad && pathname !== prevPathname) {
+      console.log('[Portfolio] Pathname changed from', prevPathname, 'to:', pathname);
       fetchPortfolio();
       fetchTransactions();
+      setPrevPathname(pathname);
     }
-  }, [pathname, isInitialLoad]);
+  }, [pathname, isInitialLoad, prevPathname]);
 
   // Refresh data when user returns to the tab
   useEffect(() => {
@@ -126,7 +128,8 @@ export default function Portfolio() {
           current_price: inv.current_price
         }))
       });
-      setData(portfolioData);
+      // Force a new object reference to trigger React re-render
+      setData({ ...portfolioData });
     } catch (error) {
       console.error('Failed to fetch portfolio:', error);
     } finally {
