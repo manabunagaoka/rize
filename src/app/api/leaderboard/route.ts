@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-
-// Force dynamic rendering - don't pre-render at build time
+// Use Edge Runtime to bypass Vercel's function caching
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 // Verify user from Manaboodle SSO
