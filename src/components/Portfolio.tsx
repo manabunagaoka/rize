@@ -76,6 +76,8 @@ export default function Portfolio() {
   useEffect(() => {
     if (pathname === '/manage' && lastFetchPathname.current !== '/manage') {
       console.log('[Portfolio] Navigated back to /manage, refreshing data...');
+      setLoading(true); // Show loading state
+      setData(null); // Clear old data
       fetchPortfolio();
       fetchTransactions();
     }
