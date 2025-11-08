@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
@@ -64,32 +64,30 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const refreshData = useCallback(() => {
-    fetchPortfolio();
-    fetchTransactions();
-  }, []);
-
   useEffect(() => {
     fetchPortfolio();
     fetchTransactions();
     fetchNews();
   }, []);
 
-  // Refresh when navigating back to this page
+  // Refresh when pathname changes
   useEffect(() => {
-    refreshData();
-  }, [pathname, refreshData]);
+    fetchPortfolio();
+    fetchTransactions();
+  }, [pathname]);
 
   // Refresh data when user returns to the tab
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        refreshData();
+        fetchPortfolio();
+        fetchTransactions();
       }
     };
     
     const handleFocus = () => {
-      refreshData();
+      fetchPortfolio();
+      fetchTransactions();
     };
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -99,7 +97,7 @@ export default function Portfolio() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [refreshData]);
+  }, []);
 
   async function fetchPortfolio() {
     try {
