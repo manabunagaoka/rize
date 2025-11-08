@@ -208,16 +208,18 @@ export async function GET(request: NextRequest) {
         total_invested: balance.total_invested
       },
       investments: investmentsWithPrices,
-      _version: '2025-11-07-v7', // Force cache invalidation
+      _version: '2025-11-08-v8', // Force cache invalidation
       _timestamp: new Date().toISOString(),
-      _deploymentCheck: 'CACHE_FIX_NOV7'
+      _deploymentCheck: 'CACHE_FIX_NOV8'
     }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'CDN-Cache-Control': 'no-store', // Vercel-specific: disable CDN caching
+        'Vercel-CDN-Cache-Control': 'no-store', // Alternative Vercel header
         'Pragma': 'no-cache',
         'Expires': '0',
         'Surrogate-Control': 'no-store',
-        'X-API-Version': '2025-11-07-v7'
+        'X-API-Version': '2025-11-08-v8'
       }
     });
 
