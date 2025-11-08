@@ -75,7 +75,13 @@ export default function Portfolio() {
         cache: 'no-store'
       });
       const portfolioData = await response.json();
-      console.log('[Portfolio] Fetched portfolio data:', portfolioData);
+      console.log('[Portfolio/Manage] API Response:', {
+        timestamp: portfolioData._timestamp,
+        cash: portfolioData.balance?.available_tokens,
+        holdings: portfolioData.balance?.portfolio_value,
+        total: (portfolioData.balance?.available_tokens || 0) + (portfolioData.balance?.portfolio_value || 0),
+        investments: portfolioData.investments?.length
+      });
       setData(portfolioData);
     } catch (error) {
       console.error('Failed to fetch portfolio:', error);

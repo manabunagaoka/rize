@@ -72,6 +72,16 @@ export default function LeaderboardPage() {
       }
 
       const result = await response.json();
+      console.log('[Compete] API Response:', {
+        timestamp: result.timestamp,
+        currentUser: result.currentUser ? {
+          cash: result.currentUser.cash,
+          holdings: result.currentUser.holdingsValue,
+          total: result.currentUser.portfolioValue,
+          rank: result.currentUser.rank
+        } : null,
+        totalInvestors: result.totalInvestors
+      });
       setData(result);
       setLastUpdated(new Date());
       setError(null);
