@@ -114,7 +114,7 @@ export default function DebugPage() {
             <Database className="w-8 h-8 text-blue-400" />
             <div>
               <h1 className="text-xl font-bold text-white">Admin Debug Panel</h1>
-              <p className="text-xs text-gray-400">Data Integrity Monitor</p>
+              <p className="text-xs text-gray-400">Data Integrity Monitor v2.0</p>
             </div>
           </div>
           <a
