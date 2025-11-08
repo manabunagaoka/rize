@@ -27,8 +27,8 @@ const PUBLIC_PATHS = [
   '/terms',         // Terms of service
   '/privacy',       // Privacy policy
   '/how-to-play',   // How to play page
-  '/admin/debug',   // Admin debug dashboard (no auth)
-  '/api/admin/debug', // Debug API endpoint (no auth)
+  '/data-integrity', // Data integrity dashboard (no auth)
+  '/api/data-integrity', // Data integrity API (no auth)
   // API routes that allow unauthenticated requests
   '/api/leaderboard', // Leaderboard API (public)
 ];

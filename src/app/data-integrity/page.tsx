@@ -38,7 +38,7 @@ export default function DebugPage() {
   const fetchDebugData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/debug', {
+      const response = await fetch('/api/data-integrity', {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache'
