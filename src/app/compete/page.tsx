@@ -302,64 +302,6 @@ export default function LeaderboardPage() {
             </div>
           </div>
 
-          {/* Your Rank Card */}
-          {data?.currentUser ? (
-            <div className="bg-gray-800 border-2 border-blue-500 rounded-2xl p-6 mb-8 hover:border-blue-400 transition-all">
-              <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <BarChart3 className="w-5 h-5 text-blue-400" />
-                    <h2 className="text-xl font-bold text-white">Your Performance</h2>
-                    <div className="flex items-center gap-1.5 ml-2 text-xs text-gray-400">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span>Updated {getTimeAgo(lastUpdated)}</span>
-                    </div>
-                  </div>
-                  <p className="text-gray-300">@{data.currentUser.username}</p>
-                  <p className="text-xs text-gray-500 mt-1">Rankings auto-refresh every 60s • Prices delayed 15 min</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-4xl font-bold text-white mb-1">
-                    #{data.currentUser.rank}
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    of {data.totalInvestors}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-gray-900/50 rounded-xl p-4">
-                  <p className="text-sm text-gray-400 mb-1">Portfolio Value</p>
-                  <p className="text-xl md:text-2xl font-bold text-white">{formatCurrency(data.currentUser.portfolioValue)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Total value</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-xl p-4">
-                  <p className="text-sm text-gray-400 mb-1">Cash</p>
-                  <p className="text-xl md:text-2xl font-bold text-white">{formatCurrency(data.currentUser.cash)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Available to trade</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-xl p-4">
-                  <p className="text-sm text-gray-400 mb-1">Holdings</p>
-                  <p className="text-xl md:text-2xl font-bold text-white">{formatCurrency(data.currentUser.holdingsValue)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Invested value</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/50 rounded-2xl p-6 mb-8 text-center">
-              <User className="w-12 h-12 text-purple-400 mx-auto mb-3" />
-              <h3 className="text-xl font-bold text-white mb-2">Sign in to compete</h3>
-              <p className="text-gray-400 mb-4">Track your rank, view your performance, and compete against AI investors</p>
-              <button 
-                onClick={() => window.location.href = '/login?redirect_to=/compete'}
-                className="px-6 py-3 bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-lg transition-all shadow-lg shadow-pink-500/30"
-              >
-                Sign In
-              </button>
-            </div>
-          )}
-
           {/* Leaderboard Table */}
           <div className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700">
             <div className="overflow-x-auto">
