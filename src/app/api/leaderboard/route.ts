@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
           try {
             const response = await fetch(
               `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${process.env.STOCK_API_KEY}`,
-              { next: { revalidate: 60 } }
+              { cache: 'no-store' } // Don't use next.revalidate in API routes
             );
             const data = await response.json();
             if (data.c && data.c > 0) {

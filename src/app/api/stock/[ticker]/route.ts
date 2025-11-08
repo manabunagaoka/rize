@@ -27,15 +27,11 @@ export async function GET(
 
   try {
     // Fetch from Finnhub API
-    // Use cache for normal requests, bypass for manual refresh
+    // Always use no-store to get fresh data in API routes
     const response = await fetch(
       `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
-      isManualRefresh ? { 
-        cache: 'no-store' // Bypass cache for manual refresh
-      } : { 
-        next: { 
-          revalidate: 300 // Cache for 5 minutes for normal requests
-        } 
+      { 
+        cache: 'no-store' // Always get fresh data in API routes
       }
     );
 
@@ -52,18 +48,17 @@ export async function GET(
       dp: data.dp  // change percent
     };
     
-    // Add no-cache headers for manual refresh
-    if (isManualRefresh) {
-      return NextResponse.json(result, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
-    }
-    
-    return NextResponse.json(result);
+    // Return with appropriate cache headers
+    // Cache at CDN/browser level for 5 minutes unless manual refresh
+    return NextResponse.json(result, {
+      headers: isManualRefresh ? {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      } : {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
 
   } catch (error) {
     console.error(`Error fetching stock price for ${ticker}:`, error);

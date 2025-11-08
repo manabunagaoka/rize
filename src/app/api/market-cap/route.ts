@@ -31,9 +31,7 @@ export async function GET() {
         const response = await fetch(
           `https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${apiKey}`,
           { 
-            next: { 
-              revalidate: 3600 // Cache for 1 hour (market cap changes slowly)
-            } 
+            cache: 'no-store' // Don't use next.revalidate in API routes
           }
         );
         

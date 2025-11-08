@@ -135,30 +135,40 @@ export async function GET(request: NextRequest) {
     const investmentsWithPrices = await Promise.all(
       (investments || []).map(async (inv) => {
         const ticker = tickerMap[inv.pitch_id];
-        let currentPrice = 100;
+        let currentPrice = 100; // Fallback only if API completely fails
         
         if (ticker) {
           try {
-            // Fetch real-time price from Finnhub API
+            // Fetch real-time price from Finnhub API directly
             const apiKey = process.env.STOCK_API_KEY;
             
             if (apiKey) {
+              console.log(`[Portfolio] Fetching price for ${ticker} from Finnhub...`);
               const priceResponse = await fetch(
                 `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
                 { 
-                  next: { 
-                    revalidate: 60 // Cache for 1 minute (more frequent than before)
-                  } 
+                  cache: 'no-store' // Don't use next.revalidate in API routes
                 }
               );
-              const priceData = await priceResponse.json();
               
-              if (priceData.c && priceData.c > 0) {
-                currentPrice = priceData.c;
+              if (priceResponse.ok) {
+                const priceData = await priceResponse.json();
+                console.log(`[Portfolio] Finnhub response for ${ticker}:`, priceData);
+                
+                if (priceData.c && priceData.c > 0) {
+                  currentPrice = priceData.c;
+                  console.log(`[Portfolio] ✓ Price for ${ticker}: $${currentPrice}`);
+                } else {
+                  console.warn(`[Portfolio] ✗ Invalid price data for ${ticker}:`, priceData);
+                }
+              } else {
+                console.error(`[Portfolio] ✗ Finnhub API error for ${ticker}, status:`, priceResponse.status);
               }
+            } else {
+              console.error(`[Portfolio] ✗ No STOCK_API_KEY configured`);
             }
           } catch (error) {
-            console.error(`Failed to fetch price for ${ticker}:`, error);
+            console.error(`[Portfolio] ✗ Error fetching price for ${ticker}:`, error);
           }
         }
 
