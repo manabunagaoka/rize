@@ -108,7 +108,11 @@ export default function Portfolio() {
     try {
       const response = await fetch(`/api/portfolio?t=${Date.now()}`, {
         credentials: 'include',
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
       });
       const portfolioData = await response.json();
       console.log('[Portfolio/Manage] API Response:', {
@@ -116,7 +120,11 @@ export default function Portfolio() {
         cash: portfolioData.balance?.available_tokens,
         holdings: portfolioData.balance?.portfolio_value,
         total: (portfolioData.balance?.available_tokens || 0) + (portfolioData.balance?.portfolio_value || 0),
-        investments: portfolioData.investments?.length
+        investments: portfolioData.investments?.length,
+        prices: portfolioData.investments?.map((inv: any) => ({
+          pitch_id: inv.pitch_id,
+          current_price: inv.current_price
+        }))
       });
       setData(portfolioData);
     } catch (error) {
