@@ -155,6 +155,20 @@ export async function GET(request: NextRequest) {
     const leaderboardData = investors?.map(investor => {
       // Calculate holdings value using real-time prices
       const userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
+      
+      // Debug logging for specific user
+      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') {
+        console.log('[Leaderboard] ManaMana investments found:', {
+          count: userInvestments.length,
+          investments: userInvestments.map(inv => ({
+            pitch_id: inv.pitch_id,
+            shares: inv.shares_owned,
+            price: pitchPrices[inv.pitch_id],
+            value: Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100))
+          }))
+        });
+      }
+      
       const holdingsValue = userInvestments.reduce((sum, inv) => {
         // Always calculate from real-time prices, not database current_value
         const value = Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100));
