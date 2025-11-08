@@ -107,6 +107,7 @@ export default function Portfolio() {
 
   async function fetchPortfolio() {
     try {
+      setLoading(true); // Show loading during fetch
       const response = await fetch(`/api/portfolio?t=${Date.now()}`, {
         credentials: 'include',
         cache: 'no-store',
@@ -129,9 +130,9 @@ export default function Portfolio() {
       });
       // Force a new object reference to trigger React re-render
       setData({ ...portfolioData });
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch portfolio:', error);
-    } finally {
       setLoading(false);
     }
   }
