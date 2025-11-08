@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
@@ -63,25 +63,24 @@ export default function Portfolio() {
   const [news, setNews] = useState<NewsPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [prevPathname, setPrevPathname] = useState(pathname);
+  const lastFetchPathname = useRef<string>('');
 
   useEffect(() => {
     fetchPortfolio();
     fetchTransactions();
     fetchNews();
-    setIsInitialLoad(false);
+    lastFetchPathname.current = pathname;
   }, []);
 
-  // Refresh when pathname changes (but skip initial load and only if pathname actually changed)
+  // Refresh when navigating back to /manage from a different page
   useEffect(() => {
-    if (!isInitialLoad && pathname !== prevPathname) {
-      console.log('[Portfolio] Pathname changed from', prevPathname, 'to:', pathname);
+    if (pathname === '/manage' && lastFetchPathname.current !== '/manage') {
+      console.log('[Portfolio] Navigated back to /manage, refreshing data...');
       fetchPortfolio();
       fetchTransactions();
-      setPrevPathname(pathname);
     }
-  }, [pathname, isInitialLoad, prevPathname]);
+    lastFetchPathname.current = pathname;
+  }, [pathname]);
 
   // Refresh data when user returns to the tab
   useEffect(() => {
