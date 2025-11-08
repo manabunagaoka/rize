@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all user investments (pitch holdings) - force fresh query from PRIMARY
-    // Add multiple filters to prevent any form of caching
-    const veryOldDate = new Date('2020-01-01').toISOString();
+    // Add timestamp to query to force fresh data
+    const now = new Date().toISOString();
     const { data: investments, error: investmentsError} = await supabase
       .from('user_investments')
       .select(`
@@ -100,9 +100,11 @@ export async function GET(request: NextRequest) {
         updated_at
       `)
       .gt('shares_owned', 0) // Only fetch positions with actual shares
-      .gte('created_at', veryOldDate) // Force fresh query by adding filter
+      .lte('created_at', now) // Force fresh query with timestamp filter
       .order('updated_at', { ascending: false }) // Order by latest updates first
       .limit(10000); // Force non-cached query
+
+    console.log(`[Leaderboard] Fetched ${investments?.length || 0} investments with shares > 0`);
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -162,11 +164,13 @@ export async function GET(request: NextRequest) {
       }, 0);
 
       // Debug logging for specific user
-      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') {
-        console.log('[Leaderboard] ManaMana data:', {
+      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85' || investor.user_id === user?.id) {
+        console.log(`[Leaderboard] ${investor.username || investor.user_email} data:`, {
+          user_id: investor.user_id,
           cash: investor.available_tokens,
           cash_updated_at: investor.updated_at,
           investments_count: userInvestments.length,
+          investment_pitch_ids: userInvestments.map(inv => inv.pitch_id),
           holdings_value: holdingsValue,
           total: (investor.available_tokens || 0) + holdingsValue,
           query_time: new Date().toISOString()
