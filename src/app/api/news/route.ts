@@ -19,6 +19,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('News fetch error:', error);
+      // Return empty array instead of erroring if table doesn't exist
+      if (error.code === 'PGRST116' || error.message?.includes('does not exist')) {
+        return NextResponse.json({ news: [] });
+      }
       return NextResponse.json(
         { error: 'Failed to fetch news' },
         { status: 500 }
@@ -31,9 +35,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('News error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch news' },
-      { status: 500 }
-    );
+    // Return empty array on error to prevent UI breaking
+    return NextResponse.json({ news: [] });
   }
 }
