@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Header from '@/components/Header';
 import { RefreshCw, AlertCircle, CheckCircle, Database, Monitor } from 'lucide-react';
 
 interface UserData {
@@ -89,7 +88,6 @@ export default function DebugPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900">
-        <Header />
         <div className="flex items-center justify-center h-screen">
           <div className="text-xl text-gray-400">Loading debug data...</div>
         </div>
@@ -100,7 +98,6 @@ export default function DebugPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-900">
-        <Header />
         <div className="flex items-center justify-center h-screen">
           <div className="text-xl text-red-400">{error}</div>
         </div>
@@ -110,9 +107,26 @@ export default function DebugPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20">
-      <Header />
+      {/* Simple Header */}
+      <div className="bg-gray-800 border-b border-gray-700 px-4 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Database className="w-8 h-8 text-blue-400" />
+            <div>
+              <h1 className="text-xl font-bold text-white">Admin Debug Panel</h1>
+              <p className="text-xs text-gray-400">Data Integrity Monitor</p>
+            </div>
+          </div>
+          <a
+            href="/manage"
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            ← Back to App
+          </a>
+        </div>
+      </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
