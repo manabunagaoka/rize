@@ -64,8 +64,10 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const lastFetchPathname = useRef<string>('');
+  const retryCountRef = useRef<number>(0);
 
   useEffect(() => {
+    retryCountRef.current = 0; // Reset retry count on mount
     fetchPortfolio();
     fetchTransactions();
     fetchNews();
@@ -113,8 +115,11 @@ export default function Portfolio() {
   async function fetchPortfolio() {
     try {
       setLoading(true); // Show loading during fetch
+      const clientRequestTime = Date.now();
+      console.log('[Portfolio] CLIENT REQUEST TIME:', new Date(clientRequestTime).toISOString());
+      
       // Use multiple cache-busting parameters
-      const cacheBuster = `${Date.now()}.${Math.random()}`;
+      const cacheBuster = `${clientRequestTime}.${Math.random()}`;
       const response = await fetch(`/api/portfolio?t=${cacheBuster}&nocache=1`, {
         credentials: 'include',
         cache: 'no-store',
@@ -123,9 +128,21 @@ export default function Portfolio() {
           'Pragma': 'no-cache'
         }
       });
+      
+      const clientReceiveTime = Date.now();
       const portfolioData = await response.json();
+      
+      // Calculate staleness
+      const serverTime = portfolioData._timestamp ? new Date(portfolioData._timestamp).getTime() : null;
+      const staleness = serverTime ? Math.floor((clientReceiveTime - serverTime) / 1000) : 'unknown';
+      
       console.log('[Portfolio/Manage] API Response:', {
-        timestamp: portfolioData._timestamp,
+        serverTimestamp: portfolioData._timestamp,
+        clientRequestTime: new Date(clientRequestTime).toISOString(),
+        clientReceiveTime: new Date(clientReceiveTime).toISOString(),
+        stalenessSeconds: staleness,
+        roundTripMs: clientReceiveTime - clientRequestTime,
+        retryCount: retryCountRef.current,
         cash: portfolioData.balance?.available_tokens,
         holdings: portfolioData.balance?.portfolio_value,
         total: (portfolioData.balance?.available_tokens || 0) + (portfolioData.balance?.portfolio_value || 0),
@@ -135,6 +152,24 @@ export default function Portfolio() {
           current_price: inv.current_price
         }))
       });
+      
+      // If data is stale (>5 seconds old), warn and retry after 2 seconds (max 10 retries = 20 seconds)
+      if (typeof staleness === 'number' && staleness > 5 && retryCountRef.current < 10) {
+        retryCountRef.current += 1;
+        console.warn(`[Portfolio] ⚠️ STALE DATA DETECTED! Server timestamp is ${staleness}s old. Retry ${retryCountRef.current}/10 in 2s...`);
+        setTimeout(() => {
+          console.log(`[Portfolio] Retrying due to stale data (attempt ${retryCountRef.current})...`);
+          fetchPortfolio();
+        }, 2000);
+      } else if (typeof staleness === 'number' && staleness <= 5) {
+        // Reset retry count on fresh data
+        retryCountRef.current = 0;
+        console.log('[Portfolio] ✓ Fresh data received');
+      } else if (retryCountRef.current >= 10) {
+        console.error('[Portfolio] ✗ Max retries reached, giving up');
+        retryCountRef.current = 0;
+      }
+      
       // Force a new object reference to trigger React re-render
       setData({ ...portfolioData });
       setLoading(false);
