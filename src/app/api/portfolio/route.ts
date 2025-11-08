@@ -41,7 +41,7 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch user's portfolio
 export async function GET(request: NextRequest) {
-  console.log('[Portfolio API] VERSION: 2025-11-06-v6 - FORCING NEW DEPLOYMENT');
+  console.log('[Portfolio API] VERSION: 2025-11-08-CACHE-FIX - FORCING FRESH PRICES');
   console.log('[Portfolio API] Request URL:', request.url);
   console.log('[Portfolio API] Request timestamp:', new Date().toISOString());
   
@@ -147,7 +147,11 @@ export async function GET(request: NextRequest) {
               const priceResponse = await fetch(
                 `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
                 { 
-                  cache: 'no-store' // Don't use next.revalidate in API routes
+                  cache: 'no-store',
+                  headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache'
+                  }
                 }
               );
               
