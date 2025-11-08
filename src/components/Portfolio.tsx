@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
 interface Investment {
@@ -56,28 +57,49 @@ const COMPANY_NAMES: { [key: number]: { name: string; ticker: string } } = {
 };
 
 export default function Portfolio() {
+  const pathname = usePathname();
   const [data, setData] = useState<PortfolioData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [news, setNews] = useState<NewsPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const refreshData = useCallback(() => {
+    fetchPortfolio();
+    fetchTransactions();
+  }, []);
+
   useEffect(() => {
     fetchPortfolio();
     fetchTransactions();
     fetchNews();
+  }, []);
 
-    // Refresh data when user returns to the tab
+  // Refresh when navigating back to this page
+  useEffect(() => {
+    refreshData();
+  }, [pathname, refreshData]);
+
+  // Refresh data when user returns to the tab
+  useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        fetchPortfolio();
-        fetchTransactions();
+        refreshData();
       }
     };
     
+    const handleFocus = () => {
+      refreshData();
+    };
+    
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refreshData]);
 
   async function fetchPortfolio() {
     try {

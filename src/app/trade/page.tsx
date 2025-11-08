@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import Header from '@/components/Header';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getUserFromToken() {
   const cookieStore = cookies();
   const token = cookieStore.get('manaboodle_sso_token')?.value;
