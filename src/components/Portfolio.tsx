@@ -78,8 +78,11 @@ export default function Portfolio() {
       console.log('[Portfolio] Navigated back to /manage, refreshing data...');
       setLoading(true); // Show loading state
       setData(null); // Clear old data
-      fetchPortfolio();
-      fetchTransactions();
+      // Add small delay to allow database replication after trades
+      setTimeout(() => {
+        fetchPortfolio();
+        fetchTransactions();
+      }, 600); // 600ms to account for DB replication (500ms) + buffer
     }
     lastFetchPathname.current = pathname;
   }, [pathname]);
