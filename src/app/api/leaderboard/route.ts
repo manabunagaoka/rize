@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     //   );
     // }
 
-    // Fetch all investors with their balances and holdings - force fresh data
+        // Fetch all investors with their balances and holdings - force fresh data from PRIMARY
     const { data: investors, error: investorsError } = await supabase
       .from('user_token_balances')
       .select(`
@@ -70,16 +70,13 @@ export async function GET(request: NextRequest) {
         ai_strategy,
         ai_catchphrase,
         ai_status,
-        available_tokens,
-        total_tokens,
         investor_tier,
-        investor_tier_earned_at,
         founder_tier,
-        founder_tier_earned_at,
-        portfolio_value,
-        all_time_gain_loss
+        available_tokens,
+        updated_at
       `)
-      .order('user_id', { ascending: true }); // Force fresh query
+      .order('updated_at', { ascending: false }) // Force non-cached query
+      .limit(1000); // Add limit to prevent caching
 
     if (investorsError) {
       console.error('Error fetching investors:', investorsError);
@@ -157,24 +154,23 @@ export async function GET(request: NextRequest) {
       // Calculate holdings value using real-time prices
       const userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
       
-      // Debug logging for specific user
-      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') {
-        console.log('[Leaderboard] ManaMana investments found:', {
-          count: userInvestments.length,
-          investments: userInvestments.map(inv => ({
-            pitch_id: inv.pitch_id,
-            shares: inv.shares_owned,
-            price: pitchPrices[inv.pitch_id],
-            value: Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100))
-          }))
-        });
-      }
-      
       const holdingsValue = userInvestments.reduce((sum, inv) => {
         // Always calculate from real-time prices, not database current_value
         const value = Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100));
         return sum + value;
       }, 0);
+
+      // Debug logging for specific user
+      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85') {
+        console.log('[Leaderboard] ManaMana data:', {
+          cash: investor.available_tokens,
+          cash_updated_at: investor.updated_at,
+          investments_count: userInvestments.length,
+          holdings_value: holdingsValue,
+          total: (investor.available_tokens || 0) + holdingsValue,
+          query_time: new Date().toISOString()
+        });
+      }
 
       // Portfolio value = cash + holdings
       const portfolioValue = (investor.available_tokens || 0) + holdingsValue;

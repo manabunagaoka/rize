@@ -59,19 +59,45 @@ export default function LeaderboardPage() {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/leaderboard?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
       
-      if (!response.ok) {
+      // Fetch both leaderboard AND portfolio to get accurate cash balance
+      const [leaderboardResponse, portfolioResponse] = await Promise.all([
+        fetch(`/api/leaderboard?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch(`/api/portfolio?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+      ]);
+      
+      if (!leaderboardResponse.ok) {
         throw new Error('Failed to fetch leaderboard');
       }
 
-      const result = await response.json();
+      const result = await leaderboardResponse.json();
+      
+      // Override currentUser cash with accurate value from Portfolio API
+      if (portfolioResponse.ok) {
+        const portfolioData = await portfolioResponse.json();
+        if (result.currentUser && portfolioData.cash !== undefined) {
+          console.log('[Compete] Correcting cash balance:', {
+            leaderboard_cash: result.currentUser.cash,
+            portfolio_cash: portfolioData.cash,
+            difference: portfolioData.cash - result.currentUser.cash
+          });
+          result.currentUser.cash = portfolioData.cash;
+          result.currentUser.portfolioValue = portfolioData.cash + result.currentUser.holdingsValue;
+        }
+      }
+      
       console.log('[Compete] API Response:', {
         timestamp: result.timestamp,
         currentUser: result.currentUser ? {
