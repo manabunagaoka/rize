@@ -40,11 +40,30 @@ async function verifyUser(request: NextRequest) {
 
 // GET - Fetch leaderboard with all investors ranked by portfolio value
 export async function GET(request: NextRequest) {
-  // Create fresh Supabase client to avoid caching issues
+  console.log('[Leaderboard API] Request timestamp:', new Date().toISOString());
+  
+  // Create fresh Supabase client - FORCE PRIMARY READ (same config as Portfolio API)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
-    { auth: { persistSession: false } }
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      },
+      db: {
+        schema: 'public'
+      },
+      global: {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'x-client-info': `supabase-js-node`,
+          'apikey': process.env.SUPABASE_SERVICE_KEY!
+        }
+      }
+    }
   );
   
   try {
@@ -59,6 +78,7 @@ export async function GET(request: NextRequest) {
     // }
 
         // Fetch all investors with their balances and holdings - force fresh data from PRIMARY
+    const queryTime = new Date().toISOString();
     const { data: investors, error: investorsError } = await supabase
       .from('user_token_balances')
       .select(`
@@ -76,8 +96,11 @@ export async function GET(request: NextRequest) {
         available_tokens,
         updated_at
       `)
+      .lte('updated_at', queryTime) // Force fresh query with current timestamp
       .order('updated_at', { ascending: false }) // Force non-cached query
       .limit(1000); // Add limit to prevent caching
+
+    console.log(`[Leaderboard] Fetched ${investors?.length || 0} investors at ${queryTime}`);
 
     if (investorsError) {
       console.error('Error fetching investors:', investorsError);
