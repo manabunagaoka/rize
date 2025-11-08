@@ -127,7 +127,15 @@ export async function middleware(request: NextRequest) {
   }
   
   // Skip authentication for public paths
-  if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path))) {
+  // Check exact matches first, then startsWith for API routes
+  const isPublicPath = PUBLIC_PATHS.some(path => {
+    if (pathname === path) return true;
+    // Allow startsWith for API routes
+    if (path.startsWith('/api/') && pathname.startsWith(path)) return true;
+    return false;
+  });
+  
+  if (isPublicPath) {
     console.log('[MIDDLEWARE] Public path:', pathname);
     
     // For public paths, if token exists, verify it and inject user headers
