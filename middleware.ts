@@ -42,7 +42,7 @@ const PROTECTED_PATHS = [
   '/dashboard',     // Dashboard
   '/submit',        // Submit startup
   '/vote',          // Vote on pitches
-  '/admin',         // Admin panel
+  '/manage',        // Portfolio management page
   '/api/portfolio', // Portfolio API
   '/api/invest',    // Investment API
   '/api/sell',      // Sell API
@@ -129,11 +129,19 @@ export async function middleware(request: NextRequest) {
   // Skip authentication for public paths
   // Check exact matches first, then startsWith for API routes
   const isPublicPath = PUBLIC_PATHS.some(path => {
-    if (pathname === path) return true;
+    if (pathname === path) {
+      console.log(`[MIDDLEWARE] Exact match public path: ${path}`);
+      return true;
+    }
     // Allow startsWith for API routes
-    if (path.startsWith('/api/') && pathname.startsWith(path)) return true;
+    if (path.startsWith('/api/') && pathname.startsWith(path)) {
+      console.log(`[MIDDLEWARE] API prefix match: ${path}`);
+      return true;
+    }
     return false;
   });
+  
+  console.log(`[MIDDLEWARE] Is public path? ${isPublicPath} for ${pathname}`);
   
   if (isPublicPath) {
     console.log('[MIDDLEWARE] Public path:', pathname);
