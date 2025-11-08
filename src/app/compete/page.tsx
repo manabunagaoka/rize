@@ -5,9 +5,6 @@ import Header from '@/components/Header';
 import InvestorProfileModal from '@/components/InvestorProfileModal';
 import { Crown, Trophy, Award, TrendingUp, TrendingDown, User, Bot, GraduationCap, BarChart3 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 interface Holding {
   ticker: string;
   shares: number;
