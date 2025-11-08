@@ -149,9 +149,17 @@ export default function Portfolio() {
         investments: portfolioData.investments?.length,
         prices: portfolioData.investments?.map((inv: any) => ({
           pitch_id: inv.pitch_id,
-          current_price: inv.current_price
+          current_price: inv.current_price,
+          is_fallback: inv.current_price === 100,
+          price_source: inv.price_source
         }))
       });
+      
+      // Count how many prices are using the $100 fallback
+      const fallbackCount = portfolioData.investments?.filter((inv: any) => inv.current_price === 100).length || 0;
+      if (fallbackCount > 0) {
+        console.warn(`[Portfolio] ⚠️ ${fallbackCount} out of ${portfolioData.investments?.length || 0} prices are using $100 fallback!`);
+      }
       
       // If data is stale (>5 seconds old), warn and retry after 2 seconds (max 10 retries = 20 seconds)
       if (typeof staleness === 'number' && staleness > 5 && retryCountRef.current < 10) {

@@ -7,6 +7,10 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
+// Last known good prices cache - survives across requests in Edge Runtime
+const priceCache = new Map<string, { price: number; timestamp: number }>();
+const PRICE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // Verify user from Manaboodle SSO
 async function verifyUser(request: NextRequest) {
   const token = request.cookies.get('manaboodle_sso_token')?.value;
@@ -135,50 +139,81 @@ export async function GET(request: NextRequest) {
     const investmentsWithPrices = await Promise.all(
       (investments || []).map(async (inv) => {
         const ticker = tickerMap[inv.pitch_id];
-        let currentPrice = 100; // Fallback only if API completely fails
+        let currentPrice = 100; // Final fallback only if no cached price exists
+        let priceSource = 'fallback';
         
         if (ticker) {
-          try {
-            // Fetch real-time price from Finnhub API directly
-            const apiKey = process.env.STOCK_API_KEY;
-            
-            if (apiKey) {
-              console.log(`[Portfolio] Fetching price for ${ticker} from Finnhub...`);
-              // Add timestamp to bust any edge caching
-              const timestamp = Date.now();
-              const priceResponse = await fetch(
-                `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}&_=${timestamp}`,
-                { 
-                  cache: 'no-store',
-                  headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                  },
-                  next: { revalidate: 0 }
-                }
-              );
+          // Check cache first
+          const cached = priceCache.get(ticker);
+          const now = Date.now();
+          
+          if (cached && (now - cached.timestamp) < PRICE_CACHE_TTL) {
+            currentPrice = cached.price;
+            priceSource = 'cache';
+            console.log(`[Portfolio] Using cached price for ${ticker}: $${currentPrice} (age: ${Math.floor((now - cached.timestamp) / 1000)}s)`);
+          } else {
+            // Cache miss or expired - fetch from Finnhub
+            try {
+              const apiKey = process.env.STOCK_API_KEY;
               
-              if (priceResponse.ok) {
-                const priceData = await priceResponse.json();
-                console.log(`[Portfolio] Finnhub response for ${ticker}:`, priceData);
+              if (apiKey) {
+                console.log(`[Portfolio] Fetching price for ${ticker} from Finnhub...`);
+                const timestamp = Date.now();
+                const priceResponse = await fetch(
+                  `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}&_=${timestamp}`,
+                  { 
+                    cache: 'no-store',
+                    headers: {
+                      'Cache-Control': 'no-cache, no-store, must-revalidate',
+                      'Pragma': 'no-cache',
+                      'Expires': '0'
+                    },
+                    next: { revalidate: 0 }
+                  }
+                );
                 
-                if (priceData.c && priceData.c > 0) {
-                  currentPrice = priceData.c;
-                  console.log(`[Portfolio] ✓ Price for ${ticker}: $${currentPrice}`);
+                if (priceResponse.ok) {
+                  const priceData = await priceResponse.json();
+                  console.log(`[Portfolio] Finnhub response for ${ticker}:`, priceData);
+                  
+                  if (priceData.c && priceData.c > 0) {
+                    currentPrice = priceData.c;
+                    priceSource = 'finnhub';
+                    // Update cache with fresh price
+                    priceCache.set(ticker, { price: currentPrice, timestamp: now });
+                    console.log(`[Portfolio] ✓ Price for ${ticker}: $${currentPrice} (cached for 5min)`);
+                  } else {
+                    // Finnhub returned invalid data - use cached price if available
+                    if (cached) {
+                      currentPrice = cached.price;
+                      priceSource = 'stale-cache';
+                      console.warn(`[Portfolio] ✗ Invalid Finnhub data for ${ticker}, using stale cache: $${currentPrice}`);
+                    } else {
+                      console.warn(`[Portfolio] ✗ Invalid price data for ${ticker}:`, priceData);
+                      console.warn(`[Portfolio] ✗ Full response:`, JSON.stringify(priceData));
+                    }
+                  }
                 } else {
-                  console.warn(`[Portfolio] ✗ Invalid price data for ${ticker}:`, priceData);
-                  console.warn(`[Portfolio] ✗ Full response:`, JSON.stringify(priceData));
+                  const errorText = await priceResponse.text();
+                  console.error(`[Portfolio] ✗ Finnhub API error for ${ticker}, status:`, priceResponse.status, 'body:', errorText);
+                  // Use cached price even if stale
+                  if (cached) {
+                    currentPrice = cached.price;
+                    priceSource = 'stale-cache';
+                    console.warn(`[Portfolio] Using stale cache for ${ticker} due to API error: $${currentPrice}`);
+                  }
                 }
               } else {
-                const errorText = await priceResponse.text();
-                console.error(`[Portfolio] ✗ Finnhub API error for ${ticker}, status:`, priceResponse.status, 'body:', errorText);
+                console.error(`[Portfolio] ✗ No STOCK_API_KEY configured`);
               }
-            } else {
-              console.error(`[Portfolio] ✗ No STOCK_API_KEY configured`);
+            } catch (error) {
+              console.error(`[Portfolio] ✗ Error fetching price for ${ticker}:`, error);
+              // Use cached price even if stale
+              if (cached) {
+                currentPrice = cached.price;
+                priceSource = 'stale-cache';
+              }
             }
-          } catch (error) {
-            console.error(`[Portfolio] ✗ Error fetching price for ${ticker}:`, error);
           }
         }
 
@@ -190,7 +225,8 @@ export async function GET(request: NextRequest) {
           shares_owned: parseFloat(inv.shares_owned),
           current_price: currentPrice,
           current_value: currentValue,
-          unrealized_gain_loss: unrealizedGainLoss
+          unrealized_gain_loss: unrealizedGainLoss,
+          price_source: priceSource
         };
       })
     );
