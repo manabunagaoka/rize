@@ -1,6 +1,9 @@
 import { cookies } from 'next/headers';
 import AccountClient from './AccountClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getUserFromToken() {
   const cookieStore = cookies();
   const token = cookieStore.get('manaboodle_sso_token')?.value;
