@@ -1,133 +1,103 @@
-# Cache Issue - November 8, 2025
+# Cache Issue - November 8, 2025 [RESOLVED]
 
-## Problem
-Portfolio prices show $100 (fallback) or stale prices when navigating back to Manage page after trading. Prices refresh correctly after **exactly 60 seconds** or when switching browser tabs.
+## Problem ✅ FIXED
+Portfolio prices showed $100 (fallback) or stale prices when navigating back to Manage page after trading. Prices would refresh correctly after **exactly 60 seconds** or when switching browser tabs.
 
-## Root Cause (Suspected)
-**Vercel Function Caching** - Despite all our cache-busting efforts, there's a 60-second cache somewhere in Vercel's infrastructure that we cannot override with headers or query parameters.
+## Root Cause [IDENTIFIED]
+**NOT Vercel caching** - The server timestamps were fresh (0 seconds staleness).
 
-## What We've Tried
+**Actual cause**: Finnhub API intermittently returns invalid/empty data (`{ c: 0 }` or slow responses), causing the code to fall back to the hardcoded $100 default price. When navigating back and forth, eventually Finnhub would return valid data.
+
+## Solution Implemented ✅
+
+### 5-Minute Server-Side Price Cache
+Added an in-memory cache in the Edge Runtime that stores last known good prices:
+
+```typescript
+const priceCache = new Map<string, { price: number; timestamp: number }>();
+const PRICE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+```
+
+**How it works:**
+1. **First fetch**: Calls Finnhub, caches the valid price
+2. **Subsequent fetches**: Uses cached price if Finnhub fails or returns invalid data
+3. **Cache expiry**: 5 minutes (refreshes automatically)
+4. **Graceful degradation**: Falls back to stale cache if Finnhub is down
+
+### Benefits
+- ✅ No more $100 fallback prices
+- ✅ Instant price display on navigation (uses cache)
+- ✅ Survives Finnhub API delays/failures
+- ✅ Cache persists across Edge Runtime requests
+- ✅ Automatic refresh every 5 minutes
+
+## Verification
+Console logs now show:
+```javascript
+{
+  price_source: 'cache',        // or 'finnhub', 'stale-cache', 'fallback'
+  current_price: 621.71,         // Real price, not $100
+  is_fallback: false,
+  stalenessSeconds: 0            // Server response is fresh
+}
+```
+
+## Files Modified (Final)
 
 ### 1. ✅ Fixed Invalid Finnhub API Key
 - Old key was invalid/expired
 - Updated with new working key
-- Test endpoint confirms Finnhub returns real prices
 
-### 2. ✅ Added Cache-Busting Headers (Server-Side)
-```typescript
-headers: {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-  'CDN-Cache-Control': 'no-store',
-  'Vercel-CDN-Cache-Control': 'no-store',
-  'Pragma': 'no-cache',
-  'Expires': '0',
-  'Surrogate-Control': 'no-store'
-}
-```
+## Diagnostic Journey (What We Learned)
 
-### 3. ✅ Added Aggressive Client-Side Cache Busting
-```typescript
-const cacheBuster = `${Date.now()}.${Math.random()}`;
-fetch(`/api/portfolio?t=${cacheBuster}&nocache=1`, {
-  cache: 'no-store',
-  headers: {
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache'
-  }
-})
-```
+### Initial Hypothesis: Vercel Caching ❌
+Suspected Vercel was caching API responses for 60 seconds despite headers.
 
-### 4. ✅ Added Force-Dynamic Exports
-```typescript
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-export const fetchCache = 'force-no-store';
-```
+### Tests Performed:
+1. ✅ Added Edge Runtime (`export const runtime = 'edge'`)
+2. ✅ Added aggressive cache-busting headers on server and client
+3. ✅ Added staleness detection (compared server timestamp to client time)
+4. ✅ Added auto-retry logic for stale responses
 
-### 5. ✅ Added Pathname Change Detection
-- Detects navigation back to /manage
-- Clears stale data
-- Triggers fresh fetch with delay for DB replication
+### Key Discovery:
+**Server timestamps showed 0 seconds staleness** → Vercel was NOT caching!
 
-### 6. ✅ Added Tab Visibility Listeners
-- Refreshes when user returns to tab (THIS WORKS!)
-- Refreshes on window focus
+The real issue was Finnhub API returning invalid data intermittently, causing fallback to $100.
+
+## Files Modified (Final)
 
 ## What Works
-- ✅ Tab switching triggers refresh with real prices
-- ✅ Manual refresh button works
-- ✅ Waiting 60 seconds then navigating works
-- ✅ Test endpoint shows Finnhub returns real prices
-- ✅ Trade page shows correct current prices
 
-## What Doesn't Work
-- ❌ Navigating from Trade → Manage shows $100 (for ~60 seconds)
-- ❌ After trading, returning to Manage shows stale prices (for ~60 seconds)
+## Diagnostic Journey (What We Learned)
 
-## The 60-Second Pattern
-The fact that it's **exactly 60 seconds** suggests:
-1. **Vercel Functions have a default 60s cache** that can't be overridden with headers
-2. **Supabase connection pooling** might cache query results for 60s
-3. **Some middleware or proxy** between client and API is caching
+### Initial Hypothesis: Vercel Caching ❌
+Suspected Vercel was caching API responses for 60 seconds despite headers.
 
-## Potential Solutions (Not Yet Tried)
+### Tests Performed:
+1. ✅ Added Edge Runtime (`export const runtime = 'edge'`)
+2. ✅ Added aggressive cache-busting headers on server and client
+3. ✅ Added staleness detection (compared server timestamp to client time)
+4. ✅ Added auto-retry logic for stale responses
 
-### Option 1: Disable Vercel Function Caching in Dashboard
-- Go to Vercel Dashboard → Project Settings → Functions
-- Look for caching settings
-- May need to contact Vercel support
+### Key Discovery:
+**Server timestamps showed 0 seconds staleness** → Vercel was NOT caching!
 
-### Option 2: Use Edge Runtime
-Change API routes to use Edge Runtime which has different caching behavior:
-```typescript
-export const runtime = 'edge';
-```
+The real issue was Finnhub API returning invalid data intermittently, causing fallback to $100.
 
-### Option 3: Add Vercel Config
-Add to `vercel.json`:
-```json
-{
-  "functions": {
-    "api/portfolio.ts": {
-      "maxDuration": 10
-    }
-  },
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0" }
-      ]
-    }
-  ]
-}
-```
+## Files Modified (Final)
+- `/src/app/api/portfolio/route.ts` - Added 5-minute price cache with fallback logic
+- `/src/components/Portfolio.tsx` - Added staleness detection, auto-retry, and price source logging
+- `/src/app/api/news/route.ts` - Fixed to return empty array instead of 500 error
+- `/src/app/api/debug-prices/route.ts` - Added debug endpoint to test Finnhub directly
 
-### Option 4: Server-Side Polling
-Instead of client fetching, make the server push updates via:
-- Server-Sent Events (SSE)
-- WebSockets
-- Polling with short intervals
+## Test Results ✅
+After deployment:
+- ✅ Prices show immediately on navigation (cache hit)
+- ✅ All prices are real values (not $100)
+- ✅ `price_source: 'cache'` confirms cache is working
+- ✅ No 60-second delay
+- ✅ Console shows `stalenessSeconds: 0` (server responses are fresh)
 
-### Option 5: Bypass API Routes
-Fetch directly from Supabase in the client component (not recommended for security)
+## Bonus Fix
+Fixed `/api/news` endpoint to gracefully handle missing `news_posts` table instead of throwing 500 errors.
 
-## Current Workaround
-Users can switch to another browser tab and back to trigger the visibility listener, which fetches fresh data immediately.
-
-## Files Modified Today
-- `/src/app/api/portfolio/route.ts` - Added CDN cache headers, aggressive cache busting
-- `/src/app/api/leaderboard/route.ts` - Added CDN cache headers
-- `/src/app/api/invest/route.ts` - Added cache-busting headers
-- `/src/app/api/sell/route.ts` - Added cache-busting headers
-- `/src/app/api/stock/[ticker]/route.ts` - Added cache-busting, better error handling
-- `/src/components/Portfolio.tsx` - Added pathname detection, visibility listeners, aggressive cache-busting
-- `/src/app/compete/page.tsx` - Added cache-busting
-- `/src/app/manage/page.tsx` - Added force-dynamic export
-- `/src/app/trade/page.tsx` - Added force-dynamic export
-
-## Next Steps
-1. Try Edge Runtime (Option 2)
-2. Add Vercel config headers (Option 3)
-3. Contact Vercel support about function caching
-4. Consider alternative architecture (SSE/WebSockets)
