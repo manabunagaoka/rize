@@ -143,6 +143,14 @@ export default function Portfolio() {
   // Calculate percentage gain from starting balance (1M MTK) to match Compete page
   const gainLossPercent = ((totalValue - 1000000) / 1000000 * 100).toFixed(2);
 
+  console.log('[Portfolio/Manage] Performance Calculation:', {
+    cash: data.balance.available_tokens,
+    holdings: data.balance.portfolio_value,
+    totalValue,
+    performance: gainLossPercent + '%',
+    formula: `((${totalValue} - 1000000) / 1000000 * 100).toFixed(2)`
+  });
+
   return (
     <div className="space-y-6">
       {/* Portfolio Summary */}

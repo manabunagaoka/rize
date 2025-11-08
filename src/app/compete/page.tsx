@@ -262,7 +262,15 @@ export default function LeaderboardPage() {
 
           {/* Your Rank Card */}
           {data?.currentUser ? (
-            <div className="bg-gray-800 border-2 border-blue-500 rounded-2xl p-6 mb-8 hover:border-blue-400 transition-all">
+            <>
+              {console.log('[Compete] Performance Calculation:', {
+                cash: data.currentUser.cash,
+                holdings: data.currentUser.holdingsValue,
+                portfolioValue: data.currentUser.portfolioValue,
+                performance: formatPercentage(data.currentUser.portfolioValue),
+                formula: `((${data.currentUser.portfolioValue} - 1000000) / 1000000) * 100`
+              })}
+              <div className="bg-gray-800 border-2 border-blue-500 rounded-2xl p-6 mb-8 hover:border-blue-400 transition-all">
               <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -314,6 +322,7 @@ export default function LeaderboardPage() {
                 </div>
               </div>
             </div>
+            </>
           ) : (
             <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/50 rounded-2xl p-6 mb-8 text-center">
               <User className="w-12 h-12 text-purple-400 mx-auto mb-3" />
