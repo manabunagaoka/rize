@@ -144,14 +144,18 @@ export async function GET(request: NextRequest) {
             
             if (apiKey) {
               console.log(`[Portfolio] Fetching price for ${ticker} from Finnhub...`);
+              // Add timestamp to bust any edge caching
+              const timestamp = Date.now();
               const priceResponse = await fetch(
-                `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`,
+                `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}&_=${timestamp}`,
                 { 
                   cache: 'no-store',
                   headers: {
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache'
-                  }
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                  },
+                  next: { revalidate: 0 }
                 }
               );
               
@@ -164,9 +168,11 @@ export async function GET(request: NextRequest) {
                   console.log(`[Portfolio] ✓ Price for ${ticker}: $${currentPrice}`);
                 } else {
                   console.warn(`[Portfolio] ✗ Invalid price data for ${ticker}:`, priceData);
+                  console.warn(`[Portfolio] ✗ Full response:`, JSON.stringify(priceData));
                 }
               } else {
-                console.error(`[Portfolio] ✗ Finnhub API error for ${ticker}, status:`, priceResponse.status);
+                const errorText = await priceResponse.text();
+                console.error(`[Portfolio] ✗ Finnhub API error for ${ticker}, status:`, priceResponse.status, 'body:', errorText);
               }
             } else {
               console.error(`[Portfolio] ✗ No STOCK_API_KEY configured`);

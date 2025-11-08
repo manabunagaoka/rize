@@ -145,8 +145,16 @@ export async function POST(request: NextRequest) {
         if (!apiKey) {
           console.error('[Invest API] STOCK_API_KEY not found in environment');
         } else {
-          const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`;
-          const priceResponse = await fetch(finnhubUrl);
+          const timestamp = Date.now();
+          const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}&_=${timestamp}`;
+          const priceResponse = await fetch(finnhubUrl, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          });
           const priceData = await priceResponse.json();
           console.log(`[Invest API] Fetched price for ${ticker} from Finnhub:`, priceData);
           if (priceData.c && priceData.c > 0) {

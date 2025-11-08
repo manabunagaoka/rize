@@ -129,14 +129,25 @@ export async function GET(request: NextRequest) {
         const ticker = tickerMap[pitchId];
         if (ticker && process.env.STOCK_API_KEY) {
           try {
+            const timestamp = Date.now();
             const response = await fetch(
-              `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${process.env.STOCK_API_KEY}`,
-              { cache: 'no-store' } // Don't use next.revalidate in API routes
+              `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${process.env.STOCK_API_KEY}&_=${timestamp}`,
+              { 
+                cache: 'no-store',
+                headers: {
+                  'Cache-Control': 'no-cache, no-store, must-revalidate',
+                  'Pragma': 'no-cache',
+                  'Expires': '0'
+                },
+                next: { revalidate: 0 }
+              }
             );
             const data = await response.json();
+            console.log(`[Leaderboard] Finnhub price for ${ticker}:`, data.c);
             if (data.c && data.c > 0) {
               pitchPrices[pitchId] = data.c;
             } else {
+              console.warn(`[Leaderboard] Invalid price for ${ticker}, using fallback 100`);
               pitchPrices[pitchId] = 100;
             }
           } catch (error) {
