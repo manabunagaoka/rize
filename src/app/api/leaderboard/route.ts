@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { fetchPriceWithCache } from '@/lib/price-cache';
 
 // Use Edge Runtime to bypass Vercel's function caching
 export const runtime = 'edge';
@@ -122,43 +123,32 @@ export async function GET(request: NextRequest) {
       5: 'RDDT', 6: 'WRBY', 7: 'BKNG'
     };
     
-    // Fetch real-time prices from Finnhub
+    // Fetch real-time prices from Finnhub with shared caching
     const pitchPrices: Record<number, number> = {};
-    await Promise.all(
-      pitchIds.map(async (pitchId) => {
-        const ticker = tickerMap[pitchId];
-        if (ticker && process.env.STOCK_API_KEY) {
-          try {
-            const timestamp = Date.now();
-            const response = await fetch(
-              `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${process.env.STOCK_API_KEY}&_=${timestamp}`,
-              { 
-                cache: 'no-store',
-                headers: {
-                  'Cache-Control': 'no-cache, no-store, must-revalidate',
-                  'Pragma': 'no-cache',
-                  'Expires': '0'
-                },
-                next: { revalidate: 0 }
-              }
-            );
-            const data = await response.json();
-            console.log(`[Leaderboard] Finnhub price for ${ticker}:`, data.c);
-            if (data.c && data.c > 0) {
-              pitchPrices[pitchId] = data.c;
-            } else {
-              console.warn(`[Leaderboard] Invalid price for ${ticker}, using fallback 100`);
+    const apiKey = process.env.STOCK_API_KEY;
+    
+    if (apiKey) {
+      await Promise.all(
+        pitchIds.map(async (pitchId) => {
+          const ticker = tickerMap[pitchId];
+          if (ticker) {
+            try {
+              pitchPrices[pitchId] = await fetchPriceWithCache(ticker, pitchId, apiKey);
+            } catch (error) {
+              console.error(`[Leaderboard] Error fetching price for ${ticker}:`, error);
               pitchPrices[pitchId] = 100;
             }
-          } catch (error) {
-            console.error(`Error fetching price for ${ticker}:`, error);
+          } else {
             pitchPrices[pitchId] = 100;
           }
-        } else {
-          pitchPrices[pitchId] = 100;
-        }
-      })
-    );
+        })
+      );
+    } else {
+      // No API key - use fallback
+      pitchIds.forEach(pitchId => {
+        pitchPrices[pitchId] = 100;
+      });
+    }
 
     // Calculate portfolio value for each investor
     const leaderboardData = investors?.map(investor => {

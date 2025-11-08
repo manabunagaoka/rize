@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { fetchPriceWithCache } from '@/lib/price-cache';
 
 // Use Edge Runtime to bypass Vercel's function caching
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
-
-// Last known good prices cache - survives across requests in Edge Runtime
-const priceCache = new Map<string, { price: number; timestamp: number }>();
-const PRICE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Verify user from Manaboodle SSO
 async function verifyUser(request: NextRequest) {
@@ -142,78 +139,13 @@ export async function GET(request: NextRequest) {
         let currentPrice = 100; // Final fallback only if no cached price exists
         let priceSource = 'fallback';
         
-        if (ticker) {
-          // Check cache first
-          const cached = priceCache.get(ticker);
-          const now = Date.now();
-          
-          if (cached && (now - cached.timestamp) < PRICE_CACHE_TTL) {
-            currentPrice = cached.price;
-            priceSource = 'cache';
-            console.log(`[Portfolio] Using cached price for ${ticker}: $${currentPrice} (age: ${Math.floor((now - cached.timestamp) / 1000)}s)`);
-          } else {
-            // Cache miss or expired - fetch from Finnhub
-            try {
-              const apiKey = process.env.STOCK_API_KEY;
-              
-              if (apiKey) {
-                console.log(`[Portfolio] Fetching price for ${ticker} from Finnhub...`);
-                const timestamp = Date.now();
-                const priceResponse = await fetch(
-                  `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}&_=${timestamp}`,
-                  { 
-                    cache: 'no-store',
-                    headers: {
-                      'Cache-Control': 'no-cache, no-store, must-revalidate',
-                      'Pragma': 'no-cache',
-                      'Expires': '0'
-                    },
-                    next: { revalidate: 0 }
-                  }
-                );
-                
-                if (priceResponse.ok) {
-                  const priceData = await priceResponse.json();
-                  console.log(`[Portfolio] Finnhub response for ${ticker}:`, priceData);
-                  
-                  if (priceData.c && priceData.c > 0) {
-                    currentPrice = priceData.c;
-                    priceSource = 'finnhub';
-                    // Update cache with fresh price
-                    priceCache.set(ticker, { price: currentPrice, timestamp: now });
-                    console.log(`[Portfolio] ✓ Price for ${ticker}: $${currentPrice} (cached for 5min)`);
-                  } else {
-                    // Finnhub returned invalid data - use cached price if available
-                    if (cached) {
-                      currentPrice = cached.price;
-                      priceSource = 'stale-cache';
-                      console.warn(`[Portfolio] ✗ Invalid Finnhub data for ${ticker}, using stale cache: $${currentPrice}`);
-                    } else {
-                      console.warn(`[Portfolio] ✗ Invalid price data for ${ticker}:`, priceData);
-                      console.warn(`[Portfolio] ✗ Full response:`, JSON.stringify(priceData));
-                    }
-                  }
-                } else {
-                  const errorText = await priceResponse.text();
-                  console.error(`[Portfolio] ✗ Finnhub API error for ${ticker}, status:`, priceResponse.status, 'body:', errorText);
-                  // Use cached price even if stale
-                  if (cached) {
-                    currentPrice = cached.price;
-                    priceSource = 'stale-cache';
-                    console.warn(`[Portfolio] Using stale cache for ${ticker} due to API error: $${currentPrice}`);
-                  }
-                }
-              } else {
-                console.error(`[Portfolio] ✗ No STOCK_API_KEY configured`);
-              }
-            } catch (error) {
-              console.error(`[Portfolio] ✗ Error fetching price for ${ticker}:`, error);
-              // Use cached price even if stale
-              if (cached) {
-                currentPrice = cached.price;
-                priceSource = 'stale-cache';
-              }
-            }
+        if (ticker && process.env.STOCK_API_KEY) {
+          try {
+            currentPrice = await fetchPriceWithCache(ticker, inv.pitch_id, process.env.STOCK_API_KEY);
+            priceSource = 'cache'; // fetchPriceWithCache handles cache internally
+          } catch (error) {
+            console.error(`[Portfolio] Error fetching price for ${ticker}:`, error);
+            priceSource = 'fallback';
           }
         }
 
