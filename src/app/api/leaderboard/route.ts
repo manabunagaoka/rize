@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all user investments (pitch holdings) - force fresh query
+    // Fetch all user investments (pitch holdings) - force fresh query from PRIMARY
     // Add multiple filters to prevent any form of caching
     const veryOldDate = new Date('2020-01-01').toISOString();
     const { data: investments, error: investmentsError} = await supabase
@@ -103,7 +103,8 @@ export async function GET(request: NextRequest) {
       `)
       .gt('shares_owned', 0) // Only fetch positions with actual shares
       .gte('created_at', veryOldDate) // Force fresh query by adding filter
-      .order('updated_at', { ascending: false }); // Order by latest updates first
+      .order('updated_at', { ascending: false }) // Order by latest updates first
+      .limit(10000); // Force non-cached query
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -221,12 +222,15 @@ export async function GET(request: NextRequest) {
       currentUser: currentUserData,
       topAI,
       totalInvestors: rankedLeaderboard.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      _version: 'v2025-11-08-fix-duplicates',
+      _serverTime: Date.now()
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-API-Version': 'v2025-11-08-fix-duplicates'
       }
     });
 
