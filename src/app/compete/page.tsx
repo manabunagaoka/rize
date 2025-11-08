@@ -210,7 +210,7 @@ export default function LeaderboardPage() {
                 </h1>
                 <p className="text-gray-400 text-base md:text-lg mb-2">Real-time rankings • 10 AI investors • Live market competition</p>
                 <p className="text-gray-500 text-sm md:text-base">
-                  Track your rank, view your performance, and compete against AI investors and fellow students. Can you beat the AI?
+                  Track your rank and compete against AI investors and fellow students. View detailed performance in the Manage tab.
                 </p>
                 <p className="text-xs text-gray-600 mt-2">
                   AI investors trade every 6 hours (2-3 trades each) • Prices delayed 15 min
@@ -262,15 +262,7 @@ export default function LeaderboardPage() {
 
           {/* Your Rank Card */}
           {data?.currentUser ? (
-            <>
-              {console.log('[Compete] Performance Calculation:', {
-                cash: data.currentUser.cash,
-                holdings: data.currentUser.holdingsValue,
-                portfolioValue: data.currentUser.portfolioValue,
-                performance: formatPercentage(data.currentUser.portfolioValue),
-                formula: `((${data.currentUser.portfolioValue} - 1000000) / 1000000) * 100`
-              })}
-              <div className="bg-gray-800 border-2 border-blue-500 rounded-2xl p-6 mb-8 hover:border-blue-400 transition-all">
+            <div className="bg-gray-800 border-2 border-blue-500 rounded-2xl p-6 mb-8 hover:border-blue-400 transition-all">
               <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -294,35 +286,24 @@ export default function LeaderboardPage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="bg-gray-900/50 rounded-xl p-4">
                   <p className="text-sm text-gray-400 mb-1">Portfolio Value</p>
                   <p className="text-xl md:text-2xl font-bold text-white">{formatCurrency(data.currentUser.portfolioValue)}</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-xl p-4">
-                  <p className="text-sm text-gray-400 mb-1">Performance</p>
-                  <div className="flex items-center gap-1">
-                    {((data.currentUser.portfolioValue - 1000000) / 1000000) * 100 >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-green-400" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 text-red-400" />
-                    )}
-                    <p className={`text-xl md:text-2xl font-bold ${getPerformanceColor(data.currentUser.portfolioValue)}`}>
-                      {formatPercentage(data.currentUser.portfolioValue)}
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Total value</p>
                 </div>
                 <div className="bg-gray-900/50 rounded-xl p-4">
                   <p className="text-sm text-gray-400 mb-1">Cash</p>
                   <p className="text-xl md:text-2xl font-bold text-white">{formatCurrency(data.currentUser.cash)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Available to trade</p>
                 </div>
                 <div className="bg-gray-900/50 rounded-xl p-4">
                   <p className="text-sm text-gray-400 mb-1">Holdings</p>
                   <p className="text-xl md:text-2xl font-bold text-white">{formatCurrency(data.currentUser.holdingsValue)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Invested value</p>
                 </div>
               </div>
             </div>
-            </>
           ) : (
             <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/50 rounded-2xl p-6 mb-8 text-center">
               <User className="w-12 h-12 text-purple-400 mx-auto mb-3" />
