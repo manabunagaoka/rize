@@ -113,7 +113,9 @@ export default function Portfolio() {
   async function fetchPortfolio() {
     try {
       setLoading(true); // Show loading during fetch
-      const response = await fetch(`/api/portfolio?t=${Date.now()}`, {
+      // Use multiple cache-busting parameters
+      const cacheBuster = `${Date.now()}.${Math.random()}`;
+      const response = await fetch(`/api/portfolio?t=${cacheBuster}&nocache=1`, {
         credentials: 'include',
         cache: 'no-store',
         headers: {
@@ -151,7 +153,8 @@ export default function Portfolio() {
 
   async function fetchTransactions() {
     try {
-      const response = await fetch(`/api/transactions?t=${Date.now()}`, {
+      const cacheBuster = `${Date.now()}.${Math.random()}`;
+      const response = await fetch(`/api/transactions?t=${cacheBuster}&nocache=1`, {
         credentials: 'include',
         cache: 'no-store',
         headers: {

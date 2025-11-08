@@ -61,15 +61,16 @@ export default function LeaderboardPage() {
       setLoading(true);
       
       // Fetch both leaderboard AND portfolio to get accurate cash balance
+      const cacheBuster = `${Date.now()}.${Math.random()}`;
       const [leaderboardResponse, portfolioResponse] = await Promise.all([
-        fetch(`/api/leaderboard?t=${Date.now()}`, {
+        fetch(`/api/leaderboard?t=${cacheBuster}&nocache=1`, {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
           }
         }),
-        fetch(`/api/portfolio?t=${Date.now()}`, {
+        fetch(`/api/portfolio?t=${cacheBuster}&nocache=1`, {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache',
