@@ -88,14 +88,46 @@ export default function LeaderboardPage() {
       // Override currentUser cash with accurate value from Portfolio API
       if (portfolioResponse.ok) {
         const portfolioData = await portfolioResponse.json();
-        if (result.currentUser && portfolioData.cash !== undefined) {
-          console.log('[Compete] Correcting cash balance:', {
-            leaderboard_cash: result.currentUser.cash,
-            portfolio_cash: portfolioData.cash,
-            difference: portfolioData.cash - result.currentUser.cash
+        if (result.currentUser && portfolioData.balance) {
+          console.log('[Compete] Data comparison:', {
+            leaderboard: {
+              cash: result.currentUser.cash,
+              holdings: result.currentUser.holdingsValue,
+              total: result.currentUser.portfolioValue,
+              holdings_count: result.currentUser.holdings?.length || 0
+            },
+            portfolio: {
+              cash: portfolioData.balance.available_tokens,
+              holdings: portfolioData.balance.portfolio_value,
+              total: portfolioData.balance.available_tokens + portfolioData.balance.portfolio_value,
+              holdings_count: portfolioData.investments?.length || 0
+            },
+            difference: {
+              cash: portfolioData.balance.available_tokens - result.currentUser.cash,
+              holdings: portfolioData.balance.portfolio_value - result.currentUser.holdingsValue,
+              total: (portfolioData.balance.available_tokens + portfolioData.balance.portfolio_value) - result.currentUser.portfolioValue
+            }
           });
-          result.currentUser.cash = portfolioData.cash;
-          result.currentUser.portfolioValue = portfolioData.cash + result.currentUser.holdingsValue;
+          
+          // Use Portfolio API data as source of truth (it has fresh prices and correct holdings)
+          result.currentUser.cash = portfolioData.balance.available_tokens;
+          result.currentUser.holdingsValue = portfolioData.balance.portfolio_value;
+          result.currentUser.portfolioValue = portfolioData.balance.available_tokens + portfolioData.balance.portfolio_value;
+          
+          // Update holdings array from Portfolio API (has correct count and prices)
+          const tickerMap: Record<number, string> = {
+            1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 
+            5: 'RDDT', 6: 'WRBY', 7: 'BKNG'
+          };
+          
+          if (portfolioData.investments) {
+            result.currentUser.holdings = portfolioData.investments.map((inv: any) => ({
+              ticker: tickerMap[inv.pitch_id] || `PITCH-${inv.pitch_id}`,
+              shares: inv.shares_owned,
+              currentPrice: inv.current_price,
+              value: inv.current_value
+            }));
+          }
         }
       }
       
