@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Integrity Dashboard - RIZE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .diff-highlight {
+            background-color: #fee;
+            border: 2px solid #f00;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">Data Integrity Dashboard</h1>
+            <p class="text-gray-400">Real-time comparison: UI Display vs Database Reality</p>
+            <p class="text-xs text-gray-500 mt-1">No authentication required - Direct HTML version v3.0</p>
+        </div>
+
+        <div id="loading" class="text-center py-12">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+            <p class="text-gray-400">Loading data...</p>
+        </div>
+
+        <div id="error" class="hidden bg-red-900/30 border border-red-500 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-red-400 mb-2">Error Loading Data</h2>
+            <p id="error-message" class="text-red-300"></p>
+        </div>
+
+        <div id="summary" class="hidden grid grid-cols-3 gap-4 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6">
+                <div class="text-gray-400 text-sm mb-1">Total Users</div>
+                <div id="total-users" class="text-3xl font-bold">-</div>
+            </div>
+            <div class="bg-red-900/30 rounded-lg p-6 border border-red-500">
+                <div class="text-red-400 text-sm mb-1">Issues Found</div>
+                <div id="issues-count" class="text-3xl font-bold text-red-400">-</div>
+            </div>
+            <div class="bg-green-900/30 rounded-lg p-6 border border-green-500">
+                <div class="text-green-400 text-sm mb-1">Healthy</div>
+                <div id="healthy-count" class="text-3xl font-bold text-green-400">-</div>
+            </div>
+        </div>
+
+        <div id="content" class="hidden space-y-6"></div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('/api/data-integrity');
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('summary').classList.remove('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                
+                // Update summary
+                document.getElementById('total-users').textContent = data.users.length;
+                const issuesCount = data.users.filter(u => u.hasDiscrepancy).length;
+                document.getElementById('issues-count').textContent = issuesCount;
+                document.getElementById('healthy-count').textContent = data.users.length - issuesCount;
+                
+                // Render users
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = data.users.map(user => {
+                    const hasIssue = user.hasDiscrepancy;
+                    const borderColor = hasIssue ? 'border-red-500' : 'border-gray-700';
+                    const bgColor = hasIssue ? 'bg-red-900/10' : 'bg-gray-800';
+                    
+                    return `
+                        <div class="border ${borderColor} rounded-lg overflow-hidden ${bgColor}">
+                            <div class="p-6">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h2 class="text-2xl font-bold">${user.email}</h2>
+                                        <p class="text-gray-400 text-sm">User ID: ${user.userId}</p>
+                                    </div>
+                                    ${hasIssue ? '<span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">DISCREPANCY</span>' : '<span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">OK</span>'}
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-8">
+                                    <!-- UI Display -->
+                                    <div>
+                                        <h3 class="text-lg font-bold mb-3 text-blue-400">UI Display (What User Sees)</h3>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Cash Balance:</span>
+                                                <span class="font-mono ${user.discrepancies.cash ? 'diff-highlight' : ''}">${formatCurrency(user.ui.cash)}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Portfolio Value:</span>
+                                                <span class="font-mono ${user.discrepancies.portfolioValue ? 'diff-highlight' : ''}">${formatCurrency(user.ui.portfolioValue)}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Total Value:</span>
+                                                <span class="font-mono ${user.discrepancies.totalValue ? 'diff-highlight' : ''}">${formatCurrency(user.ui.totalValue)}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Holdings Count:</span>
+                                                <span class="font-mono ${user.discrepancies.holdingsCount ? 'diff-highlight' : ''}">${user.ui.holdingsCount}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Database Reality -->
+                                    <div>
+                                        <h3 class="text-lg font-bold mb-3 text-green-400">Database Reality (Source of Truth)</h3>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Cash Balance:</span>
+                                                <span class="font-mono ${user.discrepancies.cash ? 'diff-highlight' : ''}">${formatCurrency(user.db.cash)}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Portfolio Value:</span>
+                                                <span class="font-mono ${user.discrepancies.portfolioValue ? 'diff-highlight' : ''}">${formatCurrency(user.db.portfolioValue)}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Total Value:</span>
+                                                <span class="font-mono ${user.discrepancies.totalValue ? 'diff-highlight' : ''}">${formatCurrency(user.db.totalValue)}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Holdings Count:</span>
+                                                <span class="font-mono ${user.discrepancies.holdingsCount ? 'diff-highlight' : ''}">${user.db.holdingsCount}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${user.ui.investments && user.ui.investments.length > 0 ? `
+                                    <details class="mt-4">
+                                        <summary class="cursor-pointer text-gray-400 hover:text-white">Show Investments (${user.ui.investments.length})</summary>
+                                        <div class="mt-2 bg-gray-900 rounded p-4">
+                                            <pre class="text-xs overflow-x-auto">${JSON.stringify(user.ui.investments, null, 2)}</pre>
+                                        </div>
+                                    </details>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (err) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
+                document.getElementById('error-message').textContent = err.message;
+                console.error('Error loading data:', err);
+            }
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+        
+        // Load data on page load
+        loadData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
