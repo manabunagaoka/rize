@@ -63,18 +63,23 @@ export default function Portfolio() {
   const [news, setNews] = useState<NewsPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     fetchPortfolio();
     fetchTransactions();
     fetchNews();
+    setIsInitialLoad(false);
   }, []);
 
-  // Refresh when pathname changes
+  // Refresh when pathname changes (but skip initial load)
   useEffect(() => {
-    fetchPortfolio();
-    fetchTransactions();
-  }, [pathname]);
+    if (!isInitialLoad) {
+      console.log('[Portfolio] Pathname changed to:', pathname);
+      fetchPortfolio();
+      fetchTransactions();
+    }
+  }, [pathname, isInitialLoad]);
 
   // Refresh data when user returns to the tab
   useEffect(() => {
