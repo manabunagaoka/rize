@@ -125,13 +125,37 @@
                     const borderColor = hasIssue ? 'border-red-500' : 'border-gray-700';
                     const bgColor = hasIssue ? 'bg-red-900/10' : 'bg-gray-800';
                     
+                    // Build holdings display
+                    const holdingsList = user.ui.investments && user.ui.investments.length > 0 
+                        ? `<div class="mt-4 border-t border-gray-700 pt-4">
+                            <h4 class="text-sm font-bold text-gray-300 mb-2">Holdings (${user.ui.investments.length})</h4>
+                            <div class="grid grid-cols-1 gap-2">
+                                ${user.ui.investments.map(inv => `
+                                    <div class="bg-gray-900/50 rounded p-3 flex justify-between items-center">
+                                        <div>
+                                            <span class="font-bold text-blue-400">${inv.ticker}</span>
+                                            <span class="text-gray-400 text-sm ml-2">${inv.shares.toFixed(2)} shares</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-white font-mono">${formatCurrency(inv.currentValue)}</div>
+                                            <div class="text-gray-400 text-xs">@${formatCurrency(inv.currentPrice)}/share</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>`
+                        : '<p class="mt-4 text-gray-500 text-sm">No holdings</p>';
+                    
                     return `
                         <div class="border ${borderColor} rounded-lg overflow-hidden ${bgColor}">
                             <div class="p-6">
                                 <div class="flex items-start justify-between mb-4">
                                     <div>
-                                        <h2 class="text-2xl font-bold">${user.email}</h2>
-                                        <p class="text-gray-400 text-sm">User ID: ${user.userId}</p>
+                                        <h2 class="text-2xl font-bold">${user.displayName}</h2>
+                                        <p class="text-gray-400 text-sm">
+                                            ${user.isAI ? '🤖 AI Investor' : '👤 Human Investor'} 
+                                            ${user.email ? `• ${user.email}` : ''}
+                                        </p>
                                     </div>
                                     ${hasIssue ? '<span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">DISCREPANCY</span>' : '<span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">OK</span>'}
                                 </div>
@@ -158,6 +182,7 @@
                                                 <span class="font-mono ${user.discrepancies.holdingsCount ? 'diff-highlight' : ''}">${user.ui.holdingsCount}</span>
                                             </div>
                                         </div>
+                                        ${holdingsList}
                                     </div>
                                     
                                     <!-- Database Reality -->
@@ -183,15 +208,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                ${user.ui.investments && user.ui.investments.length > 0 ? `
-                                    <details class="mt-4">
-                                        <summary class="cursor-pointer text-gray-400 hover:text-white">Show Investments (${user.ui.investments.length})</summary>
-                                        <div class="mt-2 bg-gray-900 rounded p-4">
-                                            <pre class="text-xs overflow-x-auto">${JSON.stringify(user.ui.investments, null, 2)}</pre>
-                                        </div>
-                                    </details>
-                                ` : ''}
                             </div>
                         </div>
                     `;

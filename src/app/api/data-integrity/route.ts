@@ -81,9 +81,10 @@ export async function GET(request: NextRequest) {
 
       return {
         userId: balance.user_id,
-        email: balance.user_email || balance.username || balance.ai_nickname || `User-${balance.user_id}`,
-        username: balance.username,
-        ai_nickname: balance.ai_nickname,
+        // ALWAYS show nickname for display, email only for admin identification
+        displayName: balance.username || balance.ai_nickname || `User-${balance.user_id}`,
+        email: balance.user_email || null, // Keep for admin reference only
+        isAI: !!balance.ai_nickname,
         ui: {
           cash: uiCash,
           portfolioValue: uiHoldingsValue,
@@ -94,7 +95,8 @@ export async function GET(request: NextRequest) {
             ticker: tickerMap[inv.pitch_id] || `PITCH-${inv.pitch_id}`,
             shares: inv.shares_owned,
             avgPrice: inv.avg_purchase_price,
-            currentValue: inv.current_value
+            currentValue: inv.current_value,
+            currentPrice: inv.shares_owned > 0 ? (inv.current_value / inv.shares_owned) : 0
           })),
           timestamp: queryTime
         },
