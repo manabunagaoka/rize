@@ -305,7 +305,7 @@ export default function AIInvestorAdmin() {
                       rows={2}
                     />
                   ) : (
-                    <p className="text-gray-300 italic">"{selectedAI.catchphrase}"</p>
+                    <p className="text-gray-300 italic">&quot;{selectedAI.catchphrase}&quot;</p>
                   )}
 
                   <div className="mt-4 grid grid-cols-4 gap-4">
