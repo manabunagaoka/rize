@@ -29,6 +29,7 @@ const PUBLIC_PATHS = [
   '/how-to-play',   // How to play page
   '/data-integrity', // Data integrity dashboard (no auth)
   '/api/data-integrity', // Data integrity API (no auth)
+  '/simple-integrity', // Simple data integrity with password (no SSO)
   // API routes that allow unauthenticated requests
   '/api/leaderboard', // Leaderboard API (public)
 ];
