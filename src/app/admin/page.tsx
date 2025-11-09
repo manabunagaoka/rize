@@ -770,8 +770,8 @@ EXECUTION:
 CALCULATION VALIDATION:
   Cash Change:      $${(result.execution.balanceBefore - result.execution.balanceAfter).toLocaleString()}
   Portfolio Change: $${(result.execution.portfolioAfter - result.execution.portfolioBefore).toLocaleString()}
-  ${result.execution.cost && result.execution.shares && result.execution.price ? 
-    `  Cost Check:       ${result.execution.shares} × $${result.execution.price.toFixed(2)} = $${result.execution.cost.toLocaleString()} ✓` : ''}
+  ${result.execution.cost && result.decision?.shares && result.execution.price ? 
+    `  Cost Check:       ${result.decision.shares} × $${result.execution.price.toFixed(2)} = $${result.execution.cost.toLocaleString()} ✓` : ''}
 ` : ''}
 
 RESULT:
@@ -819,10 +819,10 @@ ${result.error ? `ERROR:\n  ${result.error}` : ''}
                                     </div>
                                   </div>
                                   
-                                  {result.execution.cost && result.execution.shares && result.execution.price && (
+                                  {result.execution.cost && result.decision?.shares && result.execution.price && (
                                     <div className="border-t border-gray-700 pt-2 mt-2">
                                       <div className="text-gray-400 mb-1">CALCULATION:</div>
-                                      <div>{result.execution.shares} shares × ${result.execution.price.toFixed(2)} = ${result.execution.cost.toLocaleString()}</div>
+                                      <div>{result.decision.shares} shares × ${result.execution.price.toFixed(2)} = ${result.execution.cost.toLocaleString()}</div>
                                       <div className="text-green-400 mt-1">
                                         ✓ Balance Check: ${result.execution.balanceBefore.toLocaleString()} - ${result.execution.cost.toLocaleString()} = ${result.execution.balanceAfter.toLocaleString()}
                                       </div>
