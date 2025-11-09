@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
       // Calculate what UI shows (using live prices)
       const holdingsValue = investmentsWithLivePrices.reduce((sum, inv) => {
-        return sum + inv.currentValue;
+        return sum + Math.floor(inv.currentValue); // Floor each investment value
       }, 0);
 
       // DB raw data
@@ -98,8 +98,8 @@ export async function GET(request: NextRequest) {
       const dbHoldingsCount = userInvestments.length;
 
       // UI data (what APIs return with live prices)
-      const uiCash = dbCash; // Portfolio API reads from same table
-      const uiHoldingsValue = holdingsValue; // Calculated from investments with LIVE prices
+      const uiCash = Math.floor(dbCash); // Portfolio API floors cash
+      const uiHoldingsValue = holdingsValue; // Already floored above
       const uiTotal = uiCash + uiHoldingsValue;
       const uiHoldingsCount = dbHoldingsCount; // Should match
       const uiRoi = dbTotalInvested > 0 ? ((uiHoldingsValue - dbTotalInvested) / dbTotalInvested * 100) : 0;
