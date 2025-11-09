@@ -191,8 +191,8 @@ export default function UnicornAdmin() {
                   <div className="font-bold">Manage AI Investors</div>
                   <div className="text-sm text-gray-400">{aiInvestors.length} AI traders</div>
                 </button>
-                <div className="bg-gray-700 p-4 rounded-lg opacity-50">
-                  <div className="text-3xl mb-2">�</div>
+                <div className="bg-gray-700 p-4 rounded-lg opacity-50 cursor-not-allowed">
+                  <div className="text-3xl mb-2">🔒</div>
                   <div className="font-bold">Human Users</div>
                   <div className="text-sm text-gray-400">Locked - Coming after AI work</div>
                 </div>
