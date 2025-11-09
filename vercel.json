@@ -6,6 +6,5 @@
     }
   ],
   "buildCommand": "next build",
-  "framework": "nextjs",
-  "_comment": "AI trading cron DISABLED for testing - re-enable after confirming manual triggers work correctly"
+  "framework": "nextjs"
 }
