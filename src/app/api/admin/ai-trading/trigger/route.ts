@@ -524,16 +524,50 @@ export async function POST(request: NextRequest) {
     );
 
     const { userId } = body; // If provided, test single AI
+    
+    // CRITICAL: Log what we're about to do
+    console.log('[AI Trading Trigger] Requested userId:', userId);
+    
     const aiInvestors = await getAIInvestor(supabase, userId);
+    
+    // CRITICAL: Verify we only got one AI
+    console.log('[AI Trading Trigger] Found AIs:', aiInvestors.map((ai: any) => ai.ai_nickname));
+    
+    if (userId && aiInvestors.length !== 1) {
+      throw new Error(`Expected 1 AI for userId ${userId}, got ${aiInvestors.length}`);
+    }
+    
     const pitches = await getPitchData(supabase);
     const results = [];
     
     for (const ai of aiInvestors) {
       try {
+        console.log(`[AI Trading] Processing: ${ai.ai_nickname} (${ai.user_id})`);
+        
+        // CRITICAL: Fetch FRESH balance right before trading
+        const { data: freshBalance, error: balanceError } = await supabase
+          .from('user_token_balances')
+          .select('available_tokens, total_tokens')
+          .eq('user_id', ai.user_id)
+          .single();
+        
+        if (balanceError) throw balanceError;
+        
+        // Update AI object with fresh balance
+        ai.available_tokens = freshBalance.available_tokens;
+        ai.total_tokens = freshBalance.total_tokens;
+        
+        console.log(`[AI Trading] ${ai.ai_nickname} fresh balance: $${ai.available_tokens.toFixed(2)}`);
+        
         const portfolio = await getAIPortfolio(supabase, ai.user_id);
         
         const { decision, prompt, rawResponse } = await getAITradeDecision(ai, portfolio, pitches);
+        
+        console.log(`[AI Trading] ${ai.ai_nickname} decision: ${decision.action}`);
+        
         const result = await executeTrade(supabase, ai, decision);
+        
+        console.log(`[AI Trading] ${ai.ai_nickname} result: ${result.success ? 'SUCCESS' : 'FAILED'} - ${result.message}`);
         
         await logTrade(supabase, ai, prompt, rawResponse, decision, result, 'manual');
         
