@@ -80,35 +80,39 @@ export async function GET(request: NextRequest) {
       const hasIssues = cashDiff !== 0 || holdingsCountDiff !== 0;
 
       return {
-        user_id: balance.user_id,
-        username: balance.username || balance.ai_nickname || balance.user_email,
+        userId: balance.user_id,
+        email: balance.user_email || balance.username || balance.ai_nickname || `User-${balance.user_id}`,
+        username: balance.username,
+        ai_nickname: balance.ai_nickname,
         ui: {
           cash: uiCash,
-          holdings_value: uiHoldingsValue,
-          total: uiTotal,
-          holdings_count: uiHoldingsCount,
+          portfolioValue: uiHoldingsValue,
+          totalValue: uiTotal,
+          holdingsCount: uiHoldingsCount,
+          investments: userInvestments.map(inv => ({
+            pitchId: inv.pitch_id,
+            ticker: tickerMap[inv.pitch_id] || `PITCH-${inv.pitch_id}`,
+            shares: inv.shares_owned,
+            avgPrice: inv.avg_purchase_price,
+            currentValue: inv.current_value
+          })),
           timestamp: queryTime
         },
         db: {
           cash: dbCash,
-          total_invested: dbTotalInvested,
-          holdings_count: dbHoldingsCount,
-          raw_investments: userInvestments.map(inv => ({
-            pitch_id: inv.pitch_id,
-            ticker: tickerMap[inv.pitch_id] || `PITCH-${inv.pitch_id}`,
-            shares_owned: inv.shares_owned,
-            avg_purchase_price: inv.avg_purchase_price,
-            total_invested: inv.total_invested,
-            current_value: inv.current_value,
-            updated_at: inv.updated_at
-          })),
-          updated_at: balance.updated_at
+          portfolioValue: holdingsValue,
+          totalValue: dbCash + holdingsValue,
+          holdingsCount: dbHoldingsCount,
+          totalInvested: dbTotalInvested,
+          updatedAt: balance.updated_at
         },
         discrepancies: {
-          cash_diff: cashDiff,
-          holdings_count_diff: holdingsCountDiff,
-          has_issues: hasIssues
-        }
+          cash: cashDiff !== 0,
+          portfolioValue: false, // Same calculation
+          totalValue: cashDiff !== 0, // Will differ if cash differs
+          holdingsCount: holdingsCountDiff !== 0
+        },
+        hasDiscrepancy: hasIssues
       };
     }) || [];
 
@@ -122,9 +126,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       users,
       summary: {
-        total_users: users.length,
-        users_with_issues: users.filter(u => u.discrepancies.has_issues).length,
-        healthy_users: users.filter(u => !u.discrepancies.has_issues).length
+        totalUsers: users.length,
+        usersWithIssues: users.filter(u => u.hasDiscrepancy).length,
+        healthyUsers: users.filter(u => !u.hasDiscrepancy).length
       },
       timestamp: queryTime
     }, {
