@@ -79,7 +79,7 @@ async function getPitchData(supabase: any) {
   }
   
   // Fetch live prices
-  const enrichedPitches = await Promise.all(data.map(async (pitch) => {
+  const enrichedPitches = await Promise.all(data.map(async (pitch: any) => {
     let livePrice = pitch.current_price || 100;
     
     if (pitch.ticker && process.env.STOCK_API_KEY) {
