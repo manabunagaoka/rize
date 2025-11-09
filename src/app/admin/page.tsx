@@ -229,7 +229,7 @@ export default function UnicornAdmin() {
               <div className="bg-blue-900/30 rounded-lg p-6 border border-blue-500">
                 <div className="text-blue-400 text-sm mb-1">Platform Value</div>
                 <div className="text-2xl font-bold text-blue-400">
-                  ${(users.reduce((sum, u) => sum + (u.ui?.totalValue || 0), 0) / 1000).toFixed(0)}K
+                  ${Math.floor(users.reduce((sum, u) => sum + (u.ui?.totalValue || 0), 0)).toLocaleString()}
                 </div>
               </div>
             </div>
@@ -382,11 +382,11 @@ export default function UnicornAdmin() {
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div>
                       <div className="text-gray-400">Cash</div>
-                      <div className="font-mono">${(ai.cash / 1000).toFixed(1)}K</div>
+                      <div className="font-mono">${Math.floor(ai.cash).toLocaleString()}</div>
                     </div>
                     <div>
                       <div className="text-gray-400">Total</div>
-                      <div className="font-mono">${(ai.totalValue / 1000).toFixed(1)}K</div>
+                      <div className="font-mono">${Math.floor(ai.totalValue).toLocaleString()}</div>
                     </div>
                     <div>
                       <div className="text-gray-400">ROI</div>
@@ -432,11 +432,11 @@ export default function UnicornAdmin() {
                   <div className="grid grid-cols-4 gap-3 text-sm">
                     <div>
                       <div className="text-gray-400">Cash</div>
-                      <div className="font-mono">${(user.ui?.cash / 1000).toFixed(1)}K</div>
+                      <div className="font-mono">${Math.floor(user.ui?.cash || 0).toLocaleString()}</div>
                     </div>
                     <div>
                       <div className="text-gray-400">Portfolio</div>
-                      <div className="font-mono">${(user.ui?.portfolioValue / 1000).toFixed(1)}K</div>
+                      <div className="font-mono">${Math.floor(user.ui?.portfolioValue || 0).toLocaleString()}</div>
                     </div>
                     <div>
                       <div className="text-gray-400">Holdings</div>
@@ -445,7 +445,7 @@ export default function UnicornAdmin() {
                     <div>
                       <div className="text-gray-400">ROI</div>
                       <div className={`font-mono ${user.ui?.roi >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {user.ui?.roi?.toFixed(1) || '0.0'}%
+                        {user.ui?.roi?.toFixed(2) || '0.00'}%
                       </div>
                     </div>
                   </div>
@@ -492,20 +492,20 @@ export default function UnicornAdmin() {
                     <div className="grid grid-cols-4 gap-4 text-sm">
                       <div>
                         <div className="text-gray-400">Cash</div>
-                        <div className="font-mono text-lg">${((aiDetail.user?.cash || 0) / 1000).toFixed(1)}K</div>
+                        <div className="font-mono text-lg">${Math.floor(aiDetail.user?.cash || 0).toLocaleString()}</div>
                       </div>
                       <div>
                         <div className="text-gray-400">Portfolio</div>
-                        <div className="font-mono text-lg">${((aiDetail.user?.portfolioValue || 0) / 1000).toFixed(1)}K</div>
+                        <div className="font-mono text-lg">${Math.floor(aiDetail.user?.portfolioValue || 0).toLocaleString()}</div>
                       </div>
                       <div>
                         <div className="text-gray-400">Total Value</div>
-                        <div className="font-mono text-lg">${((aiDetail.user?.totalValue || 0) / 1000).toFixed(1)}K</div>
+                        <div className="font-mono text-lg">${Math.floor(aiDetail.user?.totalValue || 0).toLocaleString()}</div>
                       </div>
                       <div>
                         <div className="text-gray-400">ROI</div>
                         <div className={`font-mono text-lg ${(aiDetail.user?.roi || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {(aiDetail.user?.roi || 0).toFixed(1)}%
+                          {(aiDetail.user?.roi || 0).toFixed(2)}%
                         </div>
                       </div>
                     </div>
