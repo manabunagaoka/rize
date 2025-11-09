@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
       if (aiError) throw aiError;
 
-      // Get investments
+      // Get investments with current prices
       const { data: investments } = await supabase
         .from('user_investments')
         .select('*')
@@ -65,13 +65,55 @@ export async function GET(request: NextRequest) {
         .not('ticker', 'is', null)
         .order('pitch_id');
 
+      // Format user data like the ai-investors endpoint
+      const formattedUser = {
+        userId: ai.user_id,
+        email: ai.user_email,
+        nickname: ai.ai_nickname,
+        emoji: ai.ai_emoji,
+        strategy: ai.ai_strategy,
+        catchphrase: ai.ai_catchphrase,
+        status: ai.ai_status || 'ACTIVE',
+        cash: ai.available_tokens || 0,
+        portfolioValue: ai.portfolio_value || 0,
+        totalValue: (ai.available_tokens || 0) + (ai.portfolio_value || 0),
+        totalInvested: ai.total_invested || 0,
+        totalGains: ai.total_gains || 0,
+        roi: ai.total_invested > 0 ? ((ai.total_gains / ai.total_invested) * 100) : 0,
+      };
+
+      // Format investments
+      const formattedInvestments = (investments || []).map(inv => ({
+        pitchId: inv.pitch_id,
+        shares: inv.shares_owned,
+        avgPrice: inv.avg_purchase_price,
+        totalInvested: inv.total_invested,
+        currentValue: inv.current_value,
+        gain: ((inv.current_value - inv.total_invested) / inv.total_invested * 100) || 0
+      }));
+
+      // Format transactions
+      const formattedTransactions = (transactions || []).map(tx => ({
+        id: tx.id,
+        type: tx.transaction_type,
+        pitch_id: tx.pitch_id,
+        shares: tx.shares,
+        price_per_share: tx.price_per_share,
+        total_amount: tx.total_amount,
+        created_at: tx.timestamp
+      }));
+
       return NextResponse.json({
-        ai,
-        investments: investments || [],
-        transactions: transactions || [],
-        tradingLogs,
+        user: formattedUser,
+        investments: formattedInvestments,
+        transactions: formattedTransactions,
+        logs: tradingLogs,
         pitches: pitches || [],
-        lastTradeTime: transactions?.[0]?.timestamp || null
+        lastTradeTime: transactions?.[0]?.timestamp || null,
+        systemInfo: {
+          schedule: '2:30 PM, 5:30 PM, 8:30 PM UTC',
+          description: 'AI trading runs 3 times daily on weekdays only'
+        }
       });
     }
 

@@ -364,8 +364,8 @@ export default function UnicornAdmin() {
                     </div>
                     <div>
                       <div className="text-gray-400">ROI</div>
-                      <div className={`font-mono ${parseFloat(ai.roi) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {ai.roi}%
+                      <div className={`font-mono ${(typeof ai.roi === 'number' ? ai.roi : parseFloat(ai.roi || '0')) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {typeof ai.roi === 'number' ? ai.roi.toFixed(2) : ai.roi || '0.00'}%
                       </div>
                     </div>
                   </div>
