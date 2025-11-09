@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 
       // Calculate portfolio value with live prices
       const holdingsValue = investmentsWithLivePrices.reduce((sum, inv) => sum + inv.currentValue, 0);
-      const portfolioValue = (ai.available_tokens || 0) + holdingsValue; // Total portfolio (cash + holdings)
+      const portfolioValue = Math.floor(ai.available_tokens || 0) + holdingsValue; // Total portfolio (cash + holdings)
       const totalValue = portfolioValue; // Same as portfolioValue for consistency
       const totalGains = investmentsWithLivePrices.reduce((sum, inv) => sum + inv.gain, 0); // Sum of individual investment gains
       const roi = ai.total_invested > 0 ? ((totalGains / ai.total_invested) * 100) : 0;
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
         strategy: ai.ai_strategy,
         catchphrase: ai.ai_catchphrase,
         status: ai.ai_status || 'ACTIVE',
-        cash: ai.available_tokens || 0,
+        cash: Math.floor(ai.available_tokens || 0),
         portfolioValue: portfolioValue,
         totalValue: totalValue,
         totalInvested: ai.total_invested || 0,

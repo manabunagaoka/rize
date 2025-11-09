@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Portfolio value = cash + holdings
-      const portfolioValue = (investor.available_tokens || 0) + holdingsValue;
+      const portfolioValue = Math.floor(investor.available_tokens || 0) + holdingsValue;
 
       return {
         userId: investor.user_id,
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
         aiStatus: investor.ai_status || 'ACTIVE',
         investorTier: investor.investor_tier || undefined,
         founderTier: investor.founder_tier || undefined,
-        cash: investor.available_tokens || 0,
+        cash: Math.floor(investor.available_tokens || 0),
         holdingsValue,
         portfolioValue,
         holdings: userInvestments.map(inv => ({

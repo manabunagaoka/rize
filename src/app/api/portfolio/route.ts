@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       balance: {
         total_tokens: balance.total_tokens,
-        available_tokens: balance.available_tokens,
+        available_tokens: Math.floor(balance.available_tokens), // Floor to remove cents
         portfolio_value: totalPortfolioValue,
         all_time_gain_loss: totalGainLoss,
         total_invested: balance.total_invested
