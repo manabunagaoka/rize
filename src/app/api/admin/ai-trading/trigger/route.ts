@@ -45,10 +45,12 @@ async function getAIInvestor(supabase: any, userId?: string) {
     if (error) throw error;
     return [data];
   } else {
+    // Only fetch active AI investors for batch trading
     const { data, error } = await supabase
       .from('user_token_balances')
       .select('*')
-      .eq('is_ai_investor', true);
+      .eq('is_ai_investor', true)
+      .eq('is_active', true);  // Skip inactive AIs
     
     if (error) throw error;
     return data;

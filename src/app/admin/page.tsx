@@ -482,48 +482,110 @@ export default function UnicornAdmin() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {aiInvestors.map(ai => (
-                <button
+                <div
                   key={ai.userId}
-                  onClick={() => loadAIDetail(ai.userId)}
-                  className="bg-gray-800 hover:bg-gray-750 rounded-lg p-4 text-left transition cursor-pointer"
+                  className="bg-gray-800 rounded-lg p-4 relative"
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl">{ai.emoji}</span>
-                    <div>
-                      <div className="font-bold text-lg">{ai.nickname}</div>
-                      <div className="text-sm text-gray-400">{ai.strategy}</div>
-                    </div>
+                  {/* Active/Inactive Badge */}
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (!confirm(`${ai.isActive ? 'Deactivate' : 'Activate'} ${ai.nickname}?\n\n${ai.isActive ? 'Inactive AIs will be skipped during auto-trading.' : 'AI will resume trading on schedule.'}`)) return;
+                        
+                        try {
+                          const res = await fetch('/api/admin/ai-toggle-active', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                              userId: ai.userId, 
+                              isActive: !ai.isActive,
+                              adminToken: 'admin_secret_manaboodle_2025'
+                            })
+                          });
+                          if (res.ok) {
+                            loadData(); // Refresh list
+                          }
+                        } catch (err) {
+                          console.error('Toggle active error:', err);
+                        }
+                      }}
+                      className={`text-xs px-2 py-1 rounded ${ai.isActive !== false ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+                      title={ai.isActive !== false ? 'Active - Click to pause' : 'Inactive - Click to activate'}
+                    >
+                      {ai.isActive !== false ? '● Active' : '○ Inactive'}
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (!confirm(`⚠️ DELETE ${ai.nickname} PERMANENTLY?\n\nThis will remove:\n- AI investor profile\n- All holdings\n- All transaction history\n- All trading logs\n\nThis action CANNOT be undone!`)) return;
+                        
+                        try {
+                          const res = await fetch('/api/admin/ai-delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                              userId: ai.userId,
+                              adminToken: 'admin_secret_manaboodle_2025'
+                            })
+                          });
+                          if (res.ok) {
+                            loadData(); // Refresh list
+                          }
+                        } catch (err) {
+                          console.error('Delete AI error:', err);
+                        }
+                      }}
+                      className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-700"
+                      title="Delete permanently"
+                    >
+                      🗑️
+                    </button>
                   </div>
-                  <p className="text-sm text-gray-300 italic mb-3">&quot;{ai.catchphrase}&quot;</p>
-                  <div className="grid grid-cols-3 gap-2 text-sm">
-                    <div>
-                      <div className="text-gray-400">Cash</div>
-                      <div className="font-mono">${ai.cash.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-400">Total</div>
-                      <div className="font-mono">${ai.totalValue.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-400">ROI</div>
-                      <div className={`font-mono ${(typeof ai.roi === 'number' ? ai.roi : parseFloat(ai.roi || '0')) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {typeof ai.roi === 'number' ? ai.roi.toFixed(2) : ai.roi || '0.00'}%
+
+                  {/* Clickable card content */}
+                  <button
+                    onClick={() => loadAIDetail(ai.userId)}
+                    className="w-full text-left"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-3xl">{ai.emoji}</span>
+                      <div>
+                        <div className="font-bold text-lg">{ai.nickname}</div>
+                        <div className="text-sm text-gray-400">{ai.strategy}</div>
                       </div>
                     </div>
-                  </div>
-                  {ai.investments?.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-700">
-                      <div className="text-xs text-gray-400 mb-1">Holdings: {ai.investments.length}</div>
-                      <div className="flex flex-wrap gap-1">
-                        {ai.investments.map((inv: any) => (
-                          <span key={inv.pitchId} className="text-xs bg-blue-600 px-2 py-1 rounded">
-                            {TICKER_MAP[inv.pitchId]}
-                          </span>
-                        ))}
+                    <p className="text-sm text-gray-300 italic mb-3">&quot;{ai.catchphrase}&quot;</p>
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <div className="text-gray-400">Cash</div>
+                        <div className="font-mono">${ai.cash.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">Total</div>
+                        <div className="font-mono">${ai.totalValue.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">ROI</div>
+                        <div className={`font-mono ${(typeof ai.roi === 'number' ? ai.roi : parseFloat(ai.roi || '0')) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {typeof ai.roi === 'number' ? ai.roi.toFixed(2) : ai.roi || '0.00'}%
+                        </div>
                       </div>
                     </div>
-                  )}
-                </button>
+                    {ai.investments?.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <div className="text-xs text-gray-400 mb-1">Holdings: {ai.investments.length}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {ai.investments.map((inv: any) => (
+                            <span key={inv.pitchId} className="text-xs bg-blue-600 px-2 py-1 rounded">
+                              {TICKER_MAP[inv.pitchId]}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                </div>
               ))}
             </div>
           </div>
