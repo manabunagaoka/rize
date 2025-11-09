@@ -13,6 +13,16 @@ interface User {
   hasDiscrepancy: boolean;
 }
 
+interface AIDetail {
+  user: any;
+  investments: any[];
+  transactions: any[];
+  logs: any[];
+  pitches: any[];
+  lastTradeTime: string | null;
+  systemInfo: any;
+}
+
 const TICKER_MAP: Record<number, string> = {
   1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM',
   5: 'RDDT', 6: 'WRBY', 7: 'BKNG'
@@ -21,10 +31,13 @@ const TICKER_MAP: Record<number, string> = {
 export default function UnicornAdmin() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'data-integrity' | 'ai-investors'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'data-integrity' | 'ai-investors' | 'human-users'>('dashboard');
   const [users, setUsers] = useState<User[]>([]);
   const [aiInvestors, setAIInvestors] = useState<any[]>([]);
+  const [selectedAI, setSelectedAI] = useState<string | null>(null);
+  const [aiDetail, setAIDetail] = useState<AIDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [testTrading, setTestTrading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +71,42 @@ export default function UnicornAdmin() {
     }
   };
 
+  const loadAIDetail = async (userId: string) => {
+    setSelectedAI(userId);
+    setAIDetail(null);
+    try {
+      const res = await fetch(`/api/admin/ai-details?userId=${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAIDetail(data);
+      }
+    } catch (err) {
+      console.error('Error loading AI detail:', err);
+    }
+  };
+
+  const triggerTestTrade = async (userId: string) => {
+    setTestTrading(true);
+    try {
+      const res = await fetch('/api/admin/ai-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Test trade triggered!\n\nStatus: ${data.success ? 'SUCCESS' : 'FAILED'}\nMessage: ${data.message}`);
+        loadAIDetail(userId);
+        loadData();
+      }
+    } catch (err) {
+      console.error('Error triggering test trade:', err);
+      alert('Failed to trigger test trade');
+    } finally {
+      setTestTrading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       const interval = setInterval(loadData, 30000);
@@ -65,12 +114,13 @@ export default function UnicornAdmin() {
     }
   }, [isAuthenticated]);
 
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-gray-800 rounded-lg shadow-xl p-8 max-w-md w-full">
           <h1 className="text-3xl font-bold text-white mb-2 text-center">
-            🦄 Unicorn Admin
+            Unicorn Admin
           </h1>
           <p className="text-gray-400 text-center mb-6">Complete platform management</p>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -104,7 +154,7 @@ export default function UnicornAdmin() {
       <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">🦄 Unicorn Admin</h1>
+            <h1 className="text-3xl font-bold">Unicorn Admin</h1>
             <p className="text-gray-400 text-sm">Complete platform management</p>
           </div>
           <button
@@ -122,9 +172,10 @@ export default function UnicornAdmin() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-4">
             {[
-              { id: 'dashboard', label: '📊 Dashboard' },
-              { id: 'data-integrity', label: '🔍 Data Integrity' },
-              { id: 'ai-investors', label: '🤖 AI Investors' }
+              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'data-integrity', label: 'Data Integrity' },
+              { id: 'ai-investors', label: 'AI Investors' },
+              { id: 'human-users', label: 'Human Users' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -172,13 +223,12 @@ export default function UnicornAdmin() {
 
             <div className="bg-gray-800 rounded-lg p-6">
               <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <button
                   onClick={() => setActiveTab('data-integrity')}
                   className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
                 >
-                  <div className="text-3xl mb-2">🔍</div>
-                  <div className="font-bold">Check Data Integrity</div>
+                  <div className="font-bold text-lg mb-1">Data Integrity</div>
                   <div className="text-sm text-gray-400">
                     {issuesCount > 0 ? `${issuesCount} issues found` : 'All healthy'}
                   </div>
@@ -187,14 +237,19 @@ export default function UnicornAdmin() {
                   onClick={() => setActiveTab('ai-investors')}
                   className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
                 >
-                  <div className="text-3xl mb-2">🤖</div>
-                  <div className="font-bold">Manage AI Investors</div>
+                  <div className="font-bold text-lg mb-1">AI Investors</div>
                   <div className="text-sm text-gray-400">{aiInvestors.length} AI traders</div>
                 </button>
-                <div className="bg-gray-700 p-4 rounded-lg opacity-50 cursor-not-allowed">
-                  <div className="text-3xl mb-2">🔒</div>
-                  <div className="font-bold">Human Users</div>
-                  <div className="text-sm text-gray-400">Locked - Coming after AI work</div>
+                <button
+                  onClick={() => setActiveTab('human-users')}
+                  className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
+                >
+                  <div className="font-bold text-lg mb-1">Human Users</div>
+                  <div className="text-sm text-gray-400">{humanUsers.length} investors</div>
+                </button>
+                <div className="bg-gray-700/50 p-4 rounded-lg opacity-50">
+                  <div className="font-bold text-lg mb-1">Competitions</div>
+                  <div className="text-sm text-gray-400">Coming soon</div>
                 </div>
               </div>
             </div>
@@ -279,10 +334,17 @@ export default function UnicornAdmin() {
 
         {activeTab === 'ai-investors' && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">AI Investors ({aiInvestors.length})</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">AI Investors ({aiInvestors.length})</h2>
+              <div className="text-sm text-gray-400">Click any AI to see details and test trades</div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               {aiInvestors.map(ai => (
-                <div key={ai.userId} className="bg-gray-800 rounded-lg p-4">
+                <button
+                  key={ai.userId}
+                  onClick={() => loadAIDetail(ai.userId)}
+                  className="bg-gray-800 hover:bg-gray-750 rounded-lg p-4 text-left transition cursor-pointer"
+                >
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-3xl">{ai.emoji}</span>
                     <div>
@@ -319,12 +381,209 @@ export default function UnicornAdmin() {
                       </div>
                     </div>
                   )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'human-users' && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Human Users ({humanUsers.length})</h2>
+            <div className="grid grid-cols-1 gap-4">
+              {humanUsers.map(user => (
+                <div key={user.userId} className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="font-bold text-lg">{user.displayName}</div>
+                      <div className="text-sm text-gray-400">{user.email}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-400">Total Value</div>
+                      <div className="font-mono text-xl">${user.ui?.totalValue?.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3 text-sm">
+                    <div>
+                      <div className="text-gray-400">Cash</div>
+                      <div className="font-mono">${(user.ui?.cash / 1000).toFixed(1)}K</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">Portfolio</div>
+                      <div className="font-mono">${(user.ui?.portfolioValue / 1000).toFixed(1)}K</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">Holdings</div>
+                      <div className="font-mono">{user.ui?.investments?.length || 0}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400">ROI</div>
+                      <div className={`font-mono ${user.ui?.roi >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {user.ui?.roi?.toFixed(1) || '0.0'}%
+                      </div>
+                    </div>
+                  </div>
+                  {user.ui?.investments?.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <div className="flex flex-wrap gap-2">
+                        {user.ui.investments.map((inv: any) => (
+                          <span key={inv.pitchId} className="text-xs bg-blue-600 px-2 py-1 rounded">
+                            {inv.ticker}: {inv.shares.toFixed(2)} @ ${inv.currentPrice.toFixed(2)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {selectedAI && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setSelectedAI(null)}>
+          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">AI Investor Deep Inspection</h2>
+              <button onClick={() => setSelectedAI(null)} className="text-gray-400 hover:text-white text-2xl">×</button>
+            </div>
+            
+            <div className="p-6">
+              {!aiDetail ? (
+                <div className="text-center py-12 text-gray-400">Loading AI details...</div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-5xl">{aiDetail.user.emoji}</span>
+                      <div>
+                        <h3 className="text-2xl font-bold">{aiDetail.user.nickname}</h3>
+                        <p className="text-gray-400">{aiDetail.user.strategy}</p>
+                        <p className="text-sm italic text-gray-500">&quot;{aiDetail.user.catchphrase}&quot;</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <div className="text-gray-400">Cash</div>
+                        <div className="font-mono text-lg">${(aiDetail.user.cash / 1000).toFixed(1)}K</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">Portfolio</div>
+                        <div className="font-mono text-lg">${(aiDetail.user.portfolioValue / 1000).toFixed(1)}K</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">Total Value</div>
+                        <div className="font-mono text-lg">${(aiDetail.user.totalValue / 1000).toFixed(1)}K</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">ROI</div>
+                        <div className={`font-mono text-lg ${aiDetail.user.roi >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {aiDetail.user.roi.toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <h4 className="font-bold mb-2">Last Trade Time</h4>
+                    <p className="text-gray-400">{aiDetail.lastTradeTime || 'Never traded'}</p>
+                  </div>
+
+                  {aiDetail.systemInfo && (
+                    <div className="bg-gray-900 rounded-lg p-4">
+                      <h4 className="font-bold mb-2">AI Trading Schedule</h4>
+                      <p className="text-sm text-gray-400">{aiDetail.systemInfo.schedule}</p>
+                      <p className="text-xs text-gray-500 mt-1">{aiDetail.systemInfo.description}</p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => triggerTestTrade(selectedAI)}
+                    disabled={testTrading}
+                    className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg"
+                  >
+                    {testTrading ? 'Running Test Trade...' : 'Test Trade Now (Manual Trigger)'}
+                  </button>
+
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <h4 className="font-bold mb-3">Current Holdings ({aiDetail.investments.length})</h4>
+                    {aiDetail.investments.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No current holdings</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {aiDetail.investments.map((inv: any) => (
+                          <div key={inv.pitchId} className="bg-gray-800 p-3 rounded flex justify-between items-center">
+                            <div>
+                              <div className="font-bold">{TICKER_MAP[inv.pitchId]}</div>
+                              <div className="text-xs text-gray-400">
+                                {inv.shares.toFixed(2)} shares @ ${inv.avgPrice.toFixed(2)}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-mono">${inv.currentValue.toFixed(0)}</div>
+                              <div className={`text-xs ${inv.gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {inv.gain >= 0 ? '+' : ''}{inv.gain.toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <h4 className="font-bold mb-3">Recent Transactions ({aiDetail.transactions.length})</h4>
+                    {aiDetail.transactions.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No transactions yet</p>
+                    ) : (
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {aiDetail.transactions.map((tx: any) => (
+                          <div key={tx.id} className="bg-gray-800 p-2 rounded text-sm">
+                            <div className="flex justify-between items-center">
+                              <span className={`font-bold ${tx.type === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
+                                {tx.type}
+                              </span>
+                              <span className="text-gray-400">{new Date(tx.created_at).toLocaleString()}</span>
+                            </div>
+                            <div className="text-gray-300 mt-1">
+                              {TICKER_MAP[tx.pitch_id]}: {tx.shares.toFixed(2)} @ ${tx.price_per_share.toFixed(2)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <h4 className="font-bold mb-3">Pitches AI Analyzes ({aiDetail.pitches.length})</h4>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {aiDetail.pitches.map((pitch: any) => (
+                        <div key={pitch.pitch_id} className="bg-gray-800 p-3 rounded">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <span className="font-bold text-blue-400">{pitch.ticker}</span>
+                              <span className="text-gray-400 ml-2">{pitch.company_name}</span>
+                            </div>
+                            <div className="text-right text-sm">
+                              <div className="font-mono">${pitch.current_price.toFixed(2)}</div>
+                              <div className={`text-xs ${pitch.price_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {pitch.price_change_24h >= 0 ? '+' : ''}{pitch.price_change_24h.toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-400 mb-1">{pitch.elevator_pitch}</p>
+                          <p className="text-xs text-gray-500 italic">{pitch.fun_fact}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
