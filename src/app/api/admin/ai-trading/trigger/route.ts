@@ -199,6 +199,9 @@ async function getAITradeDecision(
 
   const strategyLimits = getStrategyLimits(aiInvestor.ai_strategy, aiInvestor.available_tokens);
   
+  // Use custom personality prompt if available, otherwise use default guidelines
+  const personalityGuidelines = aiInvestor.ai_personality_prompt || getStrategyGuidelines(aiInvestor.ai_strategy);
+  
   const prompt = `You are "${aiInvestor.ai_nickname}", an AI investor with the ${aiInvestor.ai_strategy} strategy.
 Your catchphrase: "${aiInvestor.ai_catchphrase}"
 
@@ -214,8 +217,8 @@ ${portfolioSummary}
 INVESTMENT OPPORTUNITIES (HM7 Index - Harvard Legends):
 ${marketData}
 
-🎭 YOUR PERSONALITY - ${aiInvestor.ai_strategy}:
-${getStrategyGuidelines(aiInvestor.ai_strategy)}
+🎭 YOUR PERSONALITY & TRADING GUIDELINES:
+${personalityGuidelines}
 
 💰 TRADING RULES FOR YOU:
 - Trade sizes: ${strategyLimits.suggestion}
@@ -246,8 +249,13 @@ Make ONE bold trade decision. Respond with valid JSON only:
   "reasoning": "Brief explanation showing your personality and referencing specific pitch details or price action"
 }
 
+⚠️ CRITICAL CALCULATION RULES:
+- ALWAYS calculate shares as: (your chosen budget in MTK) / (stock's current price)
+- Example: If you want to invest $100,000 MTK in Reddit at $65.00/share: shares = 100000 / 65 = 1538.46
+- NEVER exceed your available cash of $${Math.floor(aiInvestor.available_tokens).toLocaleString()} MTK
+- Double-check: (shares × price) must be ≤ your available cash
+
 Important: 
-- Calculate shares: (your budget) / (current stock price)
 - Reference the pitch content or founder story in your reasoning
 - Show your personality in the reasoning - make it CLEAR you're ${aiInvestor.ai_nickname}!
 - If you have TOO MUCH cash for your strategy, you MUST trade!`;
@@ -305,10 +313,21 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
     const balanceBefore = aiInvestor.available_tokens;
     const balanceAfter = balanceBefore - totalCost;
     
+    // Strict balance validation
     if (balanceAfter < 0) {
+      // Recalculate maximum possible shares
+      const maxShares = Math.floor(balanceBefore / priceData.current_price * 100) / 100;
       return { 
         success: false, 
-        message: `Insufficient funds: needed $${totalCost.toFixed(2)}, available $${balanceBefore.toFixed(2)}` 
+        message: `Insufficient funds: tried to spend $${totalCost.toFixed(2)} but only have $${balanceBefore.toFixed(2)}. Max shares affordable: ${maxShares}` 
+      };
+    }
+    
+    // Additional safety check: ensure we're not spending more than total_tokens
+    if (totalCost > aiInvestor.total_tokens) {
+      return {
+        success: false,
+        message: `Invalid trade: trying to spend $${totalCost.toFixed(2)} which exceeds total portfolio value of $${aiInvestor.total_tokens.toFixed(2)}`
       };
     }
     

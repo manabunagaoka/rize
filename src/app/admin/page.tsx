@@ -39,6 +39,38 @@ export default function UnicornAdmin() {
   const [loading, setLoading] = useState(false);
   const [testTrading, setTestTrading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [editingPersona, setEditingPersona] = useState(false);
+  const [personaText, setPersonaText] = useState('');
+
+  const formatTimestamp = (timestamp: string | null) => {
+    if (!timestamp) return 'Never';
+    return new Date(timestamp).toLocaleString('en-US', { 
+      timeZone: 'America/New_York',
+      dateStyle: 'short',
+      timeStyle: 'short'
+    });
+  };
+
+  const savePersona = async (userId: string, newPersona: string) => {
+    try {
+      const res = await fetch('/api/admin/ai-update-persona', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, persona: newPersona })
+      });
+      if (res.ok) {
+        alert('Persona updated successfully!');
+        setEditingPersona(false);
+        loadAIDetail(userId);
+        loadData();
+      } else {
+        alert('Failed to update persona');
+      }
+    } catch (err) {
+      console.error('Error updating persona:', err);
+      alert('Error updating persona');
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,20 +121,34 @@ export default function UnicornAdmin() {
   const triggerTestTrade = async (userId: string) => {
     setTestTrading(true);
     try {
-      const res = await fetch('/api/admin/ai-details', {
+      const res = await fetch('/api/admin/ai-trading/trigger', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin-test-token'
+        },
         body: JSON.stringify({ userId })
       });
       if (res.ok) {
         const data = await res.json();
-        alert(`Test trade triggered!\n\nStatus: ${data.success ? 'SUCCESS' : 'FAILED'}\nMessage: ${data.message}`);
+        const result = data.results?.[0];
+        if (result) {
+          const action = result.decision?.action || 'UNKNOWN';
+          const reasoning = result.decision?.reasoning || 'No reasoning provided';
+          const message = result.result?.message || 'No message';
+          const success = result.result?.success ? '✅ SUCCESS' : '❌ FAILED';
+          
+          alert(`Test Trade Complete!\n\n${success}\n\nAction: ${action}\nReasoning: ${reasoning}\n\nResult: ${message}`);
+        } else {
+          alert(`Test trade triggered!\n\n${JSON.stringify(data, null, 2)}`);
+        }
+        // Reload AI detail and data
         loadAIDetail(userId);
         loadData();
       }
     } catch (err) {
       console.error('Error triggering test trade:', err);
-      alert('Failed to trigger test trade');
+      alert('Failed to trigger test trade: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setTestTrading(false);
     }
@@ -485,12 +531,59 @@ export default function UnicornAdmin() {
                   <div className="bg-gray-900 rounded-lg p-4">
                     <div className="flex items-center gap-4 mb-4">
                       <span className="text-5xl">{aiDetail.user?.emoji || '🤖'}</span>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-2xl font-bold">{aiDetail.user?.nickname || 'AI Investor'}</h3>
                         <p className="text-gray-400">{aiDetail.user?.strategy || 'N/A'}</p>
                         <p className="text-sm italic text-gray-500">&quot;{aiDetail.user?.catchphrase || ''}&quot;</p>
                       </div>
                     </div>
+
+                    {/* Editable Persona Section */}
+                    <div className="mt-4 mb-4 border-t border-gray-700 pt-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-bold text-sm text-gray-400">AI Persona / Trading Guidelines</h4>
+                        {!editingPersona && (
+                          <button 
+                            onClick={() => {
+                              setEditingPersona(true);
+                              setPersonaText(aiDetail.user?.persona || aiDetail.user?.catchphrase || '');
+                            }}
+                            className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                      {editingPersona ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={personaText}
+                            onChange={(e) => setPersonaText(e.target.value)}
+                            className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-blue-500 outline-none min-h-[100px] text-sm"
+                            placeholder="Describe this AI's personality, trading style, risk tolerance, and decision-making approach..."
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => savePersona(selectedAI!, personaText)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
+                            >
+                              Save Persona
+                            </button>
+                            <button
+                              onClick={() => setEditingPersona(false)}
+                              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-300 bg-gray-800 p-3 rounded">
+                          {aiDetail.user?.persona || aiDetail.user?.catchphrase || 'No persona defined'}
+                        </p>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-4 gap-4 text-sm">
                       <div>
                         <div className="text-gray-400">Cash</div>
@@ -514,8 +607,8 @@ export default function UnicornAdmin() {
                   </div>
 
                   <div className="bg-gray-900 rounded-lg p-4">
-                    <h4 className="font-bold mb-2">Last Trade Time</h4>
-                    <p className="text-gray-400">{aiDetail.lastTradeTime || 'Never traded'}</p>
+                    <h4 className="font-bold mb-2">Last Trade Time (EST)</h4>
+                    <p className="text-gray-400">{formatTimestamp(aiDetail.lastTradeTime)}</p>
                   </div>
 
                   {aiDetail.systemInfo && (
