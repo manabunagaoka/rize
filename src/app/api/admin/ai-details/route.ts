@@ -1,0 +1,132 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
+// Get detailed AI investor info including trading logs
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!,
+    {
+      auth: { persistSession: false },
+      db: { schema: 'public' }
+    }
+  );
+
+  try {
+    if (userId) {
+      // Get specific AI investor details
+      const { data: ai, error: aiError } = await supabase
+        .from('user_token_balances')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (aiError) throw aiError;
+
+      // Get investments
+      const { data: investments } = await supabase
+        .from('user_investments')
+        .select('*')
+        .eq('user_id', userId)
+        .gt('shares_owned', 0);
+
+      // Get recent transactions
+      const { data: transactions } = await supabase
+        .from('investment_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: false })
+        .limit(20);
+
+      // Try to get AI trading logs if table exists
+      let tradingLogs = [];
+      try {
+        const { data: logs } = await supabase
+          .from('ai_trading_logs')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        tradingLogs = logs || [];
+      } catch (e) {
+        console.log('No ai_trading_logs table yet');
+      }
+
+      // Get pitch data they're analyzing
+      const { data: pitches } = await supabase
+        .from('ai_readable_pitches')
+        .select('*')
+        .not('ticker', 'is', null)
+        .order('pitch_id');
+
+      return NextResponse.json({
+        ai,
+        investments: investments || [],
+        transactions: transactions || [],
+        tradingLogs,
+        pitches: pitches || [],
+        lastTradeTime: transactions?.[0]?.timestamp || null
+      });
+    }
+
+    // Get system info
+    const { data: cronStatus } = await supabase
+      .from('investment_transactions')
+      .select('timestamp')
+      .order('timestamp', { ascending: false })
+      .limit(1);
+
+    return NextResponse.json({
+      schedule: '2:30 PM, 5:30 PM, 8:30 PM UTC (weekdays only)',
+      lastSystemTrade: cronStatus?.[0]?.timestamp || 'Never',
+      message: 'AI trading runs 3x daily on weekdays'
+    });
+
+  } catch (error) {
+    console.error('AI details error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch AI details', details: String(error) },
+      { status: 500 }
+    );
+  }
+}
+
+// Manually trigger AI trading for specific investor
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { userId } = body;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'userId required' }, { status: 400 });
+    }
+
+    // Call the AI trading execute endpoint with specific user
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const protocol = baseUrl.startsWith('http') ? '' : 'https://';
+    
+    const response = await fetch(`${protocol}${baseUrl}/api/ai-trading/execute?test_user=${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.CRON_SECRET}`
+      }
+    });
+
+    const result = await response.json();
+    return NextResponse.json(result);
+
+  } catch (error) {
+    console.error('Manual trade error:', error);
+    return NextResponse.json(
+      { error: 'Failed to trigger trade', details: String(error) },
+      { status: 500 }
+    );
+  }
+}
