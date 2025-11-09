@@ -242,7 +242,7 @@ export default function Portfolio() {
     );
   }
 
-  const totalValue = data.balance.available_tokens + data.balance.portfolio_value;
+  const totalValue = Math.floor(data.balance.available_tokens + data.balance.portfolio_value);
   const totalGainLoss = data.balance.all_time_gain_loss;
   // Calculate percentage gain from starting balance (1M MTK) to match Compete page
   const gainLossPercent = ((totalValue - 1000000) / 1000000 * 100).toFixed(2);
@@ -287,7 +287,7 @@ export default function Portfolio() {
           <div>
             <div className="text-sm font-semibold uppercase opacity-75 mb-1">Cash</div>
             <div className="text-3xl font-bold">
-              ${data.balance.available_tokens.toLocaleString()}
+              ${Math.floor(data.balance.available_tokens).toLocaleString()}
             </div>
             <div className="text-xs opacity-75 mt-1">Available to trade</div>
           </div>
@@ -296,7 +296,7 @@ export default function Portfolio() {
           <div>
             <div className="text-sm font-semibold uppercase opacity-75 mb-1">Holdings</div>
             <div className="text-3xl font-bold">
-              ${data.balance.portfolio_value.toLocaleString()}
+              ${Math.floor(data.balance.portfolio_value).toLocaleString()}
             </div>
             <div className="text-xs opacity-75 mt-1">Invested value</div>
           </div>
@@ -344,11 +344,11 @@ export default function Portfolio() {
                     
                     <div className="text-right">
                       <div className="text-2xl font-bold text-white mb-1">
-                        ${inv.current_value.toLocaleString()}
+                        ${Math.floor(inv.current_value).toLocaleString()}
                       </div>
                       <div className={`flex items-center justify-end gap-1 text-sm font-semibold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
                         {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                        {isPositive ? '+' : ''}{gainLoss.toLocaleString()} MTK ({gainLossPercent}%)
+                        {isPositive ? '+' : ''}{Math.floor(gainLoss).toLocaleString()} MTK ({gainLossPercent}%)
                       </div>
                     </div>
                   </div>
@@ -401,7 +401,7 @@ export default function Portfolio() {
                     
                     <div className="text-right">
                       <div className="text-xl font-bold text-white">
-                        {isBuy ? '-' : '+'}${tx.total_amount.toLocaleString()}
+                        {isBuy ? '-' : '+'}${Math.floor(tx.total_amount).toLocaleString()}
                       </div>
                     </div>
                   </div>
