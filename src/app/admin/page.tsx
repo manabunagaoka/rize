@@ -796,7 +796,7 @@ ${result.error ? `ERROR:\n  ${result.error}` : ''}
                                     {result.decision.shares && ` (${result.decision.shares} shares)`}
                                   </div>
                                   <div className="text-xs text-gray-300 italic">
-                                    "{result.decision.reasoning}"
+                                    &ldquo;{result.decision.reasoning}&rdquo;
                                   </div>
                                 </div>
                               )}
