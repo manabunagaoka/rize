@@ -214,7 +214,7 @@ export default function UnicornAdmin() {
                   <div>
                     <h2 className="text-2xl font-bold">{user.displayName}</h2>
                     <p className="text-gray-400 text-sm">
-                      {user.isAI ? '🤖 AI' : '👤 Human'} {user.email && `• ${user.email}`}
+                      {user.isAI ? '🤖 AI Investor' : '👤 Human Investor'} {user.email && `• ${user.email}`}
                     </p>
                   </div>
                   {user.hasDiscrepancy && (
