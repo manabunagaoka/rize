@@ -30,6 +30,8 @@ const PUBLIC_PATHS = [
   '/data-integrity', // Data integrity dashboard (no auth)
   '/api/data-integrity', // Data integrity API (no auth)
   '/simple-integrity', // Simple data integrity with password (no SSO)
+  '/ai-admin',      // AI Investor admin panel (password protected)
+  '/api/admin/ai-investors', // AI admin API (password protected)
   // API routes that allow unauthenticated requests
   '/api/leaderboard', // Leaderboard API (public)
 ];
