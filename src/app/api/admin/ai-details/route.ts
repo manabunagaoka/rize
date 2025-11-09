@@ -114,6 +114,7 @@ export async function GET(request: NextRequest) {
         emoji: ai.ai_emoji,
         strategy: ai.ai_strategy,
         catchphrase: ai.ai_catchphrase,
+        persona: ai.ai_personality_prompt || null, // Custom persona
         status: ai.ai_status || 'ACTIVE',
         cash: ai.available_tokens || 0,
         portfolioValue: portfolioValue,

@@ -3,12 +3,9 @@
     {
       "path": "/api/sync-prices",
       "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/ai-trading/execute",
-      "schedule": "30 14,17,20 * * 1-5"
     }
   ],
   "buildCommand": "next build",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "_comment": "AI trading cron DISABLED for testing - re-enable after confirming manual triggers work correctly"
 }
