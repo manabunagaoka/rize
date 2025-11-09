@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { fetchPriceWithCache } from '@/lib/price-cache';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -65,6 +66,46 @@ export async function GET(request: NextRequest) {
         .not('ticker', 'is', null)
         .order('pitch_id');
 
+      // Ticker map for live price fetching
+      const tickerMap: { [key: number]: string } = {
+        1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT',
+        6: 'WRBY', 7: 'BKNG'
+      };
+
+      // Format investments with live prices
+      const formattedInvestments = await Promise.all((investments || []).map(async (inv) => {
+        const ticker = tickerMap[inv.pitch_id];
+        let currentPrice = inv.current_value && inv.shares_owned > 0 
+          ? (inv.current_value / inv.shares_owned) 
+          : 100; // fallback
+        
+        if (ticker && process.env.STOCK_API_KEY) {
+          try {
+            currentPrice = await fetchPriceWithCache(ticker, inv.pitch_id, process.env.STOCK_API_KEY);
+          } catch (error) {
+            console.error(`[AIDetails] Error fetching price for ${ticker}:`, error);
+          }
+        }
+
+        const currentValue = inv.shares_owned * currentPrice;
+        const gain = ((currentValue - inv.total_invested) / inv.total_invested * 100) || 0;
+
+        return {
+          pitchId: inv.pitch_id,
+          shares: inv.shares_owned,
+          avgPrice: inv.avg_purchase_price,
+          totalInvested: inv.total_invested,
+          currentValue: currentValue,
+          gain: gain
+        };
+      }));
+
+      // Calculate portfolio value with live prices
+      const portfolioValue = formattedInvestments.reduce((sum, inv) => sum + inv.currentValue, 0);
+      const totalValue = (ai.available_tokens || 0) + portfolioValue;
+      const totalGains = portfolioValue - (ai.total_invested || 0);
+      const roi = ai.total_invested > 0 ? ((totalGains / ai.total_invested) * 100) : 0;
+
       // Format user data like the ai-investors endpoint
       const formattedUser = {
         userId: ai.user_id,
@@ -75,22 +116,12 @@ export async function GET(request: NextRequest) {
         catchphrase: ai.ai_catchphrase,
         status: ai.ai_status || 'ACTIVE',
         cash: ai.available_tokens || 0,
-        portfolioValue: ai.portfolio_value || 0,
-        totalValue: (ai.available_tokens || 0) + (ai.portfolio_value || 0),
+        portfolioValue: portfolioValue,
+        totalValue: totalValue,
         totalInvested: ai.total_invested || 0,
-        totalGains: ai.total_gains || 0,
-        roi: ai.total_invested > 0 ? ((ai.total_gains / ai.total_invested) * 100) : 0,
+        totalGains: totalGains,
+        roi: roi,
       };
-
-      // Format investments
-      const formattedInvestments = (investments || []).map(inv => ({
-        pitchId: inv.pitch_id,
-        shares: inv.shares_owned,
-        avgPrice: inv.avg_purchase_price,
-        totalInvested: inv.total_invested,
-        currentValue: inv.current_value,
-        gain: ((inv.current_value - inv.total_invested) / inv.total_invested * 100) || 0
-      }));
 
       // Format transactions
       const formattedTransactions = (transactions || []).map(tx => ({

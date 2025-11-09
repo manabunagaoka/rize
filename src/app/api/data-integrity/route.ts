@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { fetchPriceWithCache } from '@/lib/price-cache';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -53,13 +54,42 @@ export async function GET(request: NextRequest) {
     };
 
     // Build comparison data for each user
-    const users = balances?.map(balance => {
+    const users = await Promise.all(balances?.map(async (balance) => {
       // Get user's investments from DB
       const userInvestments = investments?.filter(inv => inv.user_id === balance.user_id) || [];
 
-      // Calculate what UI shows (using current_value from investments)
-      const holdingsValue = userInvestments.reduce((sum, inv) => {
-        return sum + (inv.current_value || 0);
+      // Fetch live prices for each investment (same as Portfolio API)
+      const investmentsWithLivePrices = await Promise.all(
+        userInvestments.map(async (inv) => {
+          const ticker = tickerMap[inv.pitch_id];
+          let currentPrice = inv.current_value && inv.shares_owned > 0 
+            ? (inv.current_value / inv.shares_owned) 
+            : 100; // fallback
+          
+          if (ticker && process.env.STOCK_API_KEY) {
+            try {
+              currentPrice = await fetchPriceWithCache(ticker, inv.pitch_id, process.env.STOCK_API_KEY);
+            } catch (error) {
+              console.error(`[DataIntegrity] Error fetching price for ${ticker}:`, error);
+            }
+          }
+
+          const currentValue = inv.shares_owned * currentPrice;
+          
+          return {
+            pitchId: inv.pitch_id,
+            ticker: ticker || `PITCH-${inv.pitch_id}`,
+            shares: inv.shares_owned,
+            avgPrice: inv.avg_purchase_price,
+            currentValue: currentValue,
+            currentPrice: currentPrice
+          };
+        })
+      );
+
+      // Calculate what UI shows (using live prices)
+      const holdingsValue = investmentsWithLivePrices.reduce((sum, inv) => {
+        return sum + inv.currentValue;
       }, 0);
 
       // DB raw data
@@ -67,11 +97,12 @@ export async function GET(request: NextRequest) {
       const dbTotalInvested = balance.total_invested || 0;
       const dbHoldingsCount = userInvestments.length;
 
-      // UI data (what APIs return)
+      // UI data (what APIs return with live prices)
       const uiCash = dbCash; // Portfolio API reads from same table
-      const uiHoldingsValue = holdingsValue; // Calculated from investments
+      const uiHoldingsValue = holdingsValue; // Calculated from investments with LIVE prices
       const uiTotal = uiCash + uiHoldingsValue;
       const uiHoldingsCount = dbHoldingsCount; // Should match
+      const uiRoi = dbTotalInvested > 0 ? ((uiHoldingsValue - dbTotalInvested) / dbTotalInvested * 100) : 0;
 
       // Calculate discrepancies
       const cashDiff = uiCash - dbCash; // Should be 0
@@ -90,14 +121,8 @@ export async function GET(request: NextRequest) {
           portfolioValue: uiHoldingsValue,
           totalValue: uiTotal,
           holdingsCount: uiHoldingsCount,
-          investments: userInvestments.map(inv => ({
-            pitchId: inv.pitch_id,
-            ticker: tickerMap[inv.pitch_id] || `PITCH-${inv.pitch_id}`,
-            shares: inv.shares_owned,
-            avgPrice: inv.avg_purchase_price,
-            currentValue: inv.current_value,
-            currentPrice: inv.shares_owned > 0 ? (inv.current_value / inv.shares_owned) : 0
-          })),
+          roi: uiRoi,
+          investments: investmentsWithLivePrices,
           timestamp: queryTime
         },
         db: {
@@ -116,7 +141,7 @@ export async function GET(request: NextRequest) {
         },
         hasDiscrepancy: hasIssues
       };
-    }) || [];
+    }) || []);
 
     // Sort: users with issues first
     users.sort((a, b) => {

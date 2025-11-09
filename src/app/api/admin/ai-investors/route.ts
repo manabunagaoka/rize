@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { fetchPriceWithCache } from '@/lib/price-cache';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -50,11 +51,56 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(200);
 
-    // Combine data
-    const enrichedAIInvestors = aiInvestors?.map(ai => {
+    // Ticker map for live price fetching
+    const tickerMap: { [key: number]: string } = {
+      1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM', 5: 'RDDT',
+      6: 'WRBY', 7: 'BKNG'
+    };
+
+    // Combine data with live prices
+    const enrichedAIInvestors = await Promise.all(aiInvestors?.map(async (ai) => {
       const aiInvestments = investments?.filter(inv => inv.user_id === ai.user_id) || [];
       const aiTransactions = transactions?.filter(tx => tx.user_id === ai.user_id) || [];
       const aiLogs = tradingLogs?.filter(log => log.user_id === ai.user_id) || [];
+
+      // Fetch live prices for investments
+      const investmentsWithLivePrices = await Promise.all(
+        aiInvestments.map(async (inv) => {
+          const ticker = tickerMap[inv.pitch_id];
+          let currentPrice = inv.current_value && inv.shares_owned > 0 
+            ? (inv.current_value / inv.shares_owned) 
+            : 100; // fallback
+          
+          if (ticker && process.env.STOCK_API_KEY) {
+            try {
+              currentPrice = await fetchPriceWithCache(ticker, inv.pitch_id, process.env.STOCK_API_KEY);
+            } catch (error) {
+              console.error(`[AIInvestors] Error fetching price for ${ticker}:`, error);
+            }
+          }
+
+          const currentValue = inv.shares_owned * currentPrice;
+          const gain = currentValue - inv.total_invested;
+          const gainPercent = inv.total_invested > 0 ? ((gain / inv.total_invested) * 100) : 0;
+
+          return {
+            pitchId: inv.pitch_id,
+            shares: inv.shares_owned,
+            avgPrice: inv.avg_purchase_price,
+            totalInvested: inv.total_invested,
+            currentValue: currentValue,
+            gain: gain,
+            gainPercent: gainPercent.toFixed(2),
+            updatedAt: inv.updated_at
+          };
+        })
+      );
+
+      // Calculate portfolio value with live prices
+      const portfolioValue = investmentsWithLivePrices.reduce((sum, inv) => sum + inv.currentValue, 0);
+      const totalValue = (ai.available_tokens || 0) + portfolioValue;
+      const totalGains = portfolioValue - (ai.total_invested || 0);
+      const roi = ai.total_invested > 0 ? ((totalGains / ai.total_invested) * 100) : 0;
 
       return {
         userId: ai.user_id,
@@ -65,22 +111,13 @@ export async function GET(request: NextRequest) {
         catchphrase: ai.ai_catchphrase,
         status: ai.ai_status || 'ACTIVE',
         cash: ai.available_tokens || 0,
-        portfolioValue: ai.portfolio_value || 0,
-        totalValue: (ai.available_tokens || 0) + (ai.portfolio_value || 0),
+        portfolioValue: portfolioValue,
+        totalValue: totalValue,
         totalInvested: ai.total_invested || 0,
-        totalGains: ai.total_gains || 0,
-        roi: ai.total_invested > 0 ? ((ai.total_gains / ai.total_invested) * 100).toFixed(2) : '0.00',
+        totalGains: totalGains,
+        roi: roi.toFixed(2),
         tier: ai.investor_tier || 'BRONZE',
-        investments: aiInvestments.map(inv => ({
-          pitchId: inv.pitch_id,
-          shares: inv.shares_owned,
-          avgPrice: inv.avg_purchase_price,
-          totalInvested: inv.total_invested,
-          currentValue: inv.current_value,
-          gain: inv.current_value - inv.total_invested,
-          gainPercent: inv.total_invested > 0 ? ((inv.current_value - inv.total_invested) / inv.total_invested * 100).toFixed(2) : '0.00',
-          updatedAt: inv.updated_at
-        })),
+        investments: investmentsWithLivePrices,
         recentTransactions: aiTransactions.slice(0, 10).map(tx => ({
           type: tx.transaction_type,
           pitchId: tx.pitch_id,
@@ -106,7 +143,7 @@ export async function GET(request: NextRequest) {
         }).length,
         updatedAt: ai.updated_at
       };
-    });
+    }) || []);
 
     return NextResponse.json({
       aiInvestors: enrichedAIInvestors,
