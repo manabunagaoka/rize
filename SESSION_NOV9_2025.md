@@ -1,9 +1,57 @@
 # Session Summary - November 9, 2025
 
 ## Overview
-Fixed critical data consistency and number formatting issues across the entire platform. All views now show identical, properly formatted values.
+Fixed critical data consistency and number formatting issues across the entire platform. All views now show identical, properly formatted values. Eliminated $100 fallback prices and data discrepancies.
 
-## Issues Resolved
+## Background: Previous Session Fixes (Nov 8)
+Before today's session, we had already resolved several critical issues:
+
+1. **$100 Fallback Price Bug**: 
+   - All stock prices were showing as $100
+   - Root cause: Invalid `next: { revalidate: 60 }` syntax in API route fetches
+   - Fixed by changing to `cache: 'no-store'`
+
+2. **Shared 5-Minute Price Cache**:
+   - Created `/src/lib/price-cache.ts` with `fetchPriceWithCache()` function
+   - Prevents excessive Finnhub API calls across all endpoints
+   - 5-minute TTL with graceful fallback chain:
+     - Fresh API → 5-min cache → stale cache → $100 fallback
+   - Console logging for cache hits/misses
+
+3. **$6,712 Portfolio Discrepancy**:
+   - Manage page showed $970,493, Compete showed $977,205
+   - Root cause: Database replication lag - Leaderboard reading from stale replica
+   - Fixed by forcing primary DB reads in all APIs
+   - Made Portfolio API the source of truth for current user
+
+4. **Database Cleanup**:
+   - Added UNIQUE constraint on `user_investments(user_id, pitch_id)`
+   - Consolidated duplicate investment records
+   - Fixed data integrity issues
+
+**Result**: Platform stable with live prices and consistent data across views.
+
+## Issues Resolved (Today's Session)
+
+### 0. Auto-Refresh API Quota Conservation
+**Problem**: Admin panel was auto-refreshing every 30 seconds, burning through Finnhub API quota (60 calls/minute free tier).
+
+**Solution**:
+- Disabled auto-refresh by default
+- Added optional 5-minute auto-refresh toggle (checkbox in header)
+- Added API usage notice on dashboard explaining cache behavior
+- Reduced API calls from 120/hour to 0/hour (or 12/hour if enabled)
+
+**Result**: Price cache working perfectly, no more API quota issues.
+
+**Files Changed**:
+- `/src/app/admin/page.tsx` - Added `autoRefresh` state and conditional useEffect
+
+**Previous Context**: This built on earlier work where we:
+1. Created shared 5-minute price cache (`/src/lib/price-cache.ts`)
+2. Fixed $100 fallback prices by implementing `fetchPriceWithCache()`
+3. Fixed $6,712 discrepancy by forcing primary DB reads
+4. Made Portfolio API the source of truth for current user data
 
 ### 1. AI Investor Numbers Discrepancy (Compete vs Admin)
 **Problem**: AI investor portfolio values differed between Leaderboard (Compete) and Admin (AI Investors) tabs.
