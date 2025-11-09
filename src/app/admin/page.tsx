@@ -298,8 +298,10 @@ export default function UnicornAdmin() {
                       {user.isAI ? 'AI Investor' : 'Human Investor'} {user.email && `• ${user.email}`}
                     </p>
                   </div>
-                  {user.hasDiscrepancy && (
+                  {user.hasDiscrepancy ? (
                     <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">ISSUE</span>
+                  ) : (
+                    <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">OK</span>
                   )}
                 </div>
 
