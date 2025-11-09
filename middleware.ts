@@ -27,11 +27,9 @@ const PUBLIC_PATHS = [
   '/terms',         // Terms of service
   '/privacy',       // Privacy policy
   '/how-to-play',   // How to play page
-  '/data-integrity', // Data integrity dashboard (no auth)
-  '/api/data-integrity', // Data integrity API (no auth)
-  '/simple-integrity', // Simple data integrity with password (no SSO)
-  '/ai-admin',      // AI Investor admin panel (password protected)
-  '/api/admin/ai-investors', // AI admin API (password protected)
+  '/admin',         // Unified Unicorn Admin (password protected)
+  '/api/data-integrity', // Data integrity API
+  '/api/admin/ai-investors', // AI admin API
   // API routes that allow unauthenticated requests
   '/api/leaderboard', // Leaderboard API (public)
 ];
