@@ -118,8 +118,8 @@ export async function GET(request: NextRequest) {
 
     // Sort: users with issues first
     users.sort((a, b) => {
-      if (a.discrepancies.has_issues && !b.discrepancies.has_issues) return -1;
-      if (!a.discrepancies.has_issues && b.discrepancies.has_issues) return 1;
+      if (a.hasDiscrepancy && !b.hasDiscrepancy) return -1;
+      if (!a.hasDiscrepancy && b.hasDiscrepancy) return 1;
       return 0;
     });
 
