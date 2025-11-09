@@ -49,6 +49,8 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
 
   if (!investor) return null;
 
+  // ARCHIVED: Tier system temporarily disabled
+  /*
   const getTierGradient = (tier: string) => {
     const gradients: Record<string, string> = {
       'TITAN': 'bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text',
@@ -60,6 +62,7 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
     };
     return gradients[tier] || 'text-gray-400';
   };
+  */
 
   const getStatusStyle = (status: string) => {
     const styles: Record<string, string> = {
@@ -151,6 +154,7 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
                 <p className="text-gray-400 text-sm">
                   {investor.isAI ? 'AI Investor' : 'Student Investor'}
                 </p>
+                {/* Tier badges archived - temporarily disabled
                 {(investor.investorTier || investor.founderTier) && (
                   <>
                     <span className="text-gray-600">•</span>
@@ -168,6 +172,7 @@ export default function InvestorProfileModal({ investor, onClose }: InvestorProf
                     </div>
                   </>
                 )}
+                */}
                 {investor.aiStatus && investor.aiStatus !== 'ACTIVE' && (
                   <>
                     <span className="text-gray-600">•</span>

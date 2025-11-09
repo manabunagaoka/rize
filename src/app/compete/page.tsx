@@ -189,6 +189,9 @@ export default function LeaderboardPage() {
     return Math.round(percentile);
   };
 
+  // ARCHIVED: Tier badge system (temporarily disabled - everyone at $1M after reset)
+  // TODO: Re-enable when tier thresholds make sense again
+  /*
   const getTierBadge = (investorTier?: string, founderTier?: string, status?: string) => {
     if (!investorTier && !founderTier && !status) return null;
     
@@ -232,6 +235,7 @@ export default function LeaderboardPage() {
       </div>
     );
   };
+  */
 
   const filteredLeaderboard = data?.leaderboard.filter(investor => {
     if (filter === 'students') return !investor.isAI;
@@ -387,7 +391,7 @@ export default function LeaderboardPage() {
                                 <div className="text-sm text-gray-400">
                                   {investor.isAI ? 'AI Investor' : 'Student'}
                                 </div>
-                                {getTierBadge(investor.investorTier, investor.founderTier, investor.aiStatus)}
+                                {/* Tier badges archived - see getTierBadge function above */}
                               </div>
                             </div>
                           </div>

@@ -66,6 +66,19 @@ export default function UnicornAdmin() {
   const [personaText, setPersonaText] = useState('');
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    type: 'toggle-active' | 'delete' | null;
+    aiData: any;
+  }>({
+    show: false,
+    title: '',
+    message: '',
+    type: null,
+    aiData: null
+  });
 
   const formatTimestamp = (timestamp: string | null) => {
     if (!timestamp) return 'Never';
@@ -94,6 +107,57 @@ export default function UnicornAdmin() {
     } catch (err) {
       console.error('Error updating persona:', err);
       alert('Error updating persona');
+    }
+  };
+
+  const handleToggleActive = async () => {
+    if (!confirmModal.aiData) return;
+    
+    try {
+      const res = await fetch('/api/admin/ai-toggle-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: confirmModal.aiData.userId, 
+          isActive: !confirmModal.aiData.isActive,
+          adminToken: 'admin_secret_manaboodle_2025'
+        })
+      });
+      if (res.ok) {
+        loadData();
+        setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+      }
+    } catch (err) {
+      console.error('Toggle active error:', err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmModal.aiData) return;
+    
+    try {
+      const res = await fetch('/api/admin/ai-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: confirmModal.aiData.userId,
+          adminToken: 'admin_secret_manaboodle_2025'
+        })
+      });
+      if (res.ok) {
+        loadData();
+        setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+      }
+    } catch (err) {
+      console.error('Delete AI error:', err);
+    }
+  };
+
+  const confirmAction = () => {
+    if (confirmModal.type === 'toggle-active') {
+      handleToggleActive();
+    } else if (confirmModal.type === 'delete') {
+      handleDelete();
     }
   };
 
@@ -489,54 +553,37 @@ export default function UnicornAdmin() {
                   {/* Active/Inactive Badge */}
                   <div className="absolute top-2 right-2 flex gap-2">
                     <button
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        if (!confirm(`${ai.isActive ? 'Deactivate' : 'Activate'} ${ai.nickname}?\n\n${ai.isActive ? 'Inactive AIs will be skipped during auto-trading.' : 'AI will resume trading on schedule.'}`)) return;
-                        
-                        try {
-                          const res = await fetch('/api/admin/ai-toggle-active', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                              userId: ai.userId, 
-                              isActive: !ai.isActive,
-                              adminToken: 'admin_secret_manaboodle_2025'
-                            })
-                          });
-                          if (res.ok) {
-                            loadData(); // Refresh list
-                          }
-                        } catch (err) {
-                          console.error('Toggle active error:', err);
-                        }
+                        setConfirmModal({
+                          show: true,
+                          title: ai.isActive ? 'Deactivate AI' : 'Activate AI',
+                          message: `Are you sure you want to ${ai.isActive ? 'deactivate' : 'activate'} ${ai.nickname}?\n\n${ai.isActive ? 'Inactive AIs will be skipped during auto-trading.' : 'AI will resume trading on schedule.'}`,
+                          type: 'toggle-active',
+                          aiData: { userId: ai.userId, isActive: ai.isActive, nickname: ai.nickname }
+                        });
                       }}
-                      className={`text-xs px-2 py-1 rounded ${ai.isActive !== false ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+                      className={`text-sm px-3 py-1.5 rounded font-medium transition-all ${
+                        ai.isActive !== false 
+                          ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/50' 
+                          : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      }`}
                       title={ai.isActive !== false ? 'Active - Click to pause' : 'Inactive - Click to activate'}
                     >
                       {ai.isActive !== false ? '● Active' : '○ Inactive'}
                     </button>
                     <button
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        if (!confirm(`⚠️ DELETE ${ai.nickname} PERMANENTLY?\n\nThis will remove:\n- AI investor profile\n- All holdings\n- All transaction history\n- All trading logs\n\nThis action CANNOT be undone!`)) return;
-                        
-                        try {
-                          const res = await fetch('/api/admin/ai-delete', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                              userId: ai.userId,
-                              adminToken: 'admin_secret_manaboodle_2025'
-                            })
-                          });
-                          if (res.ok) {
-                            loadData(); // Refresh list
-                          }
-                        } catch (err) {
-                          console.error('Delete AI error:', err);
-                        }
+                        setConfirmModal({
+                          show: true,
+                          title: 'Delete AI Investor',
+                          message: `⚠️ DELETE ${ai.nickname} PERMANENTLY?\n\nThis will remove:\n- AI investor profile\n- All holdings\n- All transaction history\n- All trading logs\n\nThis action CANNOT be undone!`,
+                          type: 'delete',
+                          aiData: { userId: ai.userId, nickname: ai.nickname }
+                        });
                       }}
-                      className="text-xs px-2 py-1 rounded bg-red-600 hover:bg-red-700"
+                      className="text-sm px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white font-medium transition-all shadow-lg shadow-red-900/50"
                       title="Delete permanently"
                     >
                       🗑️
@@ -989,6 +1036,36 @@ ${result.error ? `ERROR:\n  ${result.error}` : ''}
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal.show && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg shadow-2xl max-w-md w-full border border-gray-700">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-4">{confirmModal.title}</h3>
+              <p className="text-gray-300 whitespace-pre-line mb-6">{confirmModal.message}</p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null })}
+                  className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAction}
+                  className={`px-4 py-2 rounded font-medium transition-colors ${
+                    confirmModal.type === 'delete' 
+                      ? 'bg-red-600 hover:bg-red-700 text-white' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
         </div>
