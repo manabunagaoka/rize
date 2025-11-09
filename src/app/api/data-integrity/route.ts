@@ -104,8 +104,8 @@ export async function GET(request: NextRequest) {
       const uiHoldingsCount = dbHoldingsCount; // Should match
       const uiRoi = dbTotalInvested > 0 ? ((uiHoldingsValue - dbTotalInvested) / dbTotalInvested * 100) : 0;
 
-      // Calculate discrepancies
-      const cashDiff = uiCash - dbCash; // Should be 0
+      // Calculate discrepancies (floor both sides since UI floors everything)
+      const cashDiff = uiCash - Math.floor(dbCash); // Should be 0
       const holdingsCountDiff = uiHoldingsCount - dbHoldingsCount; // Should be 0
 
       const hasIssues = cashDiff !== 0 || holdingsCountDiff !== 0;
@@ -126,9 +126,9 @@ export async function GET(request: NextRequest) {
           timestamp: queryTime
         },
         db: {
-          cash: dbCash,
+          cash: Math.floor(dbCash),
           portfolioValue: holdingsValue,
-          totalValue: dbCash + holdingsValue,
+          totalValue: Math.floor(dbCash) + holdingsValue,
           holdingsCount: dbHoldingsCount,
           totalInvested: dbTotalInvested,
           updatedAt: balance.updated_at
