@@ -38,6 +38,7 @@ export default function UnicornAdmin() {
   const [aiDetail, setAIDetail] = useState<AIDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [testTrading, setTestTrading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,11 +109,12 @@ export default function UnicornAdmin() {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const interval = setInterval(loadData, 30000);
+    if (isAuthenticated && autoRefresh) {
+      // Only refresh if auto-refresh is enabled, and use 5 minutes to match cache TTL
+      const interval = setInterval(loadData, 5 * 60 * 1000); // 5 minutes
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, autoRefresh]);
 
 
   if (!isAuthenticated) {
@@ -157,13 +159,24 @@ export default function UnicornAdmin() {
             <h1 className="text-3xl font-bold">Unicorn Admin</h1>
             <p className="text-gray-400 text-sm">Complete platform management</p>
           </div>
-          <button
-            onClick={loadData}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm disabled:opacity-50"
-          >
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={(e) => setAutoRefresh(e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <span className="text-gray-300">Auto-refresh (5min)</span>
+            </label>
+            <button
+              onClick={loadData}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+            >
+              {loading ? 'Loading...' : 'Refresh Now'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -250,6 +263,19 @@ export default function UnicornAdmin() {
                 <div className="bg-gray-700/50 p-4 rounded-lg opacity-50">
                   <div className="font-bold text-lg mb-1">Competitions</div>
                   <div className="text-sm text-gray-400">Coming soon</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-900/20 border border-blue-500/50 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="text-blue-400 text-2xl">ℹ️</div>
+                <div>
+                  <div className="font-bold text-blue-400 mb-1">API Usage Notice</div>
+                  <div className="text-sm text-gray-300">
+                    All prices are cached for 5 minutes to conserve Finnhub API quota. 
+                    Auto-refresh is disabled by default. Enable it only when actively monitoring markets.
+                  </div>
                 </div>
               </div>
             </div>
