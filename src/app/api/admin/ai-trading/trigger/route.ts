@@ -295,8 +295,19 @@ Important:
 }
 
 async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDecision) {
+  const portfolioBefore = aiInvestor.portfolio_value || 0;
+  
   if (decision.action === 'HOLD') {
-    return { success: true, message: 'Holding position' };
+    return { 
+      success: true, 
+      message: 'Holding position',
+      execution: {
+        balanceBefore: aiInvestor.available_tokens,
+        balanceAfter: aiInvestor.available_tokens,
+        portfolioBefore,
+        portfolioAfter: portfolioBefore
+      }
+    };
   }
 
   if (decision.action === 'BUY' && decision.shares) {
@@ -319,7 +330,15 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
       const maxShares = Math.floor(balanceBefore / priceData.current_price * 100) / 100;
       return { 
         success: false, 
-        message: `Insufficient funds: tried to spend $${totalCost.toFixed(2)} but only have $${balanceBefore.toFixed(2)}. Max shares affordable: ${maxShares}` 
+        message: `Insufficient funds: tried to spend $${totalCost.toFixed(2)} but only have $${balanceBefore.toFixed(2)}. Max shares affordable: ${maxShares}`,
+        execution: {
+          balanceBefore,
+          balanceAfter: balanceBefore,
+          portfolioBefore,
+          portfolioAfter: portfolioBefore,
+          price: priceData.current_price,
+          cost: totalCost
+        }
       };
     }
     
@@ -327,7 +346,15 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
     if (totalCost > aiInvestor.total_tokens) {
       return {
         success: false,
-        message: `Invalid trade: trying to spend $${totalCost.toFixed(2)} which exceeds total portfolio value of $${aiInvestor.total_tokens.toFixed(2)}`
+        message: `Invalid trade: trying to spend $${totalCost.toFixed(2)} which exceeds total portfolio value of $${aiInvestor.total_tokens.toFixed(2)}`,
+        execution: {
+          balanceBefore,
+          balanceAfter: balanceBefore,
+          portfolioBefore,
+          portfolioAfter: portfolioBefore,
+          price: priceData.current_price,
+          cost: totalCost
+        }
       };
     }
     
@@ -392,7 +419,15 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
 
     return {
       success: true,
-      message: `${aiInvestor.ai_nickname} bought ${decision.shares.toFixed(2)} shares of ${pitch?.name} for $${totalCost.toFixed(2)} MTK`
+      message: `${aiInvestor.ai_nickname} bought ${decision.shares.toFixed(2)} shares of ${pitch?.name} for $${totalCost.toFixed(2)} MTK`,
+      execution: {
+        balanceBefore,
+        balanceAfter,
+        portfolioBefore,
+        portfolioAfter: portfolioBefore + totalCost,
+        price: priceData.current_price,
+        cost: totalCost
+      }
     };
   }
 
@@ -409,7 +444,13 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
     if (!existingInvestment || existingInvestment.shares_owned < decision.shares) {
       return {
         success: false,
-        message: `Insufficient shares: has ${existingInvestment?.shares_owned || 0}, tried to sell ${decision.shares}`
+        message: `Insufficient shares: has ${existingInvestment?.shares_owned || 0}, tried to sell ${decision.shares}`,
+        execution: {
+          balanceBefore: aiInvestor.available_tokens,
+          balanceAfter: aiInvestor.available_tokens,
+          portfolioBefore,
+          portfolioAfter: portfolioBefore
+        }
       };
     }
 
@@ -474,11 +515,28 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
 
     return {
       success: true,
-      message: `${aiInvestor.ai_nickname} sold ${decision.shares.toFixed(2)} shares of ${pitch?.name} for $${totalRevenue.toFixed(2)} MTK`
+      message: `${aiInvestor.ai_nickname} sold ${decision.shares.toFixed(2)} shares of ${pitch?.name} for $${totalRevenue.toFixed(2)} MTK`,
+      execution: {
+        balanceBefore,
+        balanceAfter,
+        portfolioBefore,
+        portfolioAfter: portfolioBefore - totalRevenue,
+        price: priceData.current_price,
+        cost: totalRevenue
+      }
     };
   }
 
-  return { success: false, message: 'Invalid action' };
+  return { 
+    success: false, 
+    message: 'Invalid action',
+    execution: {
+      balanceBefore: aiInvestor.available_tokens,
+      balanceAfter: aiInvestor.available_tokens,
+      portfolioBefore,
+      portfolioAfter: portfolioBefore
+    }
+  };
 }
 
 async function logTrade(supabase: any, aiInvestor: any, prompt: string, rawResponse: string, decision: AITradeDecision, result: any, triggeredBy: string) {
@@ -573,8 +631,12 @@ export async function POST(request: NextRequest) {
         
         results.push({
           investor: ai.ai_nickname,
-          decision,
-          result
+          decision: {
+            ...decision,
+            ticker: HM7_PITCHES.find(p => p.id === decision.pitch_id)?.ticker
+          },
+          result,
+          execution: result.execution
         });
 
         await new Promise(resolve => setTimeout(resolve, 500));

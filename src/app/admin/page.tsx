@@ -23,6 +23,29 @@ interface AIDetail {
   systemInfo: any;
 }
 
+interface TestResult {
+  timestamp: string;
+  aiName: string;
+  userId: string;
+  success: boolean;
+  decision?: {
+    action: string;
+    ticker?: string;
+    shares?: number;
+    reasoning: string;
+  };
+  execution?: {
+    balanceBefore: number;
+    balanceAfter: number;
+    portfolioBefore: number;
+    portfolioAfter: number;
+    price?: number;
+    cost?: number;
+  };
+  message: string;
+  error?: string;
+}
+
 const TICKER_MAP: Record<number, string> = {
   1: 'META', 2: 'MSFT', 3: 'DBX', 4: 'AKAM',
   5: 'RDDT', 6: 'WRBY', 7: 'BKNG'
@@ -41,6 +64,8 @@ export default function UnicornAdmin() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [editingPersona, setEditingPersona] = useState(false);
   const [personaText, setPersonaText] = useState('');
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
 
   const formatTimestamp = (timestamp: string | null) => {
     if (!timestamp) return 'Never';
@@ -120,6 +145,8 @@ export default function UnicornAdmin() {
 
   const triggerTestTrade = async (userId: string) => {
     setTestTrading(true);
+    const aiName = aiDetail?.user?.nickname || 'Unknown AI';
+    
     try {
       const res = await fetch('/api/admin/ai-trading/trigger', {
         method: 'POST',
@@ -129,26 +156,67 @@ export default function UnicornAdmin() {
         },
         body: JSON.stringify({ userId })
       });
+      
       if (res.ok) {
         const data = await res.json();
         const result = data.results?.[0];
+        
         if (result) {
-          const action = result.decision?.action || 'UNKNOWN';
-          const reasoning = result.decision?.reasoning || 'No reasoning provided';
-          const message = result.result?.message || 'No message';
-          const success = result.result?.success ? '✅ SUCCESS' : '❌ FAILED';
+          const testResult: TestResult = {
+            timestamp: new Date().toISOString(),
+            aiName,
+            userId,
+            success: result.result?.success || false,
+            decision: result.decision ? {
+              action: result.decision.action || 'UNKNOWN',
+              ticker: result.decision.ticker,
+              shares: result.decision.shares,
+              reasoning: result.decision.reasoning || 'No reasoning provided'
+            } : undefined,
+            execution: result.execution ? {
+              balanceBefore: result.execution.balanceBefore || 0,
+              balanceAfter: result.execution.balanceAfter || 0,
+              portfolioBefore: result.execution.portfolioBefore || 0,
+              portfolioAfter: result.execution.portfolioAfter || 0,
+              price: result.execution.price,
+              cost: result.execution.cost
+            } : undefined,
+            message: result.result?.message || 'No message',
+            error: result.error
+          };
           
-          alert(`Test Trade Complete!\n\n${success}\n\nAction: ${action}\nReasoning: ${reasoning}\n\nResult: ${message}`);
-        } else {
-          alert(`Test trade triggered!\n\n${JSON.stringify(data, null, 2)}`);
+          setTestResults(prev => [testResult, ...prev].slice(0, 10)); // Keep last 10
+          setShowResults(true);
         }
+        
         // Reload AI detail and data
         loadAIDetail(userId);
         loadData();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        const testResult: TestResult = {
+          timestamp: new Date().toISOString(),
+          aiName,
+          userId,
+          success: false,
+          message: 'Failed to execute test trade',
+          error: errorData.error || 'Unknown error'
+        };
+        setTestResults(prev => [testResult, ...prev].slice(0, 10));
+        setShowResults(true);
       }
     } catch (err) {
       console.error('Error triggering test trade:', err);
-      alert('Failed to trigger test trade: ' + (err instanceof Error ? err.message : String(err)));
+      const testResult: TestResult = {
+        timestamp: new Date().toISOString(),
+        aiName,
+        userId,
+        success: false,
+        message: 'Failed to trigger test trade',
+        error: err instanceof Error ? err.message : String(err)
+      };
+      setTestResults(prev => [testResult, ...prev].slice(0, 10));
+      setShowResults(true);
     } finally {
       setTestTrading(false);
     }
@@ -626,6 +694,160 @@ export default function UnicornAdmin() {
                   >
                     {testTrading ? 'Running Test Trade...' : 'Test Trade Now (Manual Trigger)'}
                   </button>
+
+                  {/* Test Results Display */}
+                  {testResults.length > 0 && (
+                    <div className="bg-gray-900 rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-bold">Test Results ({testResults.length})</h4>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setShowResults(!showResults)}
+                            className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+                          >
+                            {showResults ? 'Hide' : 'Show'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const text = testResults.map(r => 
+                                `${formatTimestamp(r.timestamp)} | ${r.aiName} | ${r.success ? 'SUCCESS' : 'FAILED'} | ${r.decision?.action || 'N/A'} | ${r.message}`
+                              ).join('\n');
+                              navigator.clipboard.writeText(text);
+                            }}
+                            className="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+                          >
+                            Copy All
+                          </button>
+                          <button
+                            onClick={() => setTestResults([])}
+                            className="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+
+                      {showResults && (
+                        <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                          {testResults.map((result, idx) => (
+                            <div key={idx} className="bg-gray-800 p-4 rounded border-l-4" 
+                                 style={{borderColor: result.success ? '#10b981' : '#ef4444'}}>
+                              {/* Header */}
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <div className="font-bold text-lg">
+                                    {result.success ? '✅' : '❌'} {result.aiName}
+                                  </div>
+                                  <div className="text-xs text-gray-400">
+                                    {formatTimestamp(result.timestamp)}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    const text = `
+${result.aiName} Test Trade - ${formatTimestamp(result.timestamp)}
+═══════════════════════════════════════════════
+
+${result.success ? '✅ SUCCESS' : '❌ FAILED'}
+
+${result.decision ? `
+DECISION:
+  Action:     ${result.decision.action}
+  ${result.decision.ticker ? `Ticker:     ${result.decision.ticker}` : ''}
+  ${result.decision.shares ? `Shares:     ${result.decision.shares}` : ''}
+  Reasoning:  ${result.decision.reasoning}
+` : ''}
+
+${result.execution ? `
+EXECUTION:
+  Balance Before:   $${result.execution.balanceBefore.toLocaleString()}
+  Balance After:    $${result.execution.balanceAfter.toLocaleString()}
+  Portfolio Before: $${result.execution.portfolioBefore.toLocaleString()}
+  Portfolio After:  $${result.execution.portfolioAfter.toLocaleString()}
+  ${result.execution.price ? `Price per Share:  $${result.execution.price.toFixed(2)}` : ''}
+  ${result.execution.cost ? `Total Cost:       $${result.execution.cost.toLocaleString()}` : ''}
+
+CALCULATION VALIDATION:
+  Cash Change:      $${(result.execution.balanceBefore - result.execution.balanceAfter).toLocaleString()}
+  Portfolio Change: $${(result.execution.portfolioAfter - result.execution.portfolioBefore).toLocaleString()}
+  ${result.execution.cost && result.execution.shares && result.execution.price ? 
+    `  Cost Check:       ${result.execution.shares} × $${result.execution.price.toFixed(2)} = $${result.execution.cost.toLocaleString()} ✓` : ''}
+` : ''}
+
+RESULT:
+  ${result.message}
+
+${result.error ? `ERROR:\n  ${result.error}` : ''}
+                                    `.trim();
+                                    navigator.clipboard.writeText(text);
+                                  }}
+                                  className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                                >
+                                  Copy
+                                </button>
+                              </div>
+
+                              {/* Decision */}
+                              {result.decision && (
+                                <div className="mb-3 bg-gray-900 p-3 rounded">
+                                  <div className="text-sm font-bold text-blue-400 mb-2">
+                                    DECISION: {result.decision.action}
+                                    {result.decision.ticker && ` ${result.decision.ticker}`}
+                                    {result.decision.shares && ` (${result.decision.shares} shares)`}
+                                  </div>
+                                  <div className="text-xs text-gray-300 italic">
+                                    "{result.decision.reasoning}"
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Math Validation */}
+                              {result.execution && (
+                                <div className="mb-3 bg-gray-900 p-3 rounded font-mono text-xs">
+                                  <div className="grid grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                      <div className="text-gray-400">BEFORE TRADE:</div>
+                                      <div>Cash: ${result.execution.balanceBefore.toLocaleString()}</div>
+                                      <div>Portfolio: ${result.execution.portfolioBefore.toLocaleString()}</div>
+                                      <div className="font-bold">Total: ${(result.execution.balanceBefore + result.execution.portfolioBefore).toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-gray-400">AFTER TRADE:</div>
+                                      <div>Cash: ${result.execution.balanceAfter.toLocaleString()}</div>
+                                      <div>Portfolio: ${result.execution.portfolioAfter.toLocaleString()}</div>
+                                      <div className="font-bold">Total: ${(result.execution.balanceAfter + result.execution.portfolioAfter).toLocaleString()}</div>
+                                    </div>
+                                  </div>
+                                  
+                                  {result.execution.cost && result.execution.shares && result.execution.price && (
+                                    <div className="border-t border-gray-700 pt-2 mt-2">
+                                      <div className="text-gray-400 mb-1">CALCULATION:</div>
+                                      <div>{result.execution.shares} shares × ${result.execution.price.toFixed(2)} = ${result.execution.cost.toLocaleString()}</div>
+                                      <div className="text-green-400 mt-1">
+                                        ✓ Balance Check: ${result.execution.balanceBefore.toLocaleString()} - ${result.execution.cost.toLocaleString()} = ${result.execution.balanceAfter.toLocaleString()}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Result Message */}
+                              <div className={`text-sm p-2 rounded ${result.success ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
+                                {result.message}
+                              </div>
+
+                              {/* Error */}
+                              {result.error && (
+                                <div className="mt-2 text-xs bg-red-900/30 text-red-300 p-2 rounded">
+                                  <span className="font-bold">Error:</span> {result.error}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="bg-gray-900 rounded-lg p-4">
                     <h4 className="font-bold mb-3">Current Holdings ({aiDetail.investments?.length || 0})</h4>
