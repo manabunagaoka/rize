@@ -177,7 +177,7 @@ export default function UnicornAdmin() {
                   onClick={() => setActiveTab('data-integrity')}
                   className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
                 >
-                  <div className="text-2xl mb-2">🔍</div>
+                  <div className="text-3xl mb-2">🔍</div>
                   <div className="font-bold">Check Data Integrity</div>
                   <div className="text-sm text-gray-400">
                     {issuesCount > 0 ? `${issuesCount} issues found` : 'All healthy'}
@@ -187,14 +187,14 @@ export default function UnicornAdmin() {
                   onClick={() => setActiveTab('ai-investors')}
                   className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
                 >
-                  <div className="text-2xl mb-2">🤖</div>
+                  <div className="text-3xl mb-2">🤖</div>
                   <div className="font-bold">Manage AI Investors</div>
                   <div className="text-sm text-gray-400">{aiInvestors.length} AI traders</div>
                 </button>
                 <div className="bg-gray-700 p-4 rounded-lg opacity-50">
-                  <div className="text-2xl mb-2">👤</div>
+                  <div className="text-3xl mb-2">�</div>
                   <div className="font-bold">Human Users</div>
-                  <div className="text-sm text-gray-400">Coming soon</div>
+                  <div className="text-sm text-gray-400">Locked - Coming after AI work</div>
                 </div>
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function UnicornAdmin() {
                   <div>
                     <h2 className="text-2xl font-bold">{user.displayName}</h2>
                     <p className="text-gray-400 text-sm">
-                      {user.isAI ? '🤖 AI Investor' : '👤 Human Investor'} {user.email && `• ${user.email}`}
+                      {user.isAI ? 'AI Investor' : 'Human Investor'} {user.email && `• ${user.email}`}
                     </p>
                   </div>
                   {user.hasDiscrepancy && (
