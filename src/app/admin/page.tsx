@@ -456,30 +456,30 @@ export default function UnicornAdmin() {
                 <div className="space-y-6">
                   <div className="bg-gray-900 rounded-lg p-4">
                     <div className="flex items-center gap-4 mb-4">
-                      <span className="text-5xl">{aiDetail.user.emoji}</span>
+                      <span className="text-5xl">{aiDetail.user?.emoji || '🤖'}</span>
                       <div>
-                        <h3 className="text-2xl font-bold">{aiDetail.user.nickname}</h3>
-                        <p className="text-gray-400">{aiDetail.user.strategy}</p>
-                        <p className="text-sm italic text-gray-500">&quot;{aiDetail.user.catchphrase}&quot;</p>
+                        <h3 className="text-2xl font-bold">{aiDetail.user?.nickname || 'AI Investor'}</h3>
+                        <p className="text-gray-400">{aiDetail.user?.strategy || 'N/A'}</p>
+                        <p className="text-sm italic text-gray-500">&quot;{aiDetail.user?.catchphrase || ''}&quot;</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-4 text-sm">
                       <div>
                         <div className="text-gray-400">Cash</div>
-                        <div className="font-mono text-lg">${(aiDetail.user.cash / 1000).toFixed(1)}K</div>
+                        <div className="font-mono text-lg">${((aiDetail.user?.cash || 0) / 1000).toFixed(1)}K</div>
                       </div>
                       <div>
                         <div className="text-gray-400">Portfolio</div>
-                        <div className="font-mono text-lg">${(aiDetail.user.portfolioValue / 1000).toFixed(1)}K</div>
+                        <div className="font-mono text-lg">${((aiDetail.user?.portfolioValue || 0) / 1000).toFixed(1)}K</div>
                       </div>
                       <div>
                         <div className="text-gray-400">Total Value</div>
-                        <div className="font-mono text-lg">${(aiDetail.user.totalValue / 1000).toFixed(1)}K</div>
+                        <div className="font-mono text-lg">${((aiDetail.user?.totalValue || 0) / 1000).toFixed(1)}K</div>
                       </div>
                       <div>
                         <div className="text-gray-400">ROI</div>
-                        <div className={`font-mono text-lg ${aiDetail.user.roi >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {aiDetail.user.roi.toFixed(1)}%
+                        <div className={`font-mono text-lg ${(aiDetail.user?.roi || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(aiDetail.user?.roi || 0).toFixed(1)}%
                         </div>
                       </div>
                     </div>
@@ -507,23 +507,23 @@ export default function UnicornAdmin() {
                   </button>
 
                   <div className="bg-gray-900 rounded-lg p-4">
-                    <h4 className="font-bold mb-3">Current Holdings ({aiDetail.investments.length})</h4>
-                    {aiDetail.investments.length === 0 ? (
+                    <h4 className="font-bold mb-3">Current Holdings ({aiDetail.investments?.length || 0})</h4>
+                    {!aiDetail.investments || aiDetail.investments.length === 0 ? (
                       <p className="text-gray-400 text-sm">No current holdings</p>
                     ) : (
                       <div className="space-y-2">
                         {aiDetail.investments.map((inv: any) => (
                           <div key={inv.pitchId} className="bg-gray-800 p-3 rounded flex justify-between items-center">
                             <div>
-                              <div className="font-bold">{TICKER_MAP[inv.pitchId]}</div>
+                              <div className="font-bold">{TICKER_MAP[inv.pitchId] || 'Unknown'}</div>
                               <div className="text-xs text-gray-400">
-                                {inv.shares.toFixed(2)} shares @ ${inv.avgPrice.toFixed(2)}
+                                {(inv.shares || 0).toFixed(2)} shares @ ${(inv.avgPrice || 0).toFixed(2)}
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-mono">${inv.currentValue.toFixed(0)}</div>
-                              <div className={`text-xs ${inv.gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {inv.gain >= 0 ? '+' : ''}{inv.gain.toFixed(1)}%
+                              <div className="font-mono">${(inv.currentValue || 0).toFixed(0)}</div>
+                              <div className={`text-xs ${(inv.gain || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {(inv.gain || 0) >= 0 ? '+' : ''}{(inv.gain || 0).toFixed(1)}%
                               </div>
                             </div>
                           </div>
@@ -533,8 +533,8 @@ export default function UnicornAdmin() {
                   </div>
 
                   <div className="bg-gray-900 rounded-lg p-4">
-                    <h4 className="font-bold mb-3">Recent Transactions ({aiDetail.transactions.length})</h4>
-                    {aiDetail.transactions.length === 0 ? (
+                    <h4 className="font-bold mb-3">Recent Transactions ({aiDetail.transactions?.length || 0})</h4>
+                    {!aiDetail.transactions || aiDetail.transactions.length === 0 ? (
                       <p className="text-gray-400 text-sm">No transactions yet</p>
                     ) : (
                       <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -547,7 +547,7 @@ export default function UnicornAdmin() {
                               <span className="text-gray-400">{new Date(tx.created_at).toLocaleString()}</span>
                             </div>
                             <div className="text-gray-300 mt-1">
-                              {TICKER_MAP[tx.pitch_id]}: {tx.shares.toFixed(2)} @ ${tx.price_per_share.toFixed(2)}
+                              {TICKER_MAP[tx.pitch_id] || 'Unknown'}: {(tx.shares || 0).toFixed(2)} @ ${(tx.price_per_share || 0).toFixed(2)}
                             </div>
                           </div>
                         ))}
@@ -556,27 +556,31 @@ export default function UnicornAdmin() {
                   </div>
 
                   <div className="bg-gray-900 rounded-lg p-4">
-                    <h4 className="font-bold mb-3">Pitches AI Analyzes ({aiDetail.pitches.length})</h4>
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {aiDetail.pitches.map((pitch: any) => (
-                        <div key={pitch.pitch_id} className="bg-gray-800 p-3 rounded">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <span className="font-bold text-blue-400">{pitch.ticker}</span>
-                              <span className="text-gray-400 ml-2">{pitch.company_name}</span>
-                            </div>
-                            <div className="text-right text-sm">
-                              <div className="font-mono">${pitch.current_price.toFixed(2)}</div>
-                              <div className={`text-xs ${pitch.price_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {pitch.price_change_24h >= 0 ? '+' : ''}{pitch.price_change_24h.toFixed(1)}%
+                    <h4 className="font-bold mb-3">Pitches AI Analyzes ({aiDetail.pitches?.length || 0})</h4>
+                    {!aiDetail.pitches || aiDetail.pitches.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No pitches available</p>
+                    ) : (
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {aiDetail.pitches.map((pitch: any) => (
+                          <div key={pitch.pitch_id} className="bg-gray-800 p-3 rounded">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <span className="font-bold text-blue-400">{pitch.ticker || 'N/A'}</span>
+                                <span className="text-gray-400 ml-2">{pitch.company_name || 'Unknown'}</span>
+                              </div>
+                              <div className="text-right text-sm">
+                                <div className="font-mono">${(pitch.current_price || 0).toFixed(2)}</div>
+                                <div className={`text-xs ${(pitch.price_change_24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {(pitch.price_change_24h || 0) >= 0 ? '+' : ''}{(pitch.price_change_24h || 0).toFixed(1)}%
+                                </div>
                               </div>
                             </div>
+                            <p className="text-xs text-gray-400 mb-1">{pitch.elevator_pitch || 'No pitch available'}</p>
+                            <p className="text-xs text-gray-500 italic">{pitch.fun_fact || ''}</p>
                           </div>
-                          <p className="text-xs text-gray-400 mb-1">{pitch.elevator_pitch}</p>
-                          <p className="text-xs text-gray-500 italic">{pitch.fun_fact}</p>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
