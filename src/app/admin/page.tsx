@@ -613,6 +613,48 @@ export default function UnicornAdmin() {
 
         {activeTab === 'data-integrity' && (
           <div className="space-y-6">
+            {/* API Comparison Section */}
+            <div className="border border-yellow-500 bg-yellow-900/10 rounded-lg p-6 mb-6">
+              <h2 className="text-2xl font-bold mb-4 text-yellow-400">🔍 Live API Comparison</h2>
+              <p className="text-sm text-gray-400 mb-4">
+                Compares values from all APIs at the same moment. Small differences (&lt;$1000) are normal due to live price changes.
+              </p>
+              <button
+                onClick={async () => {
+                  const cacheBuster = Date.now();
+                  const [dbTruth, aiInvestorsData, dataIntegrity, leaderboardData] = await Promise.all([
+                    fetch(`/api/db-truth?t=${cacheBuster}`).then(r => r.json()),
+                    fetch(`/api/admin/ai-investors?t=${cacheBuster}`).then(r => r.json()),
+                    fetch(`/api/data-integrity?t=${cacheBuster}`).then(r => r.json()),
+                    fetch(`/api/leaderboard?t=${cacheBuster}`).then(r => r.json())
+                  ]);
+                  
+                  // Build comparison for each user
+                  const comparisons = dataIntegrity.users.map((intUser: any) => {
+                    const aiInv = aiInvestorsData.aiInvestors?.find((ai: any) => ai.userId === intUser.userId);
+                    const lbUser = leaderboardData.leaderboard?.find((u: any) => u.userId === intUser.userId);
+                    const dbUser = intUser.userId === dbTruth.user_id ? dbTruth : null;
+                    
+                    const values = {
+                      aiInvestors: aiInv?.totalValue || 0,
+                      integrity: intUser.ui.totalValue || 0,
+                      leaderboard: lbUser?.portfolioValue || 0,
+                      database: dbUser?.database_raw.total_value || 0
+                    };
+                    
+                    const allMatch = values.aiInvestors === values.integrity && values.integrity === values.leaderboard;
+                    
+                    return { ...intUser, apiComparison: { values, allMatch, aiInv, lbUser, dbUser } };
+                  });
+                  
+                  setUsers(comparisons);
+                }}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded"
+              >
+                🔄 Fetch & Compare All APIs
+              </button>
+            </div>
+            
             {users.map(user => (
               <div
                 key={user.userId}
@@ -633,6 +675,56 @@ export default function UnicornAdmin() {
                     <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">OK</span>
                   )}
                 </div>
+
+                {/* API Comparison Section (if fetched) */}
+                {(user as any).apiComparison && (
+                  <div className="mt-4 border-t border-gray-700 pt-4">
+                    <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                      <span className="text-purple-400">API Comparison</span>
+                      {(user as any).apiComparison.allMatch ? (
+                        <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs">ALL MATCH</span>
+                      ) : (
+                        <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs">MISMATCH</span>
+                      )}
+                    </h3>
+                    <div className="grid grid-cols-4 gap-4 text-sm">
+                      <div className="bg-gray-900/50 rounded p-3">
+                        <div className="text-gray-400 text-xs mb-1">AI Investors API</div>
+                        <div className={`font-mono font-bold ${(user as any).apiComparison.allMatch ? 'text-green-400' : 'text-red-400'}`}>
+                          ${(user as any).apiComparison.values.aiInvestors.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 rounded p-3">
+                        <div className="text-gray-400 text-xs mb-1">Data Integrity API</div>
+                        <div className={`font-mono font-bold ${(user as any).apiComparison.allMatch ? 'text-green-400' : 'text-red-400'}`}>
+                          ${(user as any).apiComparison.values.integrity.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 rounded p-3">
+                        <div className="text-gray-400 text-xs mb-1">Leaderboard API</div>
+                        <div className={`font-mono font-bold ${(user as any).apiComparison.allMatch ? 'text-green-400' : 'text-red-400'}`}>
+                          ${(user as any).apiComparison.values.leaderboard.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 rounded p-3">
+                        <div className="text-gray-400 text-xs mb-1">Database (Stale)</div>
+                        <div className="font-mono font-bold text-gray-500">
+                          ${(user as any).apiComparison.values.database.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    {!(user as any).apiComparison.allMatch && (
+                      <div className="mt-2 text-xs text-red-400">
+                        ⚠️ Values don't match! Max difference: $
+                        {Math.max(
+                          Math.abs((user as any).apiComparison.values.aiInvestors - (user as any).apiComparison.values.integrity),
+                          Math.abs((user as any).apiComparison.values.aiInvestors - (user as any).apiComparison.values.leaderboard),
+                          Math.abs((user as any).apiComparison.values.integrity - (user as any).apiComparison.values.leaderboard)
+                        ).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-8">
                   <div>
