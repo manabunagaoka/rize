@@ -66,6 +66,13 @@ export default function UnicornAdmin() {
   const [personaText, setPersonaText] = useState('');
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{
+    show: boolean;
+    current: number;
+    total: number;
+    currentAI?: string;
+    results: Array<{ ai: string; success: boolean; data?: any; error?: string }>;
+  }>({ show: false, current: 0, total: 0, results: [] });
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
     title: string;
@@ -544,8 +551,180 @@ export default function UnicornAdmin() {
               <h2 className="text-2xl font-bold">AI Investors ({aiInvestors.length})</h2>
               <div className="text-sm text-gray-400">Click any AI to see details and test trades</div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {aiInvestors.map(ai => (
+
+            {/* Batch Operations */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <h3 className="text-lg font-bold mb-3 text-blue-400">Batch Operations</h3>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={async () => {
+                    const activeAIs = aiInvestors.filter(ai => ai.isActive);
+                    if (activeAIs.length === 0) {
+                      alert('No active AIs to test');
+                      return;
+                    }
+                    if (!confirm(`Test all ${activeAIs.length} active AIs? This will run sequentially.`)) return;
+                    
+                    setBatchProgress({ show: true, current: 0, total: activeAIs.length, results: [] });
+                    
+                    for (let i = 0; i < activeAIs.length; i++) {
+                      const ai = activeAIs[i];
+                      setBatchProgress(prev => ({ ...prev, current: i + 1, currentAI: ai.nickname }));
+                      
+                      try {
+                        const res = await fetch('/api/admin/ai-trading/trigger', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ 
+                            userId: ai.userId,
+                            adminToken: 'admin_secret_manaboodle_2025'
+                          })
+                        });
+                        const data = await res.json();
+                        setBatchProgress(prev => ({
+                          ...prev,
+                          results: [...prev.results, { ai: ai.nickname, success: res.ok, data }]
+                        }));
+                      } catch (err) {
+                        setBatchProgress(prev => ({
+                          ...prev,
+                          results: [...prev.results, { ai: ai.nickname, success: false, error: String(err) }]
+                        }));
+                      }
+                      
+                      // Small delay between tests
+                      await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    setBatchProgress(prev => ({ ...prev, currentAI: undefined }));
+                    loadData(); // Refresh after all tests
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  🚀 Test All Active AIs ({aiInvestors.filter(ai => ai.isActive).length})
+                </button>
+                
+                <button
+                  onClick={async () => {
+                    if (!confirm(`Activate ALL ${aiInvestors.length} AIs?`)) return;
+                    for (const ai of aiInvestors) {
+                      if (!ai.isActive) {
+                        await fetch('/api/admin/ai-toggle-active', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ 
+                            userId: ai.userId, 
+                            isActive: true,
+                            adminToken: 'admin_secret_manaboodle_2025'
+                          })
+                        });
+                      }
+                    }
+                    loadData();
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  ✓ Activate All
+                </button>
+                
+                <button
+                  onClick={async () => {
+                    if (!confirm(`Deactivate ALL ${aiInvestors.length} AIs?`)) return;
+                    for (const ai of aiInvestors) {
+                      if (ai.isActive) {
+                        await fetch('/api/admin/ai-toggle-active', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ 
+                            userId: ai.userId, 
+                            isActive: false,
+                            adminToken: 'admin_secret_manaboodle_2025'
+                          })
+                        });
+                      }
+                    }
+                    loadData();
+                  }}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  ○ Deactivate All
+                </button>
+                
+                <button
+                  onClick={() => {
+                    const csvData = aiInvestors.map(ai => ({
+                      Nickname: ai.nickname,
+                      Strategy: ai.strategy,
+                      Status: ai.isActive ? 'Active' : 'Inactive',
+                      Cash: ai.cash,
+                      Total_Value: ai.totalValue,
+                      ROI: ai.roi,
+                      Total_Trades: ai.totalTrades || 0,
+                      Win_Rate: ai.winRate || 0,
+                      Last_Trade: ai.lastTradeTime || 'Never'
+                    }));
+                    const csv = [
+                      Object.keys(csvData[0]).join(','),
+                      ...csvData.map(row => Object.values(row).join(','))
+                    ].join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ai-investors-${new Date().toISOString().split('T')[0]}.csv`;
+                    a.click();
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  📊 Export All Stats
+                </button>
+              </div>
+              
+              {/* Batch Progress Indicator */}
+              {batchProgress.show && (
+                <div className="mt-4 bg-gray-900 rounded p-4 border border-blue-500">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold">
+                      {batchProgress.currentAI ? `Testing ${batchProgress.currentAI}...` : 'Complete!'}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      {batchProgress.current}/{batchProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2 mb-3">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
+                    ></div>
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-1 text-xs">
+                    {batchProgress.results.map((result, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <span>{result.success ? '✓' : '✗'}</span>
+                        <span className={result.success ? 'text-green-400' : 'text-red-400'}>
+                          {result.ai}
+                        </span>
+                        {result.success && result.data?.decision && (
+                          <span className="text-gray-400">
+                            {result.data.decision.action} {result.data.decision.ticker || ''}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {!batchProgress.currentAI && (
+                    <button
+                      onClick={() => setBatchProgress({ show: false, current: 0, total: 0, results: [] })}
+                      className="mt-3 bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm w-full"
+                    >
+                      Close
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">{aiInvestors.map(ai => (
                 <div
                   key={ai.userId}
                   className="bg-gray-800 rounded-lg p-4 relative"
