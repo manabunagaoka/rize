@@ -75,18 +75,19 @@ export async function GET(request: NextRequest) {
       // Format investments with live prices
       const formattedInvestments = await Promise.all((investments || []).map(async (inv) => {
         const ticker = tickerMap[inv.pitch_id];
-        let currentPrice = inv.current_value && inv.shares_owned > 0 
-          ? (inv.current_value / inv.shares_owned) 
-          : 100; // fallback
+        let currentPrice = 100; // Default fallback if API fails
         
         if (ticker && process.env.STOCK_API_KEY) {
           try {
             currentPrice = await fetchPriceWithCache(ticker, inv.pitch_id, process.env.STOCK_API_KEY);
           } catch (error) {
-            console.error(`[AIDetails] Error fetching price for ${ticker}:`, error);
+            console.error(`[AIDetails] Error fetching price for ${ticker}, using fallback:`, error);
+            // Use fallback price - same as all other endpoints
+            currentPrice = 100;
           }
         }
 
+        // Always calculate from live/fallback price, NEVER use stale database current_value
         const currentValue = inv.shares_owned * currentPrice;
         const gain = ((currentValue - inv.total_invested) / inv.total_invested * 100) || 0;
 
