@@ -715,7 +715,7 @@ export default function UnicornAdmin() {
                     </div>
                     {!(user as any).apiComparison.allMatch && (
                       <div className="mt-2 text-xs text-red-400">
-                        ⚠️ Values don't match! Max difference: $
+                        ⚠️ Values don&apos;t match! Max difference: $
                         {Math.max(
                           Math.abs((user as any).apiComparison.values.aiInvestors - (user as any).apiComparison.values.integrity),
                           Math.abs((user as any).apiComparison.values.aiInvestors - (user as any).apiComparison.values.leaderboard),
