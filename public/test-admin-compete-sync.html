@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin vs Compete Data Comparison</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h2 { color: #60a5fa; border-bottom: 2px solid #60a5fa; padding-bottom: 10px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .box { background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; }
+        .box h3 { margin-top: 0; color: #34d399; }
+        .data-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #333; }
+        .label { color: #9ca3af; }
+        .value { color: #fff; font-weight: bold; }
+        .diff { color: #ef4444; font-weight: bold; }
+        .match { color: #10b981; }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px 5px; }
+        button:hover { background: #2563eb; }
+        .loading { color: #fbbf24; }
+        .error { color: #ef4444; background: #7f1d1d; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .timestamp { color: #6b7280; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Admin vs Compete Data Comparison</h1>
+        <p class="timestamp">Compare data integrity check vs live Compete page data</p>
+        
+        <div>
+            <button onclick="fetchData()">🔄 Refresh All Data</button>
+            <button onclick="clearResults()">🗑️ Clear</button>
+        </div>
+
+        <div id="loading" class="loading" style="display:none;">Loading...</div>
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                const cacheBuster = Date.now();
+                
+                // Fetch from both APIs
+                const [integrityRes, leaderboardRes] = await Promise.all([
+                    fetch(`/api/data-integrity?t=${cacheBuster}`),
+                    fetch(`/api/leaderboard?t=${cacheBuster}`)
+                ]);
+
+                if (!integrityRes.ok || !leaderboardRes.ok) {
+                    throw new Error('API fetch failed');
+                }
+
+                const integrity = await integrityRes.json();
+                const leaderboard = await leaderboardRes.json();
+
+                displayComparison(integrity, leaderboard);
+
+            } catch (err) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = `Error: ${err.message}`;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayComparison(integrity, leaderboard) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Filter to only AI investors
+            const aiInvestors = integrity.users.filter(u => u.isAI);
+            
+            let html = `<h2>AI Investors Comparison (${aiInvestors.length} total)</h2>`;
+            html += `<p class="timestamp">Admin checked: ${integrity.timestamp}<br>Compete checked: ${leaderboard.timestamp}</p>`;
+            
+            aiInvestors.forEach(ai => {
+                // Find matching AI in leaderboard
+                const competeAI = leaderboard.leaderboard.find(l => l.userId === ai.userId);
+                
+                if (!competeAI) {
+                    html += `<div class="box"><h3>${ai.displayName} ⚠️ NOT FOUND IN COMPETE</h3></div>`;
+                    return;
+                }
+
+                const cashMatch = ai.ui.cash === competeAI.cash;
+                const holdingsMatch = ai.ui.portfolioValue === competeAI.holdingsValue;
+                const totalMatch = ai.ui.totalValue === competeAI.portfolioValue;
+
+                html += `
+                    <div class="comparison">
+                        <div class="box">
+                            <h3>🔧 Admin Integrity</h3>
+                            <div class="data-row">
+                                <span class="label">Name:</span>
+                                <span class="value">${ai.displayName}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Cash:</span>
+                                <span class="value">$${ai.ui.cash.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Holdings:</span>
+                                <span class="value">$${ai.ui.portfolioValue.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Total:</span>
+                                <span class="value">$${ai.ui.totalValue.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Holdings Count:</span>
+                                <span class="value">${ai.ui.holdingsCount}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Timestamp:</span>
+                                <span class="timestamp">${new Date(ai.ui.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                        </div>
+
+                        <div class="box">
+                            <h3>🏆 Compete Page</h3>
+                            <div class="data-row">
+                                <span class="label">Name:</span>
+                                <span class="value">${competeAI.username}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Cash:</span>
+                                <span class="value ${cashMatch ? 'match' : 'diff'}">$${competeAI.cash.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Holdings:</span>
+                                <span class="value ${holdingsMatch ? 'match' : 'diff'}">$${competeAI.holdingsValue.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Total:</span>
+                                <span class="value ${totalMatch ? 'match' : 'diff'}">$${competeAI.portfolioValue.toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Holdings Count:</span>
+                                <span class="value">${competeAI.holdings.length}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Rank:</span>
+                                <span class="value">#${competeAI.rank}</span>
+                            </div>
+                        </div>
+
+                        <div class="box">
+                            <h3>📊 Difference</h3>
+                            <div class="data-row">
+                                <span class="label">Cash Diff:</span>
+                                <span class="${cashMatch ? 'match' : 'diff'}">${cashMatch ? '✓ Match' : '$' + (competeAI.cash - ai.ui.cash).toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Holdings Diff:</span>
+                                <span class="${holdingsMatch ? 'match' : 'diff'}">${holdingsMatch ? '✓ Match' : '$' + (competeAI.holdingsValue - ai.ui.portfolioValue).toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Total Diff:</span>
+                                <span class="${totalMatch ? 'match' : 'diff'}">${totalMatch ? '✓ Match' : '$' + (competeAI.portfolioValue - ai.ui.totalValue).toLocaleString()}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Holdings Count:</span>
+                                <span class="${ai.ui.holdingsCount === competeAI.holdings.length ? 'match' : 'diff'}">
+                                    ${ai.ui.holdingsCount === competeAI.holdings.length ? '✓ Match' : (competeAI.holdings.length - ai.ui.holdingsCount)}
+                                </span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Status:</span>
+                                <span class="${cashMatch && holdingsMatch && totalMatch ? 'match' : 'diff'}">
+                                    ${cashMatch && holdingsMatch && totalMatch ? '✅ PERFECT MATCH' : '❌ DISCREPANCY'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Auto-load on page load
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
