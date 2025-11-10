@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug API Responses</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: #fff; 
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #60a5fa; }
+        h2 { color: #34d399; margin-top: 30px; }
+        button { 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin: 10px 5px; 
+        }
+        button:hover { background: #2563eb; }
+        pre { 
+            background: #2a2a2a; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 1px solid #444; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .loading { color: #fbbf24; }
+        .error { color: #ef4444; background: #7f1d1d; padding: 10px; border-radius: 5px; }
+        .success { color: #10b981; }
+        .highlight { background: #fef08a; color: #000; padding: 2px 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug API Responses for Cloud Surfer</h1>
+        <p>This will fetch raw data from all APIs and show what each returns for Cloud Surfer</p>
+        
+        <div>
+            <button onclick="fetchAll()">🔄 Fetch All APIs</button>
+            <button onclick="clearResults()">🗑️ Clear</button>
+        </div>
+
+        <div id="loading" class="loading" style="display:none;">Loading...</div>
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function fetchAll() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                const cacheBuster = Date.now();
+                
+                // Fetch all APIs
+                const [aiInvestorsRes, integrityRes, leaderboardRes] = await Promise.all([
+                    fetch(`/api/admin/ai-investors?t=${cacheBuster}`),
+                    fetch(`/api/data-integrity?t=${cacheBuster}`),
+                    fetch(`/api/leaderboard?t=${cacheBuster}`)
+                ]);
+
+                if (!aiInvestorsRes.ok || !integrityRes.ok || !leaderboardRes.ok) {
+                    throw new Error('API fetch failed');
+                }
+
+                const aiInvestors = await aiInvestorsRes.json();
+                const integrity = await integrityRes.json();
+                const leaderboard = await leaderboardRes.json();
+
+                displayResults(aiInvestors, integrity, leaderboard);
+
+            } catch (err) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = `Error: ${err.message}`;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResults(aiInvestors, integrity, leaderboard) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Find Cloud Surfer in each API response
+            const aiInvestor = aiInvestors.aiInvestors?.find(ai => 
+                ai.nickname?.includes('Surfer') || ai.nickname?.includes('Cloud')
+            );
+            
+            const integrityUser = integrity.users?.find(u => 
+                u.displayName?.includes('Surfer') || u.displayName?.includes('Cloud')
+            );
+            
+            const leaderboardUser = leaderboard.leaderboard?.find(u => 
+                u.username?.includes('Surfer') || u.username?.includes('Cloud')
+            );
+
+            let html = '<h2>Cloud Surfer Data Comparison</h2>';
+
+            // AI Investors API
+            html += '<h2>1. /api/admin/ai-investors</h2>';
+            if (aiInvestor) {
+                html += '<pre>' + JSON.stringify({
+                    nickname: aiInvestor.nickname,
+                    cash: aiInvestor.cash,
+                    portfolioValue: aiInvestor.portfolioValue,
+                    totalValue: aiInvestor.totalValue,
+                    roi: aiInvestor.roi,
+                    investments: aiInvestor.investments?.map(inv => ({
+                        pitchId: inv.pitchId,
+                        shares: inv.shares,
+                        currentValue: inv.currentValue
+                    }))
+                }, null, 2) + '</pre>';
+            } else {
+                html += '<p class="error">Cloud Surfer not found!</p>';
+            }
+
+            // Data Integrity API
+            html += '<h2>2. /api/data-integrity</h2>';
+            if (integrityUser) {
+                html += '<pre>' + JSON.stringify({
+                    displayName: integrityUser.displayName,
+                    ui: {
+                        cash: integrityUser.ui?.cash,
+                        portfolioValue: integrityUser.ui?.portfolioValue,
+                        totalValue: integrityUser.ui?.totalValue,
+                        investments: integrityUser.ui?.investments?.map(inv => ({
+                            pitchId: inv.pitchId,
+                            ticker: inv.ticker,
+                            shares: inv.shares,
+                            currentPrice: inv.currentPrice,
+                            currentValue: inv.currentValue
+                        }))
+                    },
+                    db: {
+                        cash: integrityUser.db?.cash,
+                        portfolioValue: integrityUser.db?.portfolioValue,
+                        totalValue: integrityUser.db?.totalValue
+                    },
+                    hasDiscrepancy: integrityUser.hasDiscrepancy
+                }, null, 2) + '</pre>';
+            } else {
+                html += '<p class="error">Cloud Surfer not found!</p>';
+            }
+
+            // Leaderboard API
+            html += '<h2>3. /api/leaderboard</h2>';
+            if (leaderboardUser) {
+                html += '<pre>' + JSON.stringify({
+                    username: leaderboardUser.username,
+                    cash: leaderboardUser.cash,
+                    holdingsValue: leaderboardUser.holdingsValue,
+                    portfolioValue: leaderboardUser.portfolioValue,
+                    rank: leaderboardUser.rank,
+                    holdings: leaderboardUser.holdings?.map(h => ({
+                        ticker: h.ticker,
+                        shares: h.shares,
+                        currentPrice: h.currentPrice,
+                        value: h.value
+                    }))
+                }, null, 2) + '</pre>';
+            } else {
+                html += '<p class="error">Cloud Surfer not found!</p>';
+            }
+
+            // Comparison
+            html += '<h2>📊 Side-by-Side Comparison</h2>';
+            html += '<pre>';
+            html += 'AI Investors totalValue:  ' + (aiInvestor?.totalValue || 'N/A') + '\n';
+            html += 'Integrity UI totalValue:  ' + (integrityUser?.ui?.totalValue || 'N/A') + '\n';
+            html += 'Leaderboard portfolioValue: ' + (leaderboardUser?.portfolioValue || 'N/A') + '\n\n';
+            
+            html += 'AI Investors cash:        ' + (aiInvestor?.cash || 'N/A') + '\n';
+            html += 'Integrity UI cash:        ' + (integrityUser?.ui?.cash || 'N/A') + '\n';
+            html += 'Leaderboard cash:         ' + (leaderboardUser?.cash || 'N/A') + '\n\n';
+            
+            html += 'AI Investors holdings:    ' + ((aiInvestor?.portfolioValue || 0) - (aiInvestor?.cash || 0)) + '\n';
+            html += 'Integrity UI holdings:    ' + (integrityUser?.ui?.portfolioValue || 'N/A') + '\n';
+            html += 'Leaderboard holdings:     ' + (leaderboardUser?.holdingsValue || 'N/A') + '\n';
+            html += '</pre>';
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Auto-load on page load
+        window.onload = fetchAll;
+    </script>
+</body>
+</html>
