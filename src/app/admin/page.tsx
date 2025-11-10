@@ -77,7 +77,7 @@ export default function UnicornAdmin() {
     show: boolean;
     title: string;
     message: string;
-    type: 'toggle-active' | 'delete' | null;
+    type: 'toggle-active' | 'delete' | 'clone' | null;
     aiData: any;
   }>({
     show: false,
@@ -160,11 +160,34 @@ export default function UnicornAdmin() {
     }
   };
 
+  const handleClone = async () => {
+    if (!confirmModal.aiData) return;
+    
+    try {
+      const res = await fetch('/api/admin/ai-clone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          sourceUserId: confirmModal.aiData.userId,
+          adminToken: 'admin_secret_manaboodle_2025'
+        })
+      });
+      if (res.ok) {
+        loadData();
+        setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+      }
+    } catch (err) {
+      console.error('Clone AI error:', err);
+    }
+  };
+
   const confirmAction = () => {
     if (confirmModal.type === 'toggle-active') {
       handleToggleActive();
     } else if (confirmModal.type === 'delete') {
       handleDelete();
+    } else if (confirmModal.type === 'clone') {
+      handleClone();
     }
   };
 
@@ -760,6 +783,22 @@ export default function UnicornAdmin() {
                         e.stopPropagation();
                         setConfirmModal({
                           show: true,
+                          title: 'Clone AI Investor',
+                          message: `Create a copy of ${ai.nickname}?\n\nThe clone will have:\n- Same strategy and persona\n- Fresh $1M balance\n- Empty trading history\n- Name: "${ai.nickname} 2"`,
+                          type: 'clone',
+                          aiData: { userId: ai.userId, nickname: ai.nickname, strategy: ai.strategy, emoji: ai.emoji, catchphrase: ai.catchphrase, persona: ai.persona }
+                        });
+                      }}
+                      className="text-sm px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all shadow-lg shadow-purple-900/50"
+                      title="Clone this AI"
+                    >
+                      👥
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmModal({
+                          show: true,
                           title: 'Delete AI Investor',
                           message: `⚠️ DELETE ${ai.nickname} PERMANENTLY?\n\nThis will remove:\n- AI investor profile\n- All holdings\n- All transaction history\n- All trading logs\n\nThis action CANNOT be undone!`,
                           type: 'delete',
@@ -1229,6 +1268,8 @@ export default function UnicornAdmin() {
                   className={`px-4 py-2 rounded font-medium transition-colors ${
                     confirmModal.type === 'delete' 
                       ? 'bg-red-600 hover:bg-red-700 text-white' 
+                      : confirmModal.type === 'clone'
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
