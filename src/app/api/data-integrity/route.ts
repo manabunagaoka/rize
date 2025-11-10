@@ -6,17 +6,23 @@ export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  // Create Supabase client with primary DB access
+  // Create Supabase client with FORCED PRIMARY READ (no replica/cache)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!,
     {
-      auth: { persistSession: false },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      },
       db: { schema: 'public' },
       global: {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'x-client-info': 'supabase-js-node'
+          'Pragma': 'no-cache',
+          'x-client-info': 'supabase-js-node',
+          'apikey': process.env.SUPABASE_SERVICE_KEY!
         }
       }
     }
@@ -25,10 +31,11 @@ export async function GET(request: NextRequest) {
   try {
     const queryTime = new Date().toISOString();
 
-    // Fetch all users from user_token_balances (what UI uses)
+    // Fetch all users from user_token_balances - FORCE PRIMARY READ
     const { data: balances, error: balancesError } = await supabase
       .from('user_token_balances')
       .select('*')
+      .lte('updated_at', queryTime) // Force fresh query
       .order('updated_at', { ascending: false })
       .limit(50); // Top 50 most recent users
 
