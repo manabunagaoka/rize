@@ -323,19 +323,41 @@ export default function UnicornAdmin() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [integrityRes, aiRes] = await Promise.all([
-        fetch('/api/data-integrity'),
-        fetch('/api/admin/ai-investors')
+      // Fetch all APIs with comparison
+      const cacheBuster = Date.now();
+      const [integrityRes, aiRes, dbTruthRes, leaderboardRes] = await Promise.all([
+        fetch(`/api/data-integrity?t=${cacheBuster}`),
+        fetch(`/api/admin/ai-investors?t=${cacheBuster}`),
+        fetch(`/api/db-truth?t=${cacheBuster}`),
+        fetch(`/api/leaderboard?t=${cacheBuster}`)
       ]);
       
-      if (integrityRes.ok) {
-        const data = await integrityRes.json();
-        setUsers(data.users || []);
-      }
-      
-      if (aiRes.ok) {
-        const data = await aiRes.json();
-        setAIInvestors(data.aiInvestors || []);
+      if (integrityRes.ok && aiRes.ok) {
+        const integrityData = await integrityRes.json();
+        const aiData = await aiRes.json();
+        const dbTruthData = dbTruthRes.ok ? await dbTruthRes.json() : null;
+        const leaderboardData = leaderboardRes.ok ? await leaderboardRes.json() : null;
+        
+        // Build comparison for each user
+        const usersWithComparison = integrityData.users.map((intUser: any) => {
+          const aiInv = aiData.aiInvestors?.find((ai: any) => ai.userId === intUser.userId);
+          const lbUser = leaderboardData?.leaderboard?.find((u: any) => u.userId === intUser.userId);
+          const dbUser = intUser.userId === dbTruthData?.user_id ? dbTruthData : null;
+          
+          const values = {
+            aiInvestors: aiInv?.totalValue || 0,
+            integrity: intUser.ui.totalValue || 0,
+            leaderboard: lbUser?.portfolioValue || 0,
+            database: dbUser?.database_raw.total_value || 0
+          };
+          
+          const allMatch = values.aiInvestors === values.integrity && values.integrity === values.leaderboard;
+          
+          return { ...intUser, apiComparison: { values, allMatch, aiInv, lbUser, dbUser } };
+        });
+        
+        setUsers(usersWithComparison);
+        setAIInvestors(aiData.aiInvestors || []);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -613,46 +635,15 @@ export default function UnicornAdmin() {
 
         {activeTab === 'data-integrity' && (
           <div className="space-y-6">
-            {/* API Comparison Section */}
-            <div className="border border-yellow-500 bg-yellow-900/10 rounded-lg p-6 mb-6">
-              <h2 className="text-2xl font-bold mb-4 text-yellow-400">🔍 Live API Comparison</h2>
-              <p className="text-sm text-gray-400 mb-4">
-                Compares values from all APIs at the same moment. Small differences (&lt;$1000) are normal due to live price changes.
+            {/* API Comparison Info */}
+            <div className="border border-blue-500 bg-blue-900/10 rounded-lg p-4">
+              <h2 className="text-xl font-bold mb-2 text-blue-400">🔍 Live API Comparison Active</h2>
+              <p className="text-sm text-gray-400">
+                Showing real-time comparison from all APIs. Small differences (&lt;$1000) between refreshes are normal due to live price changes.
+                {' '}<button onClick={loadData} className="text-blue-400 underline hover:text-blue-300">
+                  Refresh data
+                </button>
               </p>
-              <button
-                onClick={async () => {
-                  const cacheBuster = Date.now();
-                  const [dbTruth, aiInvestorsData, dataIntegrity, leaderboardData] = await Promise.all([
-                    fetch(`/api/db-truth?t=${cacheBuster}`).then(r => r.json()),
-                    fetch(`/api/admin/ai-investors?t=${cacheBuster}`).then(r => r.json()),
-                    fetch(`/api/data-integrity?t=${cacheBuster}`).then(r => r.json()),
-                    fetch(`/api/leaderboard?t=${cacheBuster}`).then(r => r.json())
-                  ]);
-                  
-                  // Build comparison for each user
-                  const comparisons = dataIntegrity.users.map((intUser: any) => {
-                    const aiInv = aiInvestorsData.aiInvestors?.find((ai: any) => ai.userId === intUser.userId);
-                    const lbUser = leaderboardData.leaderboard?.find((u: any) => u.userId === intUser.userId);
-                    const dbUser = intUser.userId === dbTruth.user_id ? dbTruth : null;
-                    
-                    const values = {
-                      aiInvestors: aiInv?.totalValue || 0,
-                      integrity: intUser.ui.totalValue || 0,
-                      leaderboard: lbUser?.portfolioValue || 0,
-                      database: dbUser?.database_raw.total_value || 0
-                    };
-                    
-                    const allMatch = values.aiInvestors === values.integrity && values.integrity === values.leaderboard;
-                    
-                    return { ...intUser, apiComparison: { values, allMatch, aiInv, lbUser, dbUser } };
-                  });
-                  
-                  setUsers(comparisons);
-                }}
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded"
-              >
-                🔄 Fetch & Compare All APIs
-              </button>
             </div>
             
             {users.map(user => (
