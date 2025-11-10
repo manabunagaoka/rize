@@ -623,9 +623,27 @@ export async function POST(request: NextRequest) {
         
         const { decision, prompt, rawResponse } = await getAITradeDecision(ai, portfolio, pitches);
         
-        console.log(`[AI Trading] ${ai.ai_nickname} decision: ${decision.action}`);
+        // Check if this was an error from OpenAI (will have "Technical difficulties" in reasoning)
+        const isAPIError = decision.reasoning.includes('Technical difficulties') || decision.reasoning.includes('error');
         
-        const result = await executeTrade(supabase, ai, decision);
+        console.log(`[AI Trading] ${ai.ai_nickname} decision: ${decision.action}${isAPIError ? ' (API ERROR)' : ''}`);
+        
+        let result;
+        if (isAPIError) {
+          // Don't execute trade if API failed - mark as failure
+          result = {
+            success: false,
+            message: decision.reasoning,
+            execution: {
+              balanceBefore: ai.available_tokens,
+              balanceAfter: ai.available_tokens,
+              portfolioBefore: ai.total_tokens - ai.available_tokens,
+              portfolioAfter: ai.total_tokens - ai.available_tokens
+            }
+          };
+        } else {
+          result = await executeTrade(supabase, ai, decision);
+        }
         
         console.log(`[AI Trading] ${ai.ai_nickname} result: ${result.success ? 'SUCCESS' : 'FAILED'} - ${result.message}`);
         
