@@ -36,6 +36,19 @@ export async function GET(request: NextRequest) {
       throw balancesError;
     }
 
+    // Debug: Check what Supabase returned for Cloud Surfer
+    const cloudSurferBalance = balances?.find(b => 
+      b.username?.includes('Surfer') || b.username?.includes('Cloud') || 
+      b.ai_nickname?.includes('Surfer') || b.ai_nickname?.includes('Cloud')
+    );
+    if (cloudSurferBalance) {
+      console.log('[DataIntegrity] Cloud Surfer RAW from Supabase:', {
+        user_id: cloudSurferBalance.user_id,
+        available_tokens: cloudSurferBalance.available_tokens,
+        type: typeof cloudSurferBalance.available_tokens
+      });
+    }
+
     // Fetch all investments (raw DB data) - use same query as ai-investors
     const userIds = balances?.map(b => b.user_id) || [];
     
@@ -140,7 +153,9 @@ export async function GET(request: NextRequest) {
       // Debug logging for Cloud Surfer
       if (balance.username?.includes('Surfer') || balance.username?.includes('Cloud') || balance.ai_nickname?.includes('Surfer') || balance.ai_nickname?.includes('Cloud')) {
         console.log(`[DataIntegrity] ${balance.username || balance.ai_nickname} TOTALS:`, {
-          cash: uiCash,
+          raw_available_tokens: balance.available_tokens,
+          dbCash: dbCash,
+          uiCash_floored: uiCash,
           holdings_value: uiHoldingsValue,
           total: uiTotal,
           num_investments: investmentsWithLivePrices.length
