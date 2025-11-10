@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatNumber, formatCurrency, formatPercent, formatShares } from '@/lib/formatters';
 
 interface User {
   userId: string;
@@ -761,7 +762,7 @@ export default function UnicornAdmin() {
                       {user.ui.investments.map((inv: any, idx: number) => (
                         <div key={idx} className="bg-gray-900/50 rounded p-2 text-sm">
                           <span className="font-bold text-blue-400">{inv.ticker}</span>
-                          <span className="text-gray-400 ml-2">{inv.shares?.toFixed(2)} @ ${inv.currentPrice?.toFixed(2)}</span>
+                          <span className="text-gray-400 ml-2">{formatShares(inv.shares)} @ ${formatNumber(inv.currentPrice)}</span>
                         </div>
                       ))}
                     </div>
@@ -1057,7 +1058,7 @@ export default function UnicornAdmin() {
                           {ai.investments.map((inv: any) => (
                             <div key={inv.pitchId} className="flex justify-between items-center text-xs font-mono">
                               <span className="text-blue-400 font-bold">{TICKER_MAP[inv.pitchId]}</span>
-                              <span className="text-gray-300">{inv.shares.toFixed(0)} @ ${(inv.currentValue / inv.shares).toFixed(2)}</span>
+                              <span className="text-gray-300">{formatShares(inv.shares)} @ ${formatNumber(inv.currentValue / inv.shares)}</span>
                               <span className={`font-semibold ${inv.gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {inv.gain >= 0 ? '+' : ''}{inv.gainPercent}%
                               </span>
@@ -1211,7 +1212,7 @@ export default function UnicornAdmin() {
                       <div className="flex flex-wrap gap-2">
                         {user.ui.investments.map((inv: any) => (
                           <span key={inv.pitchId} className="text-xs bg-blue-600 px-2 py-1 rounded">
-                            {inv.ticker}: {inv.shares.toFixed(2)} @ ${inv.currentPrice.toFixed(2)}
+                            {inv.ticker}: {formatShares(inv.shares)} @ ${formatNumber(inv.currentPrice)}
                           </span>
                         ))}
                       </div>
@@ -1353,11 +1354,11 @@ export default function UnicornAdmin() {
                             <div>
                               <div className="font-bold">{TICKER_MAP[inv.pitchId] || 'Unknown'}</div>
                               <div className="text-xs text-gray-400">
-                                {(inv.shares || 0).toFixed(2)} shares @ ${(inv.avgPrice || 0).toFixed(2)}
+                                {formatShares(inv.shares)} shares @ ${formatNumber(inv.avgPrice)}
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-mono">${(inv.currentValue || 0).toFixed(0)}</div>
+                              <div className="font-mono">{formatCurrency(inv.currentValue)}</div>
                               <div className={`text-xs ${(inv.gain || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {(inv.gain || 0) >= 0 ? '+' : ''}{(inv.gain || 0).toFixed(1)}%
                               </div>
@@ -1383,7 +1384,7 @@ export default function UnicornAdmin() {
                               <span className="text-gray-400">{new Date(tx.created_at).toLocaleString()}</span>
                             </div>
                             <div className="text-gray-300 mt-1">
-                              {TICKER_MAP[tx.pitch_id] || 'Unknown'}: {(tx.shares || 0).toFixed(2)} @ ${(tx.price_per_share || 0).toFixed(2)}
+                              {TICKER_MAP[tx.pitch_id] || 'Unknown'}: {formatShares(tx.shares)} @ ${formatNumber(tx.price_per_share)}
                             </div>
                           </div>
                         ))}
