@@ -603,32 +603,67 @@ export default function UnicornAdmin() {
                       </div>
                     </div>
                     <p className="text-sm text-gray-300 italic mb-3">&quot;{ai.catchphrase}&quot;</p>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div>
-                        <div className="text-gray-400">Cash</div>
-                        <div className="font-mono">${ai.cash.toLocaleString()}</div>
+                    
+                    {/* Financial Stats - Excel Style */}
+                    <div className="bg-gray-900/50 rounded p-3 mb-3 font-mono text-xs">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Cash:</span>
+                          <span className="text-white">${ai.cash.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Portfolio:</span>
+                          <span className="text-white">${(ai.portfolioValue - ai.cash).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Total:</span>
+                          <span className="text-white font-bold">${ai.totalValue.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">ROI:</span>
+                          <span className={`font-bold ${(typeof ai.roi === 'number' ? ai.roi : parseFloat(ai.roi || '0')) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {typeof ai.roi === 'number' ? ai.roi.toFixed(2) : ai.roi || '0.00'}%
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-gray-400">Total</div>
-                        <div className="font-mono">${ai.totalValue.toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-400">ROI</div>
-                        <div className={`font-mono ${(typeof ai.roi === 'number' ? ai.roi : parseFloat(ai.roi || '0')) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {typeof ai.roi === 'number' ? ai.roi.toFixed(2) : ai.roi || '0.00'}%
+                      <div className="border-t border-gray-700 mt-2 pt-2 grid grid-cols-3 gap-x-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Trades:</span>
+                          <span className="text-white">{ai.totalTrades || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Win Rate:</span>
+                          <span className="text-blue-400">{ai.winRate || '0.0'}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Last:</span>
+                          <span className="text-white">
+                            {ai.lastTradeTime ? new Date(ai.lastTradeTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Never'}
+                          </span>
                         </div>
                       </div>
                     </div>
+
+                    {/* Holdings - All Stocks */}
                     {ai.investments?.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-700">
-                        <div className="text-xs text-gray-400 mb-1">Holdings: {ai.investments.length}</div>
-                        <div className="flex flex-wrap gap-1">
+                      <div className="bg-gray-900/30 rounded p-2">
+                        <div className="text-xs text-gray-400 mb-2 font-semibold">HOLDINGS ({ai.investments.length})</div>
+                        <div className="space-y-1">
                           {ai.investments.map((inv: any) => (
-                            <span key={inv.pitchId} className="text-xs bg-blue-600 px-2 py-1 rounded">
-                              {TICKER_MAP[inv.pitchId]}
-                            </span>
+                            <div key={inv.pitchId} className="flex justify-between items-center text-xs font-mono">
+                              <span className="text-blue-400 font-bold">{TICKER_MAP[inv.pitchId]}</span>
+                              <span className="text-gray-300">{inv.shares.toFixed(0)} @ ${(inv.currentValue / inv.shares).toFixed(2)}</span>
+                              <span className={`font-semibold ${inv.gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {inv.gain >= 0 ? '+' : ''}{inv.gainPercent}%
+                              </span>
+                            </div>
                           ))}
                         </div>
+                      </div>
+                    )}
+                    {!ai.investments?.length && (
+                      <div className="bg-gray-900/30 rounded p-2 text-center text-xs text-gray-500">
+                        No holdings
                       </div>
                     )}
                   </button>
@@ -717,47 +752,53 @@ export default function UnicornAdmin() {
 
                     {/* Editable Persona Section */}
                     <div className="mt-4 mb-4 border-t border-gray-700 pt-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-bold text-sm text-gray-400">AI Persona / Trading Guidelines</h4>
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-bold text-lg text-gray-300">AI Persona / Trading Guidelines</h4>
                         {!editingPersona && (
                           <button 
                             onClick={() => {
                               setEditingPersona(true);
                               setPersonaText(aiDetail.user?.persona || aiDetail.user?.catchphrase || '');
                             }}
-                            className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
+                            className="text-sm bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-medium transition-colors"
                           >
-                            Edit
+                            ✏️ Edit Persona
                           </button>
                         )}
                       </div>
                       {editingPersona ? (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
+                          <div className="text-xs text-gray-400 mb-2">
+                            Define this AI&apos;s personality, trading style, risk tolerance, decision-making approach, and any specific rules or guidelines.
+                          </div>
                           <textarea
                             value={personaText}
                             onChange={(e) => setPersonaText(e.target.value)}
-                            className="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 focus:border-blue-500 outline-none min-h-[100px] text-sm"
-                            placeholder="Describe this AI's personality, trading style, risk tolerance, and decision-making approach..."
+                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed"
+                            rows={15}
+                            placeholder="Example:&#10;&#10;I'm a tech-focused investor who believes in disruption. I look for companies with innovative products and strong market potential. My strategy:&#10;&#10;• Risk Tolerance: Moderate-High&#10;• Focus: Technology sector, especially cloud and AI&#10;• Buy Signal: Strong revenue growth + positive sentiment&#10;• Sell Signal: Declining market share or negative news&#10;• Hold: Maintain positions in winners&#10;&#10;I trade with conviction but always consider fundamentals..."
                           />
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => savePersona(selectedAI!, personaText)}
-                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
-                            >
-                              Save Persona
-                            </button>
+                          <div className="flex gap-3 justify-end">
                             <button
                               onClick={() => setEditingPersona(false)}
-                              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm"
+                              className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
                             >
                               Cancel
+                            </button>
+                            <button
+                              onClick={() => savePersona(selectedAI!, personaText)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
+                            >
+                              💾 Save Persona
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-300 bg-gray-800 p-3 rounded">
-                          {aiDetail.user?.persona || aiDetail.user?.catchphrase || 'No persona defined'}
-                        </p>
+                        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                          <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+                            {aiDetail.user?.persona || aiDetail.user?.catchphrase || 'No persona defined'}
+                          </pre>
+                        </div>
                       )}
                     </div>
 

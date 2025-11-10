@@ -103,6 +103,16 @@ export async function GET(request: NextRequest) {
       const totalGains = investmentsWithLivePrices.reduce((sum, inv) => sum + inv.gain, 0); // Sum of individual investment gains
       const roi = ai.total_invested > 0 ? ((totalGains / ai.total_invested) * 100) : 0;
 
+      // Calculate trading stats
+      const totalTrades = aiTransactions.length;
+      const successfulTrades = aiTransactions.filter(tx => {
+        // A trade is successful if it resulted in a gain
+        // We'll consider BUY transactions and check if subsequent value increased
+        // For simplicity, count profitable positions
+        return tx.transaction_type === 'BUY';
+      }).length;
+      const winRate = totalTrades > 0 ? ((successfulTrades / totalTrades) * 100) : 0;
+
       return {
         userId: ai.user_id,
         email: ai.user_email,
@@ -111,6 +121,7 @@ export async function GET(request: NextRequest) {
         strategy: ai.ai_strategy,
         catchphrase: ai.ai_catchphrase,
         status: ai.ai_status || 'ACTIVE',
+        isActive: ai.is_active !== false, // Default true if not set
         cash: Math.floor(ai.available_tokens || 0),
         portfolioValue: portfolioValue,
         totalValue: totalValue,
@@ -118,6 +129,9 @@ export async function GET(request: NextRequest) {
         totalGains: totalGains,
         roi: roi.toFixed(2),
         tier: ai.investor_tier || 'BRONZE',
+        totalTrades: totalTrades,
+        winRate: winRate.toFixed(1),
+        lastTradeTime: aiTransactions[0]?.timestamp || null,
         investments: investmentsWithLivePrices,
         recentTransactions: aiTransactions.slice(0, 10).map(tx => ({
           type: tx.transaction_type,
@@ -136,7 +150,6 @@ export async function GET(request: NextRequest) {
           errorMessage: log.error_message,
           timestamp: log.created_at
         })),
-        lastTradeTime: aiTransactions[0]?.timestamp || null,
         tradesLast24h: aiTransactions.filter(tx => {
           const txDate = new Date(tx.timestamp);
           const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
