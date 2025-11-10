@@ -36,12 +36,14 @@ export async function GET(request: NextRequest) {
       throw balancesError;
     }
 
-    // Fetch all investments (raw DB data)
+    // Fetch all investments (raw DB data) - use same query as ai-investors
+    const userIds = balances?.map(b => b.user_id) || [];
+    
     const { data: investments, error: investmentsError } = await supabase
       .from('user_investments')
       .select('*')
       .gt('shares_owned', 0)
-      .order('updated_at', { ascending: false });
+      .in('user_id', userIds);
 
     if (investmentsError) {
       throw investmentsError;
@@ -56,7 +58,17 @@ export async function GET(request: NextRequest) {
     // Build comparison data for each user
     const users = await Promise.all(balances?.map(async (balance) => {
       // Get user's investments from DB
-      const userInvestments = investments?.filter(inv => inv.user_id === balance.user_id) || [];
+      let userInvestments = investments?.filter(inv => inv.user_id === balance.user_id) || [];
+      
+      // Handle duplicate rows: Group by pitch_id and keep most recent
+      const investmentMap = new Map<number, any>();
+      userInvestments.forEach(inv => {
+        const existing = investmentMap.get(inv.pitch_id);
+        if (!existing || new Date(inv.updated_at) > new Date(existing.updated_at)) {
+          investmentMap.set(inv.pitch_id, inv);
+        }
+      });
+      userInvestments = Array.from(investmentMap.values());
 
       // Fetch live prices for each investment (same as Portfolio API)
       const investmentsWithLivePrices = await Promise.all(

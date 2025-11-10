@@ -59,7 +59,18 @@ export async function GET(request: NextRequest) {
 
     // Combine data with live prices
     const enrichedAIInvestors = await Promise.all(aiInvestors?.map(async (ai) => {
-      const aiInvestments = investments?.filter(inv => inv.user_id === ai.user_id) || [];
+      let aiInvestments = investments?.filter(inv => inv.user_id === ai.user_id) || [];
+      
+      // Handle duplicate rows: Group by pitch_id and keep most recent
+      const investmentMap = new Map<number, any>();
+      aiInvestments.forEach(inv => {
+        const existing = investmentMap.get(inv.pitch_id);
+        if (!existing || new Date(inv.updated_at) > new Date(existing.updated_at)) {
+          investmentMap.set(inv.pitch_id, inv);
+        }
+      });
+      aiInvestments = Array.from(investmentMap.values());
+      
       const aiTransactions = transactions?.filter(tx => tx.user_id === ai.user_id) || [];
       const aiLogs = tradingLogs?.filter(log => log.user_id === ai.user_id) || [];
 

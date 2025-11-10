@@ -178,7 +178,17 @@ export async function GET(request: NextRequest) {
     // Calculate portfolio value for each investor
     const leaderboardData = investors?.map(investor => {
       // Calculate holdings value using real-time prices
-      const userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
+      let userInvestments = investments?.filter(inv => inv.user_id === investor.user_id) || [];
+      
+      // Handle duplicate rows: Group by pitch_id and keep most recent
+      const investmentMap = new Map<number, any>();
+      userInvestments.forEach(inv => {
+        const existing = investmentMap.get(inv.pitch_id);
+        if (!existing || new Date(inv.updated_at) > new Date(existing.updated_at)) {
+          investmentMap.set(inv.pitch_id, inv);
+        }
+      });
+      userInvestments = Array.from(investmentMap.values());
       
       const holdingsValue = userInvestments.reduce((sum, inv) => {
         // Always calculate from real-time prices, not database current_value
