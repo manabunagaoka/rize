@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Surfer - API Comparison</title>
+  <style>
+    body {
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #00ff00;
+      border-bottom: 2px solid #00ff00;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #ffff00;
+      margin-top: 30px;
+    }
+    .api-section {
+      background: #2a2a2a;
+      border: 1px solid #00ff00;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .value-row {
+      display: grid;
+      grid-template-columns: 200px 150px;
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px solid #333;
+    }
+    .label {
+      color: #00aaff;
+      font-weight: bold;
+    }
+    .value {
+      color: #00ff00;
+      text-align: right;
+    }
+    .error {
+      color: #ff0000;
+    }
+    .loading {
+      color: #ffff00;
+    }
+    .comparison {
+      background: #3a3a3a;
+      border: 2px solid #ffff00;
+      padding: 20px;
+      margin-top: 30px;
+      border-radius: 5px;
+    }
+    .match {
+      color: #00ff00;
+    }
+    .mismatch {
+      color: #ff0000;
+      font-weight: bold;
+    }
+    button {
+      background: #00ff00;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #00cc00;
+    }
+    .investments {
+      margin-left: 20px;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <h1>☁️ Cloud Surfer - API Value Comparison</h1>
+  
+  <button onclick="fetchAll()">🔄 Refresh All APIs</button>
+  
+  <div id="loading" class="loading">Loading APIs...</div>
+  
+  <div id="results"></div>
+
+  <script>
+    async function fetchAll() {
+      const resultsDiv = document.getElementById('results');
+      const loadingDiv = document.getElementById('loading');
+      
+      loadingDiv.style.display = 'block';
+      resultsDiv.innerHTML = '';
+      
+      try {
+        // Fetch all APIs in parallel
+        const [dbTruth, aiInvestors, dataIntegrity, leaderboard] = await Promise.all([
+          fetch('/api/db-truth').then(r => r.json()),
+          fetch('/api/admin/ai-investors').then(r => r.json()),
+          fetch('/api/data-integrity').then(r => r.json()),
+          fetch('/api/leaderboard').then(r => r.json())
+        ]);
+        
+        loadingDiv.style.display = 'none';
+        
+        // Find Cloud Surfer in each API
+        const aiInvestor = aiInvestors.aiInvestors?.find(ai => 
+          ai.nickname?.includes('Cloud') || ai.nickname?.includes('Surfer')
+        );
+        
+        const integrityUser = dataIntegrity.users?.find(u => 
+          u.displayName?.includes('Cloud') || u.displayName?.includes('Surfer')
+        );
+        
+        const leaderboardUser = leaderboard.leaderboard?.find(u => 
+          u.username?.includes('Cloud') || u.username?.includes('Surfer')
+        );
+        
+        // Display results
+        let html = '';
+        
+        // DB Truth
+        html += `
+          <div class="api-section">
+            <h2>1️⃣ DATABASE TRUTH (Stored Values - STALE)</h2>
+            <div class="value-row">
+              <div class="label">Cash:</div>
+              <div class="value">$${dbTruth.database_raw.cash_floored.toLocaleString()}</div>
+            </div>
+            <div class="value-row">
+              <div class="label">Holdings (DB):</div>
+              <div class="value">$${dbTruth.database_raw.holdings_value.toLocaleString()}</div>
+            </div>
+            <div class="value-row">
+              <div class="label">Total (DB):</div>
+              <div class="value">$${dbTruth.database_raw.total_value.toLocaleString()}</div>
+            </div>
+            <div class="investments">
+              ${dbTruth.deduplicated_investments.map(inv => 
+                `Pitch ${inv.pitch_id}: ${inv.shares_owned} shares @ DB value $${inv.current_value_in_db.toLocaleString()}`
+              ).join('<br>')}
+            </div>
+          </div>
+        `;
+        
+        // AI Investors
+        if (aiInvestor) {
+          html += `
+            <div class="api-section">
+              <h2>2️⃣ /api/admin/ai-investors (Live Prices)</h2>
+              <div class="value-row">
+                <div class="label">Cash:</div>
+                <div class="value">$${aiInvestor.cash.toLocaleString()}</div>
+              </div>
+              <div class="value-row">
+                <div class="label">Holdings:</div>
+                <div class="value">$${(aiInvestor.portfolioValue - aiInvestor.cash).toLocaleString()}</div>
+              </div>
+              <div class="value-row">
+                <div class="label">Total:</div>
+                <div class="value">$${aiInvestor.totalValue.toLocaleString()}</div>
+              </div>
+              <div class="investments">
+                ${aiInvestor.investments?.map(inv => 
+                  `Pitch ${inv.pitchId}: ${inv.shares} shares = $${inv.currentValue.toLocaleString()}`
+                ).join('<br>')}
+              </div>
+            </div>
+          `;
+        }
+        
+        // Data Integrity
+        if (integrityUser) {
+          html += `
+            <div class="api-section">
+              <h2>3️⃣ /api/data-integrity (Live Prices)</h2>
+              <div class="value-row">
+                <div class="label">Cash:</div>
+                <div class="value">$${integrityUser.ui.cash.toLocaleString()}</div>
+              </div>
+              <div class="value-row">
+                <div class="label">Holdings:</div>
+                <div class="value">$${integrityUser.ui.portfolioValue.toLocaleString()}</div>
+              </div>
+              <div class="value-row">
+                <div class="label">Total:</div>
+                <div class="value">$${integrityUser.ui.totalValue.toLocaleString()}</div>
+              </div>
+              <div class="investments">
+                ${integrityUser.ui.investments?.map(inv => 
+                  `Pitch ${inv.pitchId}: ${inv.shares} shares @ $${inv.currentPrice} = $${inv.currentValue.toLocaleString()}`
+                ).join('<br>')}
+              </div>
+            </div>
+          `;
+        }
+        
+        // Leaderboard
+        if (leaderboardUser) {
+          html += `
+            <div class="api-section">
+              <h2>4️⃣ /api/leaderboard (Live Prices)</h2>
+              <div class="value-row">
+                <div class="label">Cash:</div>
+                <div class="value">$${leaderboardUser.cash.toLocaleString()}</div>
+              </div>
+              <div class="value-row">
+                <div class="label">Holdings:</div>
+                <div class="value">$${leaderboardUser.holdingsValue.toLocaleString()}</div>
+              </div>
+              <div class="value-row">
+                <div class="label">Total:</div>
+                <div class="value">$${leaderboardUser.portfolioValue.toLocaleString()}</div>
+              </div>
+              <div class="investments">
+                ${leaderboardUser.holdings?.map(h => 
+                  `${h.ticker}: ${h.shares} shares @ $${h.currentPrice} = $${h.value.toLocaleString()}`
+                ).join('<br>')}
+              </div>
+            </div>
+          `;
+        }
+        
+        // Comparison
+        const values = {
+          aiInvestors: aiInvestor?.totalValue || 0,
+          integrity: integrityUser?.ui.totalValue || 0,
+          leaderboard: leaderboardUser?.portfolioValue || 0
+        };
+        
+        const allMatch = values.aiInvestors === values.integrity && 
+                        values.integrity === values.leaderboard;
+        
+        html += `
+          <div class="comparison">
+            <h2>📊 COMPARISON</h2>
+            <div class="value-row">
+              <div class="label">AI Investors:</div>
+              <div class="value ${allMatch ? 'match' : 'mismatch'}">$${values.aiInvestors.toLocaleString()}</div>
+            </div>
+            <div class="value-row">
+              <div class="label">Data Integrity:</div>
+              <div class="value ${allMatch ? 'match' : 'mismatch'}">$${values.integrity.toLocaleString()}</div>
+            </div>
+            <div class="value-row">
+              <div class="label">Leaderboard:</div>
+              <div class="value ${allMatch ? 'match' : 'mismatch'}">$${values.leaderboard.toLocaleString()}</div>
+            </div>
+            <div style="margin-top: 20px;">
+              <strong>${allMatch ? '✅ ALL MATCH!' : '❌ VALUES DO NOT MATCH'}</strong>
+            </div>
+          </div>
+        `;
+        
+        resultsDiv.innerHTML = html;
+        
+      } catch (error) {
+        loadingDiv.style.display = 'none';
+        resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    }
+    
+    // Auto-load on page load
+    fetchAll();
+  </script>
+</body>
+</html>
