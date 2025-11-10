@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
           }
 
           // Always calculate from live/fallback price, NEVER use stale database current_value
-          const currentValue = inv.shares_owned * currentPrice;
+          const currentValue = Math.floor(inv.shares_owned * currentPrice); // Floor each investment
           const gain = currentValue - inv.total_invested;
           const gainPercent = inv.total_invested > 0 ? ((gain / inv.total_invested) * 100) : 0;
 

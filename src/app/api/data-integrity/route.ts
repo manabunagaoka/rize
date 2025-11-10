@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
           }
 
           // Always calculate from live/fallback price, NEVER use stale database current_value
-          const currentValue = inv.shares_owned * currentPrice;
+          const currentValue = Math.floor(inv.shares_owned * currentPrice); // Floor each investment
           
           return {
             pitchId: inv.pitch_id,
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 
       // Calculate what UI shows (using live prices)
       const holdingsValue = investmentsWithLivePrices.reduce((sum, inv) => {
-        return sum + Math.floor(inv.currentValue); // Floor each investment value
+        return sum + inv.currentValue; // Already floored above
       }, 0);
 
       // DB raw data
