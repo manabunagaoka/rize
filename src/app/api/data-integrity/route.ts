@@ -57,6 +57,15 @@ export async function GET(request: NextRequest) {
 
     // Build comparison data for each user
     const users = await Promise.all(balances?.map(async (balance) => {
+      // Debug logging for Cloud Surfer
+      if (balance.username?.includes('Surfer') || balance.username?.includes('Cloud') || balance.ai_nickname?.includes('Surfer') || balance.ai_nickname?.includes('Cloud')) {
+        console.log(`[DataIntegrity] Processing ${balance.username || balance.ai_nickname}:`, {
+          user_id: balance.user_id,
+          available_tokens_raw: balance.available_tokens,
+          available_tokens_type: typeof balance.available_tokens
+        });
+      }
+      
       // Get user's investments from DB
       let userInvestments = investments?.filter(inv => inv.user_id === balance.user_id) || [];
       
