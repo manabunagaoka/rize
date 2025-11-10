@@ -233,15 +233,17 @@ export default function UnicornAdmin() {
         }));
         
         // Add to test results panel
-        if (res.ok && data.decision) {
+        // API returns { results: [{ decision, result, execution }] }
+        if (res.ok && data.results && data.results[0]) {
+          const result = data.results[0];
           const testResult: TestResult = {
             timestamp: new Date().toISOString(),
             aiName: ai.nickname,
             userId: ai.userId,
-            success: true,
-            decision: data.decision,
-            execution: data.execution,
-            message: data.message || 'Trade executed'
+            success: result.result?.success || false,
+            decision: result.decision,
+            execution: result.execution,
+            message: result.result?.message || 'Trade executed'
           };
           setTestResults(prev => [testResult, ...prev].slice(0, 20));
         }
@@ -1227,7 +1229,7 @@ export default function UnicornAdmin() {
 
       {selectedAI && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setSelectedAI(null)}>
-          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[95vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex justify-between items-center">
               <h2 className="text-2xl font-bold">AI Investor Deep Inspection</h2>
               <button onClick={() => setSelectedAI(null)} className="text-gray-400 hover:text-white text-2xl">×</button>
@@ -1272,8 +1274,8 @@ export default function UnicornAdmin() {
                           <textarea
                             value={personaText}
                             onChange={(e) => setPersonaText(e.target.value)}
-                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed min-h-[500px]"
-                            rows={25}
+                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed min-h-[700px]"
+                            rows={35}
                             placeholder="Example:&#10;&#10;I'm a tech-focused investor who believes in disruption. I look for companies with innovative products and strong market potential. My strategy:&#10;&#10;• Risk Tolerance: Moderate-High&#10;• Focus: Technology sector, especially cloud and AI&#10;• Buy Signal: Strong revenue growth + positive sentiment&#10;• Sell Signal: Declining market share or negative news&#10;• Hold: Maintain positions in winners&#10;&#10;I trade with conviction but always consider fundamentals..."
                           />
                           <div className="flex gap-3 justify-end">
