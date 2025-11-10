@@ -547,12 +547,16 @@ export default function UnicornAdmin() {
 
         {activeTab === 'ai-investors' && (
           <div className="space-y-4">
+            {/* Header */}
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">AI Investors ({aiInvestors.length})</h2>
               <div className="text-sm text-gray-400">Click any AI to see details and test trades</div>
             </div>
 
-            {/* Batch Operations */}
+            {/* 2-Column Layout: Main Content + Side Panel */}
+            <div className="grid grid-cols-12 gap-4">
+              {/* Main Content - Left Side (8 columns) */}
+              <div className="col-span-8 space-y-4">{/* Batch Operations */}
             <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
               <h3 className="text-lg font-bold mb-3 text-blue-400">Batch Operations</h3>
               <div className="flex flex-wrap gap-3">
@@ -849,6 +853,105 @@ export default function UnicornAdmin() {
                 </div>
               ))}
             </div>
+              </div>
+
+              {/* Side Panel - Test Results (4 columns) */}
+              <div className="col-span-4">
+                {testResults.length > 0 && (
+                  <div className="bg-gray-800 rounded-lg p-4 sticky top-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-bold text-lg">Test Results</h4>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => setShowResults(!showResults)}
+                          className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                        >
+                          {showResults ? 'Hide' : 'Show'}
+                        </button>
+                        <button
+                          onClick={() => setTestResults([])}
+                          className="text-xs bg-red-600 hover:bg-red-700 px-2 py-1 rounded"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+
+                    {showResults && (
+                      <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+                        {testResults.map((result, idx) => (
+                          <div key={idx} className="bg-gray-900 p-3 rounded text-xs border-l-4" 
+                               style={{borderColor: result.success ? '#10b981' : '#ef4444'}}>
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <div className="font-bold">
+                                  {result.success ? '✅' : '❌'} {result.aiName}
+                                </div>
+                                <div className="text-gray-500 text-[10px]">
+                                  {formatTimestamp(result.timestamp)}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => triggerTestTrade(result.userId)}
+                                className="text-[10px] bg-blue-600 hover:bg-blue-700 px-1.5 py-0.5 rounded"
+                                title="Replay this test"
+                              >
+                                🔄
+                              </button>
+                            </div>
+
+                            {result.decision && (
+                              <div className="mb-2 bg-gray-800 p-2 rounded">
+                                <div className="font-semibold text-blue-400">
+                                  {result.decision.action} {result.decision.ticker} 
+                                  {result.decision.shares && ` (${result.decision.shares})`}
+                                </div>
+                                <div className="text-gray-400 italic mt-1 text-[10px]">
+                                  {result.decision.reasoning?.substring(0, 80)}...
+                                </div>
+                              </div>
+                            )}
+
+                            {result.execution && (
+                              <div className="text-[10px] space-y-1 font-mono">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-400">Cash:</span>
+                                  <span>${result.execution.balanceBefore.toLocaleString()} → ${result.execution.balanceAfter.toLocaleString()}</span>
+                                </div>
+                                {result.execution.cost && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-400">Cost:</span>
+                                    <span className="text-red-400">-${result.execution.cost.toLocaleString()}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {result.error && (
+                              <div className="mt-2 text-red-400 text-[10px]">
+                                {result.error}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {!showResults && (
+                      <div className="text-center text-gray-500 text-sm py-4">
+                        {testResults.length} result{testResults.length !== 1 ? 's' : ''} hidden
+                      </div>
+                    )}
+                  </div>
+                )}
+                {testResults.length === 0 && (
+                  <div className="bg-gray-800 rounded-lg p-4 text-center text-gray-500 text-sm">
+                    No test results yet.<br/>
+                    <span className="text-xs">Click &ldquo;Test&rdquo; on any AI card to run a trade simulation</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1023,160 +1126,6 @@ export default function UnicornAdmin() {
                   >
                     {testTrading ? 'Running Test Trade...' : 'Test Trade Now (Manual Trigger)'}
                   </button>
-
-                  {/* Test Results Display */}
-                  {testResults.length > 0 && (
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-bold">Test Results ({testResults.length})</h4>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setShowResults(!showResults)}
-                            className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
-                          >
-                            {showResults ? 'Hide' : 'Show'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              const text = testResults.map(r => 
-                                `${formatTimestamp(r.timestamp)} | ${r.aiName} | ${r.success ? 'SUCCESS' : 'FAILED'} | ${r.decision?.action || 'N/A'} | ${r.message}`
-                              ).join('\n');
-                              navigator.clipboard.writeText(text);
-                            }}
-                            className="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
-                          >
-                            Copy All
-                          </button>
-                          <button
-                            onClick={() => setTestResults([])}
-                            className="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-
-                      {showResults && (
-                        <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                          {testResults.map((result, idx) => (
-                            <div key={idx} className="bg-gray-800 p-4 rounded border-l-4" 
-                                 style={{borderColor: result.success ? '#10b981' : '#ef4444'}}>
-                              {/* Header */}
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <div className="font-bold text-lg">
-                                    {result.success ? '✅' : '❌'} {result.aiName}
-                                  </div>
-                                  <div className="text-xs text-gray-400">
-                                    {formatTimestamp(result.timestamp)}
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    const text = `
-${result.aiName} Test Trade - ${formatTimestamp(result.timestamp)}
-═══════════════════════════════════════════════
-
-${result.success ? '✅ SUCCESS' : '❌ FAILED'}
-
-${result.decision ? `
-DECISION:
-  Action:     ${result.decision.action}
-  ${result.decision.ticker ? `Ticker:     ${result.decision.ticker}` : ''}
-  ${result.decision.shares ? `Shares:     ${result.decision.shares}` : ''}
-  Reasoning:  ${result.decision.reasoning}
-` : ''}
-
-${result.execution ? `
-EXECUTION:
-  Balance Before:   $${result.execution.balanceBefore.toLocaleString()}
-  Balance After:    $${result.execution.balanceAfter.toLocaleString()}
-  Portfolio Before: $${result.execution.portfolioBefore.toLocaleString()}
-  Portfolio After:  $${result.execution.portfolioAfter.toLocaleString()}
-  ${result.execution.price ? `Price per Share:  $${result.execution.price.toFixed(2)}` : ''}
-  ${result.execution.cost ? `Total Cost:       $${result.execution.cost.toLocaleString()}` : ''}
-
-CALCULATION VALIDATION:
-  Cash Change:      $${(result.execution.balanceBefore - result.execution.balanceAfter).toLocaleString()}
-  Portfolio Change: $${(result.execution.portfolioAfter - result.execution.portfolioBefore).toLocaleString()}
-  ${result.execution.cost && result.decision?.shares && result.execution.price ? 
-    `  Cost Check:       ${result.decision.shares} × $${result.execution.price.toFixed(2)} = $${result.execution.cost.toLocaleString()} ✓` : ''}
-` : ''}
-
-RESULT:
-  ${result.message}
-
-${result.error ? `ERROR:\n  ${result.error}` : ''}
-                                    `.trim();
-                                    navigator.clipboard.writeText(text);
-                                  }}
-                                  className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
-                                >
-                                  Copy
-                                </button>
-                              </div>
-
-                              {/* Decision */}
-                              {result.decision && (
-                                <div className="mb-3 bg-gray-900 p-3 rounded">
-                                  <div className="text-sm font-bold text-blue-400 mb-2">
-                                    DECISION: {result.decision.action}
-                                    {result.decision.ticker && ` ${result.decision.ticker}`}
-                                    {result.decision.shares && ` (${result.decision.shares} shares)`}
-                                  </div>
-                                  <div className="text-xs text-gray-300 italic">
-                                    &ldquo;{result.decision.reasoning}&rdquo;
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Math Validation */}
-                              {result.execution && (
-                                <div className="mb-3 bg-gray-900 p-3 rounded font-mono text-xs">
-                                  <div className="grid grid-cols-2 gap-2 mb-2">
-                                    <div>
-                                      <div className="text-gray-400">BEFORE TRADE:</div>
-                                      <div>Cash: ${result.execution.balanceBefore.toLocaleString()}</div>
-                                      <div>Portfolio: ${result.execution.portfolioBefore.toLocaleString()}</div>
-                                      <div className="font-bold">Total: ${(result.execution.balanceBefore + result.execution.portfolioBefore).toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-gray-400">AFTER TRADE:</div>
-                                      <div>Cash: ${result.execution.balanceAfter.toLocaleString()}</div>
-                                      <div>Portfolio: ${result.execution.portfolioAfter.toLocaleString()}</div>
-                                      <div className="font-bold">Total: ${(result.execution.balanceAfter + result.execution.portfolioAfter).toLocaleString()}</div>
-                                    </div>
-                                  </div>
-                                  
-                                  {result.execution.cost && result.decision?.shares && result.execution.price && (
-                                    <div className="border-t border-gray-700 pt-2 mt-2">
-                                      <div className="text-gray-400 mb-1">CALCULATION:</div>
-                                      <div>{result.decision.shares} shares × ${result.execution.price.toFixed(2)} = ${result.execution.cost.toLocaleString()}</div>
-                                      <div className="text-green-400 mt-1">
-                                        ✓ Balance Check: ${result.execution.balanceBefore.toLocaleString()} - ${result.execution.cost.toLocaleString()} = ${result.execution.balanceAfter.toLocaleString()}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Result Message */}
-                              <div className={`text-sm p-2 rounded ${result.success ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
-                                {result.message}
-                              </div>
-
-                              {/* Error */}
-                              {result.error && (
-                                <div className="mt-2 text-xs bg-red-900/30 text-red-300 p-2 rounded">
-                                  <span className="font-bold">Error:</span> {result.error}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   <div className="bg-gray-900 rounded-lg p-4">
                     <h4 className="font-bold mb-3">Current Holdings ({aiDetail.investments?.length || 0})</h4>
