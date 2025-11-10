@@ -77,7 +77,7 @@ export default function UnicornAdmin() {
     show: boolean;
     title: string;
     message: string;
-    type: 'toggle-active' | 'delete' | 'clone' | null;
+    type: 'toggle-active' | 'delete' | 'clone' | 'batch-test' | 'activate-all' | 'deactivate-all' | null;
     aiData: any;
   }>({
     show: false,
@@ -181,6 +181,98 @@ export default function UnicornAdmin() {
     }
   };
 
+  const handleBatchTest = async () => {
+    if (!confirmModal.aiData?.activeAIs) return;
+    
+    const activeAIs = confirmModal.aiData.activeAIs;
+    setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+    setBatchProgress({ show: true, current: 0, total: activeAIs.length, results: [] });
+    setShowResults(true); // Auto-show results panel
+    
+    for (let i = 0; i < activeAIs.length; i++) {
+      const ai = activeAIs[i];
+      setBatchProgress(prev => ({ ...prev, current: i + 1, currentAI: ai.nickname }));
+      
+      try {
+        const res = await fetch('/api/admin/ai-trading/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: ai.userId,
+            adminToken: 'admin_secret_manaboodle_2025'
+          })
+        });
+        const data = await res.json();
+        
+        // Add to batch progress
+        setBatchProgress(prev => ({
+          ...prev,
+          results: [...prev.results, { ai: ai.nickname, success: res.ok, data }]
+        }));
+        
+        // Add to test results panel
+        if (res.ok && data.decision) {
+          const testResult: TestResult = {
+            timestamp: new Date().toISOString(),
+            aiName: ai.nickname,
+            userId: ai.userId,
+            success: true,
+            decision: data.decision,
+            execution: data.execution,
+            message: data.message || 'Trade executed'
+          };
+          setTestResults(prev => [testResult, ...prev].slice(0, 20));
+        }
+      } catch (err) {
+        setBatchProgress(prev => ({
+          ...prev,
+          results: [...prev.results, { ai: ai.nickname, success: false, error: String(err) }]
+        }));
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    setBatchProgress(prev => ({ ...prev, currentAI: undefined }));
+    loadData();
+  };
+
+  const handleActivateAll = async () => {
+    setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+    for (const ai of aiInvestors) {
+      if (!ai.isActive) {
+        await fetch('/api/admin/ai-toggle-active', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: ai.userId, 
+            isActive: true,
+            adminToken: 'admin_secret_manaboodle_2025'
+          })
+        });
+      }
+    }
+    loadData();
+  };
+
+  const handleDeactivateAll = async () => {
+    setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+    for (const ai of aiInvestors) {
+      if (ai.isActive) {
+        await fetch('/api/admin/ai-toggle-active', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: ai.userId, 
+            isActive: false,
+            adminToken: 'admin_secret_manaboodle_2025'
+          })
+        });
+      }
+    }
+    loadData();
+  };
+
   const confirmAction = () => {
     if (confirmModal.type === 'toggle-active') {
       handleToggleActive();
@@ -188,6 +280,12 @@ export default function UnicornAdmin() {
       handleDelete();
     } else if (confirmModal.type === 'clone') {
       handleClone();
+    } else if (confirmModal.type === 'batch-test') {
+      handleBatchTest();
+    } else if (confirmModal.type === 'activate-all') {
+      handleActivateAll();
+    } else if (confirmModal.type === 'deactivate-all') {
+      handleDeactivateAll();
     }
   };
 
@@ -587,44 +685,23 @@ export default function UnicornAdmin() {
                   onClick={async () => {
                     const activeAIs = aiInvestors.filter(ai => ai.isActive);
                     if (activeAIs.length === 0) {
-                      alert('No active AIs to test');
+                      setConfirmModal({
+                        show: true,
+                        title: 'No Active AIs',
+                        message: 'There are no active AIs to test. Please activate at least one AI first.',
+                        type: null,
+                        aiData: null
+                      });
                       return;
                     }
-                    if (!confirm(`Test all ${activeAIs.length} active AIs? This will run sequentially.`)) return;
                     
-                    setBatchProgress({ show: true, current: 0, total: activeAIs.length, results: [] });
-                    
-                    for (let i = 0; i < activeAIs.length; i++) {
-                      const ai = activeAIs[i];
-                      setBatchProgress(prev => ({ ...prev, current: i + 1, currentAI: ai.nickname }));
-                      
-                      try {
-                        const res = await fetch('/api/admin/ai-trading/trigger', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            userId: ai.userId,
-                            adminToken: 'admin_secret_manaboodle_2025'
-                          })
-                        });
-                        const data = await res.json();
-                        setBatchProgress(prev => ({
-                          ...prev,
-                          results: [...prev.results, { ai: ai.nickname, success: res.ok, data }]
-                        }));
-                      } catch (err) {
-                        setBatchProgress(prev => ({
-                          ...prev,
-                          results: [...prev.results, { ai: ai.nickname, success: false, error: String(err) }]
-                        }));
-                      }
-                      
-                      // Small delay between tests
-                      await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-                    
-                    setBatchProgress(prev => ({ ...prev, currentAI: undefined }));
-                    loadData(); // Refresh after all tests
+                    setConfirmModal({
+                      show: true,
+                      title: 'Test All Active AIs',
+                      message: `Run test trades for all ${activeAIs.length} active AIs?\n\nThis will execute sequentially and may take a few minutes.`,
+                      type: 'batch-test',
+                      aiData: { activeAIs }
+                    });
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
@@ -632,22 +709,14 @@ export default function UnicornAdmin() {
                 </button>
                 
                 <button
-                  onClick={async () => {
-                    if (!confirm(`Activate ALL ${aiInvestors.length} AIs?`)) return;
-                    for (const ai of aiInvestors) {
-                      if (!ai.isActive) {
-                        await fetch('/api/admin/ai-toggle-active', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            userId: ai.userId, 
-                            isActive: true,
-                            adminToken: 'admin_secret_manaboodle_2025'
-                          })
-                        });
-                      }
-                    }
-                    loadData();
+                  onClick={() => {
+                    setConfirmModal({
+                      show: true,
+                      title: 'Activate All AIs',
+                      message: `Activate ALL ${aiInvestors.length} AI investors?\n\nAll AIs will participate in auto-trading.`,
+                      type: 'activate-all',
+                      aiData: null
+                    });
                   }}
                   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
@@ -655,22 +724,14 @@ export default function UnicornAdmin() {
                 </button>
                 
                 <button
-                  onClick={async () => {
-                    if (!confirm(`Deactivate ALL ${aiInvestors.length} AIs?`)) return;
-                    for (const ai of aiInvestors) {
-                      if (ai.isActive) {
-                        await fetch('/api/admin/ai-toggle-active', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            userId: ai.userId, 
-                            isActive: false,
-                            adminToken: 'admin_secret_manaboodle_2025'
-                          })
-                        });
-                      }
-                    }
-                    loadData();
+                  onClick={() => {
+                    setConfirmModal({
+                      show: true,
+                      title: 'Deactivate All AIs',
+                      message: `Deactivate ALL ${aiInvestors.length} AI investors?\n\nAll AIs will be paused and skip auto-trading.`,
+                      type: 'deactivate-all',
+                      aiData: null
+                    });
                   }}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
@@ -922,7 +983,7 @@ export default function UnicornAdmin() {
                           <div key={idx} className="bg-gray-900 p-3 rounded text-xs border-l-4" 
                                style={{borderColor: result.success ? '#10b981' : '#ef4444'}}>
                             <div className="flex justify-between items-start mb-2">
-                              <div>
+                              <div className="flex-1">
                                 <div className="font-bold">
                                   {result.success ? '✅' : '❌'} {result.aiName}
                                 </div>
@@ -930,20 +991,13 @@ export default function UnicornAdmin() {
                                   {formatTimestamp(result.timestamp)}
                                 </div>
                               </div>
-                              <button
-                                onClick={() => triggerTestTrade(result.userId)}
-                                className="text-[10px] bg-blue-600 hover:bg-blue-700 px-1.5 py-0.5 rounded"
-                                title="Replay this test"
-                              >
-                                🔄
-                              </button>
                             </div>
 
                             {result.decision && (
                               <div className="mb-2 bg-gray-800 p-2 rounded">
                                 <div className="font-semibold text-blue-400">
                                   {result.decision.action} {result.decision.ticker} 
-                                  {result.decision.shares && ` (${result.decision.shares})`}
+                                  {result.decision.shares && ` (${Math.floor(result.decision.shares)})`}
                                 </div>
                                 <div className="text-gray-400 italic mt-1 text-[10px]">
                                   {result.decision.reasoning?.substring(0, 80)}...
@@ -955,12 +1009,12 @@ export default function UnicornAdmin() {
                               <div className="text-[10px] space-y-1 font-mono">
                                 <div className="flex justify-between">
                                   <span className="text-gray-400">Cash:</span>
-                                  <span>${result.execution.balanceBefore.toLocaleString()} → ${result.execution.balanceAfter.toLocaleString()}</span>
+                                  <span>${Math.floor(result.execution.balanceBefore).toLocaleString()} → ${Math.floor(result.execution.balanceAfter).toLocaleString()}</span>
                                 </div>
                                 {result.execution.cost && (
                                   <div className="flex justify-between">
                                     <span className="text-gray-400">Cost:</span>
-                                    <span className="text-red-400">-${result.execution.cost.toLocaleString()}</span>
+                                    <span className="text-red-400">-${Math.floor(result.execution.cost).toLocaleString()}</span>
                                   </div>
                                 )}
                               </div>
