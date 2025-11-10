@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
           .from('ai_trading_logs')
           .select('*')
           .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(10);
+          .order('execution_timestamp', { ascending: false })
+          .limit(15);
         tradingLogs = logs || [];
       } catch (e) {
         console.log('No ai_trading_logs table yet');

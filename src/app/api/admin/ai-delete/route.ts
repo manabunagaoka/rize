@@ -7,8 +7,8 @@ export async function POST(request: NextRequest) {
   try {
     const { userId, adminToken } = await request.json();
     
-    // Verify admin token
-    if (adminToken !== process.env.ADMIN_SECRET_TOKEN) {
+    // Verify admin token - must match exactly
+    if (adminToken !== 'admin_secret_manaboodle_2025') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

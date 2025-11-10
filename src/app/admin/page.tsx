@@ -77,7 +77,7 @@ export default function UnicornAdmin() {
     show: boolean;
     title: string;
     message: string;
-    type: 'toggle-active' | 'delete' | 'clone' | 'batch-test' | 'activate-all' | 'deactivate-all' | null;
+    type: 'toggle-active' | 'delete' | 'clone' | 'reset' | 'batch-test' | 'activate-all' | 'deactivate-all' | null;
     aiData: any;
   }>({
     show: false,
@@ -181,6 +181,27 @@ export default function UnicornAdmin() {
     }
   };
 
+  const handleReset = async () => {
+    if (!confirmModal.aiData) return;
+    
+    try {
+      const res = await fetch('/api/admin/ai-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: confirmModal.aiData.userId,
+          adminToken: 'admin_secret_manaboodle_2025'
+        })
+      });
+      if (res.ok) {
+        loadData();
+        setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+      }
+    } catch (err) {
+      console.error('Reset AI error:', err);
+    }
+  };
+
   const handleBatchTest = async () => {
     if (!confirmModal.aiData?.activeAIs) return;
     
@@ -280,6 +301,8 @@ export default function UnicornAdmin() {
       handleDelete();
     } else if (confirmModal.type === 'clone') {
       handleClone();
+    } else if (confirmModal.type === 'reset') {
+      handleReset();
     } else if (confirmModal.type === 'batch-test') {
       handleBatchTest();
     } else if (confirmModal.type === 'activate-all') {
@@ -860,6 +883,22 @@ export default function UnicornAdmin() {
                         e.stopPropagation();
                         setConfirmModal({
                           show: true,
+                          title: 'Reset AI Investor',
+                          message: `🔄 RESET ${ai.nickname}?\n\nThis will:\n- Reset balance to $1,000,000\n- Clear all transaction history\n- Clear all trading logs\n- Preserve persona and strategy\n\nThis action CANNOT be undone!`,
+                          type: 'reset',
+                          aiData: { userId: ai.userId, nickname: ai.nickname }
+                        });
+                      }}
+                      className="text-sm px-3 py-1.5 rounded bg-orange-600 hover:bg-orange-700 text-white font-medium transition-all shadow-lg shadow-orange-900/50"
+                      title="Reset to fresh start"
+                    >
+                      🔄
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmModal({
+                          show: true,
                           title: 'Delete AI Investor',
                           message: `⚠️ DELETE ${ai.nickname} PERMANENTLY?\n\nThis will remove:\n- AI investor profile\n- All holdings\n- All transaction history\n- All trading logs\n\nThis action CANNOT be undone!`,
                           type: 'delete',
@@ -1149,8 +1188,8 @@ export default function UnicornAdmin() {
                           <textarea
                             value={personaText}
                             onChange={(e) => setPersonaText(e.target.value)}
-                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed"
-                            rows={15}
+                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed min-h-[500px]"
+                            rows={25}
                             placeholder="Example:&#10;&#10;I'm a tech-focused investor who believes in disruption. I look for companies with innovative products and strong market potential. My strategy:&#10;&#10;• Risk Tolerance: Moderate-High&#10;• Focus: Technology sector, especially cloud and AI&#10;• Buy Signal: Strong revenue growth + positive sentiment&#10;• Sell Signal: Declining market share or negative news&#10;• Hold: Maintain positions in winners&#10;&#10;I trade with conviction but always consider fundamentals..."
                           />
                           <div className="flex gap-3 justify-end">
@@ -1270,27 +1309,52 @@ export default function UnicornAdmin() {
                   </div>
 
                   <div className="bg-gray-900 rounded-lg p-4">
-                    <h4 className="font-bold mb-3">Pitches AI Analyzes ({aiDetail.pitches?.length || 0})</h4>
-                    {!aiDetail.pitches || aiDetail.pitches.length === 0 ? (
-                      <p className="text-gray-400 text-sm">No pitches available</p>
+                    <h4 className="font-bold mb-3">Recent Trading Decisions ({aiDetail.logs?.length || 0})</h4>
+                    {!aiDetail.logs || aiDetail.logs.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No trading decisions yet</p>
                     ) : (
                       <div className="space-y-3 max-h-60 overflow-y-auto">
-                        {aiDetail.pitches.map((pitch: any) => (
-                          <div key={pitch.pitch_id} className="bg-gray-800 p-3 rounded">
+                        {aiDetail.logs.map((log: any, idx: number) => (
+                          <div key={log.id || idx} className="bg-gray-800 p-3 rounded border-l-4" style={{
+                            borderLeftColor: log.execution_success ? '#10b981' : '#ef4444'
+                          }}>
                             <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <span className="font-bold text-blue-400">{pitch.ticker || 'N/A'}</span>
-                                <span className="text-gray-400 ml-2">{pitch.company_name || 'Unknown'}</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`font-bold ${
+                                  log.decision_action === 'BUY' ? 'text-green-400' : 
+                                  log.decision_action === 'SELL' ? 'text-red-400' : 
+                                  'text-gray-400'
+                                }`}>
+                                  {log.decision_action}
+                                </span>
+                                {log.decision_pitch_id && (
+                                  <span className="text-sm text-gray-400">
+                                    Pitch #{log.decision_pitch_id}
+                                  </span>
+                                )}
+                                {log.decision_shares && (
+                                  <span className="text-sm font-mono text-blue-400">
+                                    {Math.floor(log.decision_shares)} shares
+                                  </span>
+                                )}
                               </div>
-                              <div className="text-right text-sm">
-                                <div className="font-mono">${(pitch.current_price || 0).toFixed(2)}</div>
-                                <div className={`text-xs ${(pitch.price_change_24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                  {(pitch.price_change_24h || 0) >= 0 ? '+' : ''}{(pitch.price_change_24h || 0).toFixed(1)}%
+                              <div className="text-right text-xs">
+                                <div className={log.execution_success ? 'text-green-400' : 'text-red-400'}>
+                                  {log.execution_success ? '✓ Success' : '✗ Failed'}
+                                </div>
+                                <div className="text-gray-500">
+                                  {new Date(log.execution_timestamp).toLocaleDateString()}
                                 </div>
                               </div>
                             </div>
-                            <p className="text-xs text-gray-400 mb-1">{pitch.elevator_pitch || 'No pitch available'}</p>
-                            <p className="text-xs text-gray-500 italic">{pitch.fun_fact || ''}</p>
+                            <p className="text-xs text-gray-300 mb-2 line-clamp-2">
+                              {log.decision_reasoning || 'No reasoning provided'}
+                            </p>
+                            {log.execution_message && (
+                              <p className="text-xs text-gray-500 italic">
+                                {log.execution_message}
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>
