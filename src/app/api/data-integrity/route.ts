@@ -77,6 +77,17 @@ export async function GET(request: NextRequest) {
           // Always calculate from live/fallback price, NEVER use stale database current_value
           const currentValue = Math.floor(inv.shares_owned * currentPrice); // Floor each investment
           
+          // Debug logging for Cloud Surfer
+          if (balance.username?.includes('Surfer') || balance.username?.includes('Cloud') || balance.ai_nickname?.includes('Surfer') || balance.ai_nickname?.includes('Cloud')) {
+            console.log(`[DataIntegrity] ${balance.username || balance.ai_nickname} Investment:`, {
+              pitch_id: inv.pitch_id,
+              ticker,
+              shares: inv.shares_owned,
+              price: currentPrice,
+              floored_value: currentValue
+            });
+          }
+          
           return {
             pitchId: inv.pitch_id,
             ticker: ticker || `PITCH-${inv.pitch_id}`,
@@ -104,6 +115,16 @@ export async function GET(request: NextRequest) {
       const uiTotal = uiCash + uiHoldingsValue;
       const uiHoldingsCount = dbHoldingsCount; // Should match
       const uiRoi = dbTotalInvested > 0 ? ((uiHoldingsValue - dbTotalInvested) / dbTotalInvested * 100) : 0;
+
+      // Debug logging for Cloud Surfer
+      if (balance.username?.includes('Surfer') || balance.username?.includes('Cloud') || balance.ai_nickname?.includes('Surfer') || balance.ai_nickname?.includes('Cloud')) {
+        console.log(`[DataIntegrity] ${balance.username || balance.ai_nickname} TOTALS:`, {
+          cash: uiCash,
+          holdings_value: uiHoldingsValue,
+          total: uiTotal,
+          num_investments: investmentsWithLivePrices.length
+        });
+      }
 
       // Calculate discrepancies (floor both sides since UI floors everything)
       const cashDiff = uiCash - Math.floor(dbCash); // Should be 0

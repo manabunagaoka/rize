@@ -84,6 +84,19 @@ export async function GET(request: NextRequest) {
           const gain = currentValue - inv.total_invested;
           const gainPercent = inv.total_invested > 0 ? ((gain / inv.total_invested) * 100) : 0;
 
+          // Debug logging for Cloud Surfer
+          if (ai.ai_nickname?.includes('Surfer') || ai.ai_nickname?.includes('Cloud')) {
+            console.log(`[AIInvestors] ${ai.ai_nickname} Investment:`, {
+              pitch_id: inv.pitch_id,
+              ticker,
+              shares: inv.shares_owned,
+              price: currentPrice,
+              raw_value: inv.shares_owned * currentPrice,
+              floored_value: currentValue,
+              total_invested: inv.total_invested
+            });
+          }
+
           return {
             pitchId: inv.pitch_id,
             shares: inv.shares_owned,
@@ -103,6 +116,17 @@ export async function GET(request: NextRequest) {
       const totalValue = portfolioValue; // Same as portfolioValue for consistency
       const totalGains = investmentsWithLivePrices.reduce((sum, inv) => sum + inv.gain, 0); // Sum of individual investment gains
       const roi = ai.total_invested > 0 ? ((totalGains / ai.total_invested) * 100) : 0;
+
+      // Debug logging for Cloud Surfer
+      if (ai.ai_nickname?.includes('Surfer') || ai.ai_nickname?.includes('Cloud')) {
+        console.log(`[AIInvestors] ${ai.ai_nickname} TOTALS:`, {
+          cash: Math.floor(ai.available_tokens || 0),
+          holdings_value: holdingsValue,
+          portfolio_value: portfolioValue,
+          total_value: totalValue,
+          num_investments: investmentsWithLivePrices.length
+        });
+      }
 
       // Calculate trading stats
       const totalTrades = aiTransactions.length;

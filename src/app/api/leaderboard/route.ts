@@ -183,12 +183,23 @@ export async function GET(request: NextRequest) {
       const holdingsValue = userInvestments.reduce((sum, inv) => {
         // Always calculate from real-time prices, not database current_value
         const value = Math.floor((inv.shares_owned || 0) * (pitchPrices[inv.pitch_id] || 100));
+        
+        // Debug logging for Cloud Surfer
+        if (investor.username?.includes('Surfer') || investor.username?.includes('Cloud') || investor.ai_nickname?.includes('Surfer') || investor.ai_nickname?.includes('Cloud')) {
+          console.log(`[Leaderboard] ${investor.username || investor.ai_nickname} Investment:`, {
+            pitch_id: inv.pitch_id,
+            shares: inv.shares_owned,
+            price: pitchPrices[inv.pitch_id] || 100,
+            floored_value: value
+          });
+        }
+        
         return sum + value;
       }, 0);
 
       // Debug logging for specific user
-      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85' || investor.user_id === user?.id) {
-        console.log(`[Leaderboard] ${investor.username || investor.user_email} data:`, {
+      if (investor.user_id === '19be07bc-28d0-4ac6-956b-714eef1ccc85' || investor.user_id === user?.id || investor.username?.includes('Surfer') || investor.username?.includes('Cloud') || investor.ai_nickname?.includes('Surfer') || investor.ai_nickname?.includes('Cloud')) {
+        console.log(`[Leaderboard] ${investor.username || investor.user_email || investor.ai_nickname} TOTALS:`, {
           user_id: investor.user_id,
           cash: investor.available_tokens,
           cash_updated_at: investor.updated_at,
