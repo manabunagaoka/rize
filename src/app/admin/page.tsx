@@ -1480,37 +1480,30 @@ export default function UnicornAdmin() {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {/* Custom Persona */}
-                          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-                            <div className="text-xs font-bold text-blue-400 mb-2">CUSTOM PERSONA (ai_personality_prompt):</div>
-                            <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
-                              {aiDetail.user?.persona || <span className="text-gray-500 italic">No custom persona - using default strategy guidelines below</span>}
-                            </pre>
-                          </div>
-                          
-                          {/* Default Strategy Guidelines */}
-                          <div className="bg-gray-900 p-4 rounded-lg border border-yellow-700">
-                            <div className="text-xs font-bold text-yellow-400 mb-2">DEFAULT STRATEGY GUIDELINES ({aiDetail.user?.strategy}):</div>
-                            <div className="text-sm text-gray-200 font-sans leading-relaxed">
-                              {aiDetail.user?.strategy === 'CONSERVATIVE' && 'The Boomer: ONLY invest in proven companies like Microsoft and Facebook. Small positions. Prefer holding over frequent trading. You lived through dot-com crash - never again!'}
-                              {aiDetail.user?.strategy === 'DIVERSIFIED' && 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.'}
-                              {aiDetail.user?.strategy === 'ALL_IN' && 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!'}
-                              {aiDetail.user?.strategy === 'HOLD_FOREVER' && 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌'}
-                              {aiDetail.user?.strategy === 'TECH_ONLY' && 'Silicon Brain: ONLY pure tech companies (Facebook, Microsoft, Dropbox). NO non-tech. Growth over everything. Code is eating the world.'}
-                              {aiDetail.user?.strategy === 'SAAS_ONLY' && 'Cloud Surfer: ONLY software-as-a-service businesses with recurring revenue. Dropbox, Microsoft yes. Hardware? NO WAY.'}
-                              {aiDetail.user?.strategy === 'MOMENTUM' && 'FOMO Master: You HATE missing gains! Buy stocks rising 2%+. Stock falling 2%+? Consider SELLING! Sitting on >40% cash is UNACCEPTABLE - you MUST be in the market!'}
-                              {aiDetail.user?.strategy === 'TREND_FOLLOW' && 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!'}
-                              {aiDetail.user?.strategy === 'CONTRARIAN' && 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.'}
-                              {aiDetail.user?.strategy === 'PERFECT_TIMING' && 'The Oracle: Buy low, sell high. Look for oversold opportunities (down 5%+). Exit overbought peaks (up 8%+). Precision timing wins.'}
+                          {aiDetail.user?.persona ? (
+                            <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                              <div className="text-xs font-bold text-blue-400 mb-2">CURRENT PERSONA:</div>
+                              <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+                                {aiDetail.user.persona}
+                              </pre>
                             </div>
-                          </div>
-                          
-                          {/* Info note */}
-                          <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-700/50">
-                            <div className="text-xs text-blue-300">
-                              <strong>How it works:</strong> If Custom Persona is set, it replaces the Default Strategy Guidelines in the AI&apos;s trading prompt. Otherwise, the Default Guidelines are used. The full prompt also includes portfolio status, market data, strategy-specific rules, and trading limits.
+                          ) : (
+                            <div className="bg-gray-900 p-4 rounded-lg border border-yellow-700">
+                              <div className="text-xs font-bold text-yellow-400 mb-2">DEFAULT STRATEGY ({aiDetail.user?.strategy}):</div>
+                              <div className="text-sm text-gray-200 font-sans leading-relaxed">
+                                {aiDetail.user?.strategy === 'CONSERVATIVE' && 'The Boomer: ONLY invest in proven companies like Microsoft and Facebook. Small positions. Prefer holding over frequent trading. You lived through dot-com crash - never again!'}
+                                {aiDetail.user?.strategy === 'DIVERSIFIED' && 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.'}
+                                {aiDetail.user?.strategy === 'ALL_IN' && 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!'}
+                                {aiDetail.user?.strategy === 'HOLD_FOREVER' && 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌'}
+                                {aiDetail.user?.strategy === 'TECH_ONLY' && 'Silicon Brain: ONLY pure tech companies (Facebook, Microsoft, Dropbox). NO non-tech. Growth over everything. Code is eating the world.'}
+                                {aiDetail.user?.strategy === 'SAAS_ONLY' && 'Cloud Surfer: ONLY software-as-a-service businesses with recurring revenue. Dropbox, Microsoft yes. Hardware? NO WAY.'}
+                                {aiDetail.user?.strategy === 'MOMENTUM' && 'FOMO Master: You HATE missing gains! Buy stocks rising 2%+. Stock falling 2%+? Consider SELLING! Sitting on >40% cash is UNACCEPTABLE - you MUST be in the market!'}
+                                {aiDetail.user?.strategy === 'TREND_FOLLOW' && 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!'}
+                                {aiDetail.user?.strategy === 'CONTRARIAN' && 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.'}
+                                {aiDetail.user?.strategy === 'PERFECT_TIMING' && 'The Oracle: Buy low, sell high. Look for oversold opportunities (down 5%+). Exit overbought peaks (up 8%+). Precision timing wins.'}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       )}
                     </div>

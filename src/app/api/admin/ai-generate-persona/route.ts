@@ -150,9 +150,6 @@ Return valid JSON with this structure:
       const result = JSON.parse(rawResponse);
       console.log('[Persona API] Parsed JSON keys:', Object.keys(result));
       console.log('[Persona API] Persona value type:', typeof result.persona);
-      console.log('[Persona API] Persona value (first 200 chars):', 
-        typeof result.persona === 'string' ? result.persona.substring(0, 200) : JSON.stringify(result.persona).substring(0, 200)
-      );
       
       // Check if persona is null or empty
       if (!result.persona) {
@@ -160,18 +157,27 @@ Return valid JSON with this structure:
         throw new Error(`Persona field is empty or null`);
       }
       
-      // Check if persona is not a string
-      if (typeof result.persona !== 'string') {
-        console.error('[Persona API] Persona is not a string, it is:', typeof result.persona);
-        console.error('[Persona API] Persona value:', result.persona);
-        throw new Error(`Persona field is ${typeof result.persona}, expected string`);
+      // If persona is an object, convert it to a formatted string
+      let personaString: string;
+      if (typeof result.persona === 'object') {
+        console.log('[Persona API] Persona is object, converting to string...');
+        // Convert object to formatted multi-line string
+        personaString = Object.entries(result.persona)
+          .map(([key, value]) => `[${key}]\n${value}\n`)
+          .join('\n');
+        console.log('[Persona API] Converted persona length:', personaString.length);
+      } else if (typeof result.persona === 'string') {
+        personaString = result.persona;
+      } else {
+        console.error('[Persona API] Persona is unexpected type:', typeof result.persona);
+        throw new Error(`Persona field is ${typeof result.persona}, expected string or object`);
       }
 
-      console.log(`[Persona API] SUCCESS! Generated ${result.persona.length} chars for ${nickname || 'AI Investor'}`);
+      console.log(`[Persona API] SUCCESS! Generated ${personaString.length} chars for ${nickname || 'AI Investor'}`);
 
       return NextResponse.json({ 
         success: true,
-        persona: result.persona,
+        persona: personaString,
         quickSummary: result.quickSummary || 'AI-generated persona'
       });
 
