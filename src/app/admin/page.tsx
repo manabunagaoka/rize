@@ -110,16 +110,37 @@ export default function UnicornAdmin() {
         body: JSON.stringify({ userId, persona: newPersona })
       });
       if (res.ok) {
-        alert('Persona updated successfully!');
+        setConfirmModal({
+          show: true,
+          title: 'Success',
+          message: 'Persona updated successfully!',
+          type: 'success',
+          aiData: null
+        });
         setEditingPersona(false);
+        setGeneratedPersona('');
+        setGeneratedSummary('');
+        setShowGenerateInput(false);
         loadAIDetail(userId);
         loadData();
       } else {
-        alert('Failed to update persona');
+        setConfirmModal({
+          show: true,
+          title: 'Error',
+          message: 'Failed to update persona',
+          type: 'error',
+          aiData: null
+        });
       }
     } catch (err) {
       console.error('Error updating persona:', err);
-      alert('Error updating persona');
+      setConfirmModal({
+        show: true,
+        title: 'Error',
+        message: 'Error updating persona',
+        type: 'error',
+        aiData: null
+      });
     }
   };
 
@@ -140,7 +161,13 @@ export default function UnicornAdmin() {
 
   const generatePersona = async () => {
     if (!generateDescription.trim()) {
-      alert('Please enter a description');
+      setConfirmModal({
+        show: true,
+        title: 'Validation Error',
+        message: 'Please enter a description',
+        type: 'error',
+        aiData: null
+      });
       return;
     }
 
@@ -166,11 +193,23 @@ export default function UnicornAdmin() {
         setShowGenerateInput(false);
       } else {
         const errorData = await res.json();
-        alert(`Failed to generate persona: ${errorData.error || 'Unknown error'}`);
+        setConfirmModal({
+          show: true,
+          title: 'Generation Failed',
+          message: `Failed to generate persona: ${errorData.error || 'Unknown error'}`,
+          type: 'error',
+          aiData: null
+        });
       }
     } catch (err) {
       console.error('Error generating persona:', err);
-      alert('Error generating persona');
+      setConfirmModal({
+        show: true,
+        title: 'Error',
+        message: 'Error generating persona. Please try again.',
+        type: 'error',
+        aiData: null
+      });
     } finally {
       setGeneratingPersona(false);
     }
@@ -1394,14 +1433,14 @@ export default function UnicornAdmin() {
                               onClick={() => savePersona(selectedAI!, personaText)}
                               className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
                             >
-                              💾 Save Persona
+                              Save Persona
                             </button>
                           </div>
                         </div>
                       ) : showGenerateInput ? (
                         <div className="space-y-4">
                           <div className="text-sm text-gray-400">
-                            Provide a description of this AI investor. The system will generate 10 variations with different personalities, styles, and approaches.
+                            Provide a description of this AI investor. The system will generate an optimized persona based on your input.
                           </div>
                           <textarea
                             value={generateDescription}
