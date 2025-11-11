@@ -145,11 +145,19 @@ Return valid JSON with this structure:
 
       console.log('[Persona API] OpenAI response received, parsing...');
       const rawResponse = completion.choices[0].message.content || '{}';
+      console.log('[Persona API] Raw response (first 500 chars):', rawResponse.substring(0, 500));
+      
       const result = JSON.parse(rawResponse);
+      console.log('[Persona API] Parsed JSON keys:', Object.keys(result));
       
       if (!result.persona || typeof result.persona !== 'string') {
-        console.error('[Persona API] Invalid response format:', result);
-        throw new Error('Invalid response format from OpenAI');
+        console.error('[Persona API] Invalid response format. Expected {persona: string}, got:', {
+          hasPersona: !!result.persona,
+          personaType: typeof result.persona,
+          keys: Object.keys(result),
+          fullResult: result
+        });
+        throw new Error(`Invalid response format from OpenAI - missing or invalid 'persona' field. Got keys: ${Object.keys(result).join(', ')}`);
       }
 
       console.log(`[Persona API] SUCCESS! Generated ${result.persona.length} chars for ${nickname || 'AI Investor'}`);
@@ -162,6 +170,7 @@ Return valid JSON with this structure:
 
     } catch (openaiError) {
       console.error('[Persona API] OpenAI error:', openaiError);
+      console.error('[Persona API] Error stack:', openaiError instanceof Error ? openaiError.stack : 'No stack');
       return NextResponse.json({ 
         error: 'Failed to generate persona',
         details: openaiError instanceof Error ? openaiError.message : String(openaiError)
