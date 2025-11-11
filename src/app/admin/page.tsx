@@ -78,7 +78,7 @@ export default function UnicornAdmin() {
     show: boolean;
     title: string;
     message: string;
-    type: 'toggle-active' | 'delete' | 'clone' | 'reset' | 'batch-test' | 'activate-all' | 'deactivate-all' | null;
+    type: 'toggle-active' | 'delete' | 'clone' | 'reset' | 'batch-test' | 'activate-all' | 'deactivate-all' | 'success' | 'error' | null;
     aiData: any;
   }>({
     show: false,
@@ -204,16 +204,33 @@ export default function UnicornAdmin() {
       
       if (res.ok) {
         console.log('[Reset] Success! Reloading data...');
-        setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
         await loadData();
-        alert(`✅ ${confirmModal.aiData.nickname} reset successfully!`);
+        setConfirmModal({ 
+          show: true, 
+          title: 'Reset Successful', 
+          message: `✅ ${confirmModal.aiData.nickname} has been reset to $1,000,000 MTK with all history cleared.`, 
+          type: 'success', 
+          aiData: null 
+        });
       } else {
         console.error('[Reset] Failed:', data);
-        alert(`❌ Reset failed: ${data.error || 'Unknown error'}`);
+        setConfirmModal({ 
+          show: true, 
+          title: 'Reset Failed', 
+          message: `❌ Failed to reset ${confirmModal.aiData.nickname}: ${data.error || 'Unknown error'}`, 
+          type: 'error', 
+          aiData: null 
+        });
       }
     } catch (err) {
       console.error('[Reset] Error:', err);
-      alert(`❌ Reset error: ${err instanceof Error ? err.message : String(err)}`);
+      setConfirmModal({ 
+        show: true, 
+        title: 'Reset Error', 
+        message: `❌ Error resetting AI: ${err instanceof Error ? err.message : String(err)}`, 
+        type: 'error', 
+        aiData: null 
+      });
     }
   };
 
@@ -326,6 +343,9 @@ export default function UnicornAdmin() {
       handleActivateAll();
     } else if (confirmModal.type === 'deactivate-all') {
       handleDeactivateAll();
+    } else if (confirmModal.type === 'success' || confirmModal.type === 'error') {
+      // Just close modal for success/error messages
+      setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
     }
   };
 
@@ -1491,24 +1511,35 @@ export default function UnicornAdmin() {
               <h3 className="text-xl font-bold text-white mb-4">{confirmModal.title}</h3>
               <p className="text-gray-300 whitespace-pre-line mb-6">{confirmModal.message}</p>
               <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null })}
-                  className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmAction}
-                  className={`px-4 py-2 rounded font-medium transition-colors ${
-                    confirmModal.type === 'delete' 
-                      ? 'bg-red-600 hover:bg-red-700 text-white' 
-                      : confirmModal.type === 'clone'
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  Confirm
-                </button>
+                {confirmModal.type === 'success' || confirmModal.type === 'error' ? (
+                  <button
+                    onClick={() => setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null })}
+                    className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+                  >
+                    OK
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null })}
+                      className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white font-medium transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmAction}
+                      className={`px-4 py-2 rounded font-medium transition-colors ${
+                        confirmModal.type === 'delete' 
+                          ? 'bg-red-600 hover:bg-red-700 text-white' 
+                          : confirmModal.type === 'clone'
+                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      Confirm
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
