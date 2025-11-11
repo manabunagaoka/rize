@@ -14,15 +14,22 @@ function getOpenAIClient() {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[Persona API] Request received');
+  
   try {
     const body = await request.json();
     const { description, currentData } = body;
 
+    console.log('[Persona API] Parsed body:', { description: description?.substring(0, 100), currentData });
+
     if (!description) {
+      console.error('[Persona API] No description provided');
       return NextResponse.json({ error: 'Description required' }, { status: 400 });
     }
 
     const { nickname, strategy, catchphrase } = currentData || {};
+    
+    console.log('[Persona API] Preparing OpenAI request for:', nickname || 'Unknown AI');
 
     const prompt = `You are a persona generator for AI trading agents. Create ONE refined, optimized trading persona based on the user's description.
 
@@ -120,7 +127,10 @@ Return valid JSON with this structure:
 }`;
 
     try {
+      console.log('[Persona API] Creating OpenAI client...');
       const openai = getOpenAIClient();
+      
+      console.log('[Persona API] Calling OpenAI API with gpt-4o-mini...');
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -134,14 +144,16 @@ Return valid JSON with this structure:
         response_format: { type: 'json_object' }
       });
 
+      console.log('[Persona API] OpenAI response received, parsing...');
       const rawResponse = completion.choices[0].message.content || '{}';
       const result = JSON.parse(rawResponse);
       
       if (!result.persona || typeof result.persona !== 'string') {
+        console.error('[Persona API] Invalid response format:', result);
         throw new Error('Invalid response format from OpenAI');
       }
 
-      console.log(`Generated persona for ${nickname || 'AI Investor'}`);
+      console.log(`[Persona API] SUCCESS! Generated ${result.persona.length} chars for ${nickname || 'AI Investor'}`);
 
       return NextResponse.json({ 
         success: true,
@@ -150,9 +162,9 @@ Return valid JSON with this structure:
       });
 
     } catch (openaiError) {
-      console.error('OpenAI error:', openaiError);
+      console.error('[Persona API] OpenAI error:', openaiError);
       return NextResponse.json({ 
-        error: 'Failed to generate personas',
+        error: 'Failed to generate persona',
         details: openaiError instanceof Error ? openaiError.message : String(openaiError)
       }, { status: 500 });
     }

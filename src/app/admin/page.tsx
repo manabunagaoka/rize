@@ -172,6 +172,12 @@ export default function UnicornAdmin() {
     }
 
     setGeneratingPersona(true);
+    console.log('[Persona Gen] Starting generation...', {
+      description: generateDescription,
+      nickname: aiDetail?.user?.nickname,
+      strategy: aiDetail?.user?.strategy
+    });
+
     try {
       const res = await fetch('/api/admin/ai-generate-persona', {
         method: 'POST',
@@ -186,30 +192,47 @@ export default function UnicornAdmin() {
         })
       });
 
+      console.log('[Persona Gen] Response status:', res.status);
+
       if (res.ok) {
         const data = await res.json();
+        console.log('[Persona Gen] Success! Persona length:', data.persona?.length || 0);
+        console.log('[Persona Gen] Quick summary:', data.quickSummary);
+        
         setGeneratedPersona(data.persona || '');
         setGeneratedSummary(data.quickSummary || '');
         setShowGenerateInput(false);
       } else {
         const errorData = await res.json();
+        console.error('[Persona Gen] API Error:', errorData);
+        
         setConfirmModal({
           show: true,
           title: 'Generation Failed',
-          message: `Failed to generate persona: ${errorData.error || 'Unknown error'}`,
+          message: `Failed to generate persona: ${errorData.error || 'Unknown error'}${errorData.details ? '\n\nDetails: ' + errorData.details : ''}`,
           type: 'error',
           aiData: null
         });
+        
+        // Keep input visible on error
+        setShowGenerateInput(true);
+        setGeneratedPersona('');
+        setGeneratedSummary('');
       }
     } catch (err) {
-      console.error('Error generating persona:', err);
+      console.error('[Persona Gen] Fetch Error:', err);
       setConfirmModal({
         show: true,
         title: 'Error',
-        message: 'Error generating persona. Please try again.',
+        message: `Error generating persona: ${err instanceof Error ? err.message : 'Network error'}`,
         type: 'error',
         aiData: null
       });
+      
+      // Keep input visible on error
+      setShowGenerateInput(true);
+      setGeneratedPersona('');
+      setGeneratedSummary('');
     } finally {
       setGeneratingPersona(false);
     }
