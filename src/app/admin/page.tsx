@@ -67,6 +67,11 @@ export default function UnicornAdmin() {
   const [personaText, setPersonaText] = useState('');
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [generatingPersona, setGeneratingPersona] = useState(false);
+  const [showGenerateInput, setShowGenerateInput] = useState(false);
+  const [generateDescription, setGenerateDescription] = useState('');
+  const [personaVariations, setPersonaVariations] = useState<Array<{ id: number; quickSummary: string; fullPersona: string }>>([]);
+  const [selectedVariation, setSelectedVariation] = useState<number | null>(null);
   const [batchProgress, setBatchProgress] = useState<{
     show: boolean;
     current: number;
@@ -116,6 +121,67 @@ export default function UnicornAdmin() {
       console.error('Error updating persona:', err);
       alert('Error updating persona');
     }
+  };
+
+  const startPersonaGeneration = () => {
+    // Pre-fill with existing persona data
+    const existingPersona = aiDetail?.user?.persona || aiDetail?.user?.catchphrase || '';
+    const strategy = aiDetail?.user?.strategy || '';
+    const nickname = aiDetail?.user?.nickname || 'AI Investor';
+    
+    const defaultDescription = existingPersona || 
+      `${nickname} - ${strategy} strategy investor`;
+    
+    setGenerateDescription(defaultDescription);
+    setShowGenerateInput(true);
+    setPersonaVariations([]);
+    setSelectedVariation(null);
+  };
+
+  const generatePersonaVariations = async () => {
+    if (!generateDescription.trim()) {
+      alert('Please enter a description');
+      return;
+    }
+
+    setGeneratingPersona(true);
+    try {
+      const res = await fetch('/api/admin/ai-generate-persona', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: generateDescription })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPersonaVariations(data.variations || []);
+        setShowGenerateInput(false);
+      } else {
+        alert('Failed to generate variations');
+      }
+    } catch (err) {
+      console.error('Error generating variations:', err);
+      alert('Error generating variations');
+    } finally {
+      setGeneratingPersona(false);
+    }
+  };
+
+  const acceptPersonaVariation = async () => {
+    if (selectedVariation === null) {
+      alert('Please select a variation');
+      return;
+    }
+
+    const variation = personaVariations.find(v => v.id === selectedVariation);
+    if (!variation || !selectedAI) return;
+
+    await savePersona(selectedAI, variation.fullPersona);
+    
+    // Reset generation state
+    setPersonaVariations([]);
+    setSelectedVariation(null);
+    setShowGenerateInput(false);
   };
 
   const handleToggleActive = async () => {
@@ -1276,16 +1342,24 @@ export default function UnicornAdmin() {
                     <div className="mt-4 mb-4 border-t border-gray-700 pt-4">
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-bold text-lg text-gray-300">AI Persona / Trading Guidelines</h4>
-                        {!editingPersona && (
-                          <button 
-                            onClick={() => {
-                              setEditingPersona(true);
-                              setPersonaText(aiDetail.user?.persona || aiDetail.user?.catchphrase || '');
-                            }}
-                            className="text-sm bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-medium transition-colors"
-                          >
-                            ✏️ Edit Persona
-                          </button>
+                        {!editingPersona && personaVariations.length === 0 && (
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={startPersonaGeneration}
+                              className="text-sm bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium transition-colors"
+                            >
+                              Generate with AI
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setEditingPersona(true);
+                                setPersonaText(aiDetail.user?.persona || aiDetail.user?.catchphrase || '');
+                              }}
+                              className="text-sm bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-medium transition-colors"
+                            >
+                              Edit Persona
+                            </button>
+                          </div>
                         )}
                       </div>
                       {editingPersona ? (
@@ -1312,6 +1386,120 @@ export default function UnicornAdmin() {
                               className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
                             >
                               💾 Save Persona
+                            </button>
+                          </div>
+                        </div>
+                      ) : showGenerateInput ? (
+                        <div className="space-y-4">
+                          <div className="text-sm text-gray-400">
+                            Provide a description of this AI investor. The system will generate 10 variations with different personalities, styles, and approaches.
+                          </div>
+                          <textarea
+                            value={generateDescription}
+                            onChange={(e) => setGenerateDescription(e.target.value)}
+                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-purple-600 focus:border-purple-500 outline-none font-sans text-sm leading-relaxed resize-none"
+                            rows={6}
+                            placeholder="Example: Tech-focused investor with moderate risk tolerance. Prefers SaaS companies with recurring revenue. Makes data-driven decisions based on growth metrics and market sentiment."
+                          />
+                          <div className="flex gap-3 justify-end">
+                            <button
+                              onClick={() => {
+                                setShowGenerateInput(false);
+                                setGenerateDescription('');
+                              }}
+                              className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={generatePersonaVariations}
+                              disabled={generatingPersona || !generateDescription.trim()}
+                              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-purple-900/50 flex items-center gap-2"
+                            >
+                              {generatingPersona ? (
+                                <>
+                                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                  Generating...
+                                </>
+                              ) : (
+                                'Generate 10 Variations'
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ) : personaVariations.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="text-sm text-gray-400 mb-4">
+                            Select a variation below. Click on any card to preview the full persona.
+                          </div>
+                          
+                          {/* Variations Grid */}
+                          <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto">
+                            {personaVariations.map((variation) => (
+                              <div
+                                key={variation.id}
+                                onClick={() => setSelectedVariation(variation.id)}
+                                className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
+                                  selectedVariation === variation.id
+                                    ? 'border-purple-500 bg-purple-900/30'
+                                    : 'border-gray-700 bg-gray-900 hover:border-gray-600'
+                                }`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                    selectedVariation === variation.id
+                                      ? 'border-purple-500 bg-purple-500'
+                                      : 'border-gray-600'
+                                  }`}>
+                                    {selectedVariation === variation.id && (
+                                      <span className="text-white text-xs">✓</span>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-bold text-sm text-purple-400 mb-1">Variation {variation.id}</div>
+                                    <div className="text-xs text-gray-300 line-clamp-3">{variation.quickSummary}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Selected Variation Preview */}
+                          {selectedVariation !== null && (
+                            <div className="bg-gray-900 p-4 rounded-lg border-2 border-purple-500 max-h-[30vh] overflow-y-auto">
+                              <div className="text-xs font-bold text-purple-400 mb-2">FULL PERSONA PREVIEW:</div>
+                              <pre className="text-xs text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+                                {personaVariations.find(v => v.id === selectedVariation)?.fullPersona}
+                              </pre>
+                            </div>
+                          )}
+
+                          <div className="flex gap-3 justify-end pt-2">
+                            <button
+                              onClick={() => {
+                                setPersonaVariations([]);
+                                setSelectedVariation(null);
+                              }}
+                              className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => {
+                                setPersonaVariations([]);
+                                setSelectedVariation(null);
+                                setShowGenerateInput(true);
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+                            >
+                              Regenerate
+                            </button>
+                            <button
+                              onClick={acceptPersonaVariation}
+                              disabled={selectedVariation === null}
+                              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
+                            >
+                              Accept & Save
                             </button>
                           </div>
                         </div>
