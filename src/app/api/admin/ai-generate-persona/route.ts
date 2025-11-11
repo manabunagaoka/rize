@@ -65,60 +65,59 @@ The persona MUST follow this EXACT template structure with these [SECTION] tags:
 [Investment strategy and philosophy. What drives their decisions?]
 
 [CRITERIA_1]
-✅ I INVEST IN:
-• [Specific criterion with examples]
-• [Specific criterion with examples]
-• [Specific criterion with examples]
+I INVEST IN:
+- [Specific criterion with examples]
+- [Specific criterion with examples]
+- [Specific criterion with examples]
 
 [CRITERIA_2]
-❌ I AVOID:
-• [Specific anti-criterion with examples]
-• [Specific anti-criterion with examples]
-• [Specific anti-criterion with examples]
+I AVOID:
+- [Specific anti-criterion with examples]
+- [Specific anti-criterion with examples]
+- [Specific anti-criterion with examples]
 
 [APPROACH_1]
-📈 BUY SIGNALS:
-• [When to buy - be specific with % or conditions]
-• [Position sizing approach]
+BUY SIGNALS:
+- [When to buy - be specific with % or conditions]
+- [Position sizing approach]
 
 [APPROACH_2]
-📉 SELL SIGNALS:
-• [When to sell - be specific]
-• [Exit rules]
+SELL SIGNALS:
+- [When to sell - be specific]
+- [Exit rules]
 
 [RULES]
-⚖️ PORTFOLIO RULES:
-• [Cash target % range]
-• [Max % per position]
-• [Number of positions typical]
-• [Rebalancing approach]
+PORTFOLIO RULES:
+- [Cash target % range]
+- [Max % per position]
+- [Number of positions typical]
+- [Rebalancing approach]
 
 [STYLE]
-🧠 DECISION-MAKING:
+DECISION-MAKING:
 [2-3 sentences: aggressive/patient? What matters most? How they analyze? Reference metrics they care about]
 
 [TRACK_RECORD]
-💰 BACKGROUND:
-• Currently managing: [Amount and type]
-• Track record: [Specific returns with timeframe]
-• Notable wins: [2-3 specific examples with returns]
-• One big loss: [What they learned]
-• Known for: [Reputation in market]
-• Other activities: [Advisory roles, newsletter, etc.]
+BACKGROUND:
+- Currently managing: [Amount and type]
+- Track record: [Specific returns with timeframe]
+- Notable wins: [2-3 specific examples with returns]
+- One big loss: [What they learned]
+- Known for: [Reputation in market]
 
 [CURRENT_VIEW]
-🌍 MARKET PERSPECTIVE:
+MARKET PERSPECTIVE:
 [Current stance on market conditions, valuations, opportunities. Should reflect their strategy and personality]
 
 CRITICAL RULES:
-1. Keep [SECTION] tags EXACTLY as shown (including emoji)
+1. Keep [SECTION] tags EXACTLY as shown
 2. Be specific with numbers, percentages, and thresholds
 3. Make it actionable - clear buy/sell rules
 4. Personality must come through in language and reasoning
-5. Reference nickname and catchphrase naturally
+5. Reference the strategy naturally in the persona
 6. Make INVEST_IN and AVOID clearly distinct
 7. Track record must be realistic but impressive
-8. Each variation should feel like a DIFFERENT person
+8. Should feel like a real, unique investor personality
 
 Return valid JSON with this structure:
 {
