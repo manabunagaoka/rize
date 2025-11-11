@@ -70,8 +70,8 @@ export default function UnicornAdmin() {
   const [generatingPersona, setGeneratingPersona] = useState(false);
   const [showGenerateInput, setShowGenerateInput] = useState(false);
   const [generateDescription, setGenerateDescription] = useState('');
-  const [personaVariations, setPersonaVariations] = useState<Array<{ id: number; quickSummary: string; fullPersona: string }>>([]);
-  const [selectedVariation, setSelectedVariation] = useState<number | null>(null);
+  const [generatedPersona, setGeneratedPersona] = useState<string>('');
+  const [generatedSummary, setGeneratedSummary] = useState<string>('');
   const [batchProgress, setBatchProgress] = useState<{
     show: boolean;
     current: number;
@@ -134,11 +134,11 @@ export default function UnicornAdmin() {
     
     setGenerateDescription(defaultDescription);
     setShowGenerateInput(true);
-    setPersonaVariations([]);
-    setSelectedVariation(null);
+    setGeneratedPersona('');
+    setGeneratedSummary('');
   };
 
-  const generatePersonaVariations = async () => {
+  const generatePersona = async () => {
     if (!generateDescription.trim()) {
       alert('Please enter a description');
       return;
@@ -149,39 +149,48 @@ export default function UnicornAdmin() {
       const res = await fetch('/api/admin/ai-generate-persona', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: generateDescription })
+        body: JSON.stringify({ 
+          description: generateDescription,
+          currentData: {
+            nickname: aiDetail?.user?.nickname,
+            strategy: aiDetail?.user?.strategy,
+            catchphrase: aiDetail?.user?.catchphrase
+          }
+        })
       });
 
       if (res.ok) {
         const data = await res.json();
-        setPersonaVariations(data.variations || []);
+        setGeneratedPersona(data.persona || '');
+        setGeneratedSummary(data.quickSummary || '');
         setShowGenerateInput(false);
       } else {
-        alert('Failed to generate variations');
+        const errorData = await res.json();
+        alert(`Failed to generate persona: ${errorData.error || 'Unknown error'}`);
       }
     } catch (err) {
-      console.error('Error generating variations:', err);
-      alert('Error generating variations');
+      console.error('Error generating persona:', err);
+      alert('Error generating persona');
     } finally {
       setGeneratingPersona(false);
     }
   };
 
-  const acceptPersonaVariation = async () => {
-    if (selectedVariation === null) {
-      alert('Please select a variation');
-      return;
-    }
+  const acceptGeneratedPersona = async () => {
+    if (!generatedPersona || !selectedAI) return;
 
-    const variation = personaVariations.find(v => v.id === selectedVariation);
-    if (!variation || !selectedAI) return;
-
-    await savePersona(selectedAI, variation.fullPersona);
+    await savePersona(selectedAI, generatedPersona);
     
     // Reset generation state
-    setPersonaVariations([]);
-    setSelectedVariation(null);
+    setGeneratedPersona('');
+    setGeneratedSummary('');
     setShowGenerateInput(false);
+  };
+
+  const editGenerationInput = () => {
+    setShowGenerateInput(true);
+    setGeneratedPersona('');
+    setGeneratedSummary('');
   };
 
   const handleToggleActive = async () => {
@@ -1342,7 +1351,7 @@ export default function UnicornAdmin() {
                     <div className="mt-4 mb-4 border-t border-gray-700 pt-4">
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-bold text-lg text-gray-300">AI Persona / Trading Guidelines</h4>
-                        {!editingPersona && personaVariations.length === 0 && (
+                        {!editingPersona && !showGenerateInput && !generatedPersona && (
                           <div className="flex gap-2">
                             <button 
                               onClick={startPersonaGeneration}
@@ -1412,7 +1421,7 @@ export default function UnicornAdmin() {
                               Cancel
                             </button>
                             <button
-                              onClick={generatePersonaVariations}
+                              onClick={generatePersona}
                               disabled={generatingPersona || !generateDescription.trim()}
                               className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-purple-900/50 flex items-center gap-2"
                             >
@@ -1422,82 +1431,57 @@ export default function UnicornAdmin() {
                                   Generating...
                                 </>
                               ) : (
-                                'Generate 10 Variations'
+                                'Generate Persona'
                               )}
                             </button>
                           </div>
                         </div>
-                      ) : personaVariations.length > 0 ? (
+                      ) : generatedPersona ? (
                         <div className="space-y-4">
-                          <div className="text-sm text-gray-400 mb-4">
-                            Select a variation below. Click on any card to preview the full persona.
+                          <div className="text-sm text-gray-400 mb-2">
+                            Review the generated persona below. You can accept it, regenerate a different version, or edit the input description.
                           </div>
                           
-                          {/* Variations Grid */}
-                          <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto">
-                            {personaVariations.map((variation) => (
-                              <div
-                                key={variation.id}
-                                onClick={() => setSelectedVariation(variation.id)}
-                                className={`cursor-pointer p-4 rounded-lg border-2 transition-all ${
-                                  selectedVariation === variation.id
-                                    ? 'border-purple-500 bg-purple-900/30'
-                                    : 'border-gray-700 bg-gray-900 hover:border-gray-600'
-                                }`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                                    selectedVariation === variation.id
-                                      ? 'border-purple-500 bg-purple-500'
-                                      : 'border-gray-600'
-                                  }`}>
-                                    {selectedVariation === variation.id && (
-                                      <span className="text-white text-xs">✓</span>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-bold text-sm text-purple-400 mb-1">Variation {variation.id}</div>
-                                    <div className="text-xs text-gray-300 line-clamp-3">{variation.quickSummary}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Selected Variation Preview */}
-                          {selectedVariation !== null && (
-                            <div className="bg-gray-900 p-4 rounded-lg border-2 border-purple-500 max-h-[30vh] overflow-y-auto">
-                              <div className="text-xs font-bold text-purple-400 mb-2">FULL PERSONA PREVIEW:</div>
-                              <pre className="text-xs text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
-                                {personaVariations.find(v => v.id === selectedVariation)?.fullPersona}
-                              </pre>
+                          {generatedSummary && (
+                            <div className="bg-purple-900/30 p-3 rounded-lg border border-purple-600">
+                              <div className="text-xs font-bold text-purple-400 mb-1">QUICK SUMMARY:</div>
+                              <div className="text-sm text-gray-200">{generatedSummary}</div>
                             </div>
                           )}
+
+                          {/* Generated Persona Preview */}
+                          <div className="bg-gray-900 p-4 rounded-lg border-2 border-purple-500 max-h-[50vh] overflow-y-auto">
+                            <div className="text-xs font-bold text-purple-400 mb-2">GENERATED PERSONA:</div>
+                            <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+                              {generatedPersona}
+                            </pre>
+                          </div>
 
                           <div className="flex gap-3 justify-end pt-2">
                             <button
                               onClick={() => {
-                                setPersonaVariations([]);
-                                setSelectedVariation(null);
+                                setGeneratedPersona('');
+                                setGeneratedSummary('');
                               }}
                               className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
                             >
                               Cancel
                             </button>
                             <button
-                              onClick={() => {
-                                setPersonaVariations([]);
-                                setSelectedVariation(null);
-                                setShowGenerateInput(true);
-                              }}
+                              onClick={editGenerationInput}
                               className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+                            >
+                              Edit Input
+                            </button>
+                            <button
+                              onClick={generatePersona}
+                              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
                             >
                               Regenerate
                             </button>
                             <button
-                              onClick={acceptPersonaVariation}
-                              disabled={selectedVariation === null}
-                              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
+                              onClick={acceptGeneratedPersona}
+                              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
                             >
                               Accept & Save
                             </button>

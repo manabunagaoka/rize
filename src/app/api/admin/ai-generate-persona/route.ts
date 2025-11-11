@@ -16,7 +16,7 @@ function getOpenAIClient() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { description, currentData, variationCount = 10 } = body;
+    const { description, currentData } = body;
 
     if (!description) {
       return NextResponse.json({ error: 'Description required' }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const { nickname, strategy, catchphrase } = currentData || {};
 
-    const prompt = `You are a persona generator for AI trading agents. Create ${variationCount} DIFFERENT trading personas based on the user's description.
+    const prompt = `You are a persona generator for AI trading agents. Create ONE refined, optimized trading persona based on the user's description.
 
 AI Details:
 - Nickname: ${nickname || 'AI Investor'}
@@ -34,7 +34,7 @@ AI Details:
 User Description:
 "${description}"
 
-Generate ${variationCount} VARIATIONS of this persona. Each variation should be DIFFERENT in:
+Create a SINGLE optimized persona that captures their essence with rich detail across:
 1. Track record (hedge fund manager $500M vs ex-founder $50M vs family office $2B, etc.)
 2. Personality (aggressive vs patient, data-driven vs intuitive, contrarian vs momentum)
 3. Decision style (fast mover vs patient hunter, mechanical vs gut-feel)
@@ -46,7 +46,7 @@ Generate ${variationCount} VARIATIONS of this persona. Each variation should be 
 9. Strategy nuances (pure vs hybrid, growth vs profitability focus, concentration vs diversification)
 10. Current market view (bullish vs cautious vs defensive vs opportunistic)
 
-Each persona MUST follow this EXACT template structure with these [SECTION] tags:
+The persona MUST follow this EXACT template structure with these [SECTION] tags:
 
 [QUICK_SUMMARY]
 [One powerful sentence, 50-100 characters max]
@@ -115,14 +115,8 @@ CRITICAL RULES:
 
 Return valid JSON with this structure:
 {
-  "variations": [
-    {
-      "id": 1,
-      "quickSummary": "...",
-      "fullPersona": "... (complete template with all sections)"
-    },
-    ...${variationCount} variations total
-  ]
+  "persona": "... (complete template with all sections)",
+  "quickSummary": "Brief 1-2 sentence description of this persona's core approach"
 }`;
 
     try {
@@ -143,15 +137,16 @@ Return valid JSON with this structure:
       const rawResponse = completion.choices[0].message.content || '{}';
       const result = JSON.parse(rawResponse);
       
-      if (!result.variations || !Array.isArray(result.variations)) {
+      if (!result.persona || typeof result.persona !== 'string') {
         throw new Error('Invalid response format from OpenAI');
       }
 
-      console.log(`Generated ${result.variations.length} persona variations for ${nickname}`);
+      console.log(`Generated persona for ${nickname || 'AI Investor'}`);
 
       return NextResponse.json({ 
         success: true,
-        variations: result.variations
+        persona: result.persona,
+        quickSummary: result.quickSummary || 'AI-generated persona'
       });
 
     } catch (openaiError) {
