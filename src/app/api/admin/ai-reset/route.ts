@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
 
     // Verify user is an AI investor
     const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('is_ai_investor, nickname')
-      .eq('id', userId)
+      .from('user_token_balances')
+      .select('user_id, ai_nickname, is_ai_investor')
+      .eq('user_id', userId)
       .single();
 
     if (userError || !user) {
@@ -41,44 +41,59 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User is not an AI investor' }, { status: 400 });
     }
 
-    // Reset balance to $1,000,000
+    // Reset balance to $1,000,000 in user_token_balances
     const { error: balanceError } = await supabase
-      .from('users')
-      .update({ tokens: 1000000 })
-      .eq('id', userId);
+      .from('user_token_balances')
+      .update({ 
+        available_tokens: 1000000,
+        total_tokens: 1000000,
+        total_invested: 0
+      })
+      .eq('user_id', userId);
 
     if (balanceError) {
       console.error('Error resetting balance:', balanceError);
       return NextResponse.json({ error: 'Failed to reset balance' }, { status: 500 });
     }
 
+    // Clear investment holdings
+    const { error: investmentError } = await supabase
+      .from('user_investments')
+      .delete()
+      .eq('user_id', userId);
+
+    if (investmentError) {
+      console.error('Error clearing investments:', investmentError);
+      // Non-critical, continue
+    }
+
     // Clear transaction history
     const { error: transactionError } = await supabase
-      .from('transactions')
+      .from('investment_transactions')
       .delete()
       .eq('user_id', userId);
 
     if (transactionError) {
       console.error('Error clearing transactions:', transactionError);
-      return NextResponse.json({ error: 'Failed to clear transaction history' }, { status: 500 });
+      // Non-critical, continue
     }
 
     // Clear trading logs
     const { error: logsError } = await supabase
       .from('ai_trading_logs')
       .delete()
-      .eq('ai_investor_id', userId);
+      .eq('user_id', userId);
 
     if (logsError) {
       console.error('Error clearing trading logs:', logsError);
       // Non-critical, continue
     }
 
-    console.log(`✅ Reset AI investor ${user.nickname} (${userId}) - Balance: $1M, History cleared`);
+    console.log(`✅ Reset AI investor ${user.ai_nickname} (${userId}) - Balance: $1M, History cleared`);
 
     return NextResponse.json({ 
       success: true,
-      message: `Reset ${user.nickname} successfully`,
+      message: `Reset ${user.ai_nickname} successfully`,
       newBalance: 1000000
     });
 

@@ -186,20 +186,34 @@ export default function UnicornAdmin() {
     if (!confirmModal.aiData) return;
     
     try {
+      console.log('[Reset] Attempting reset for:', confirmModal.aiData);
       const res = await fetch('/api/admin/ai-reset', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin_secret_manaboodle_2025'
+        },
         body: JSON.stringify({ 
           userId: confirmModal.aiData.userId,
           adminToken: 'admin_secret_manaboodle_2025'
         })
       });
+      
+      const data = await res.json();
+      console.log('[Reset] Response:', { status: res.status, ok: res.ok, data });
+      
       if (res.ok) {
-        loadData();
+        console.log('[Reset] Success! Reloading data...');
         setConfirmModal({ show: false, title: '', message: '', type: null, aiData: null });
+        await loadData();
+        alert(`✅ ${confirmModal.aiData.nickname} reset successfully!`);
+      } else {
+        console.error('[Reset] Failed:', data);
+        alert(`❌ Reset failed: ${data.error || 'Unknown error'}`);
       }
     } catch (err) {
-      console.error('Reset AI error:', err);
+      console.error('[Reset] Error:', err);
+      alert(`❌ Reset error: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
@@ -817,20 +831,8 @@ export default function UnicornAdmin() {
                   🚀 Test All Active AIs ({aiInvestors.filter(ai => ai.isActive).length})
                 </button>
                 
-                <button
-                  onClick={() => {
-                    setConfirmModal({
-                      show: true,
-                      title: 'Activate All AIs',
-                      message: `Activate ALL ${aiInvestors.length} AI investors?\n\nAll AIs will participate in auto-trading.`,
-                      type: 'activate-all',
-                      aiData: null
-                    });
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                  ✓ Activate All
-                </button>
+                {/* Note: Activate All button hidden - AI trading cron is currently disabled */}
+                {/* To enable: Add AI trading schedule to vercel.json crons array */}
                 
                 <button
                   onClick={() => {
@@ -1229,13 +1231,13 @@ export default function UnicornAdmin() {
 
       {selectedAI && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={() => setSelectedAI(null)}>
-          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[95vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex justify-between items-center">
+          <div className="bg-gray-800 rounded-lg max-w-4xl w-full h-[95vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gray-800 border-b border-gray-700 p-6 flex justify-between items-center shrink-0">
               <h2 className="text-2xl font-bold">AI Investor Deep Inspection</h2>
               <button onClick={() => setSelectedAI(null)} className="text-gray-400 hover:text-white text-2xl">×</button>
             </div>
             
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               {!aiDetail ? (
                 <div className="text-center py-12 text-gray-400">Loading AI details...</div>
               ) : (
@@ -1274,8 +1276,8 @@ export default function UnicornAdmin() {
                           <textarea
                             value={personaText}
                             onChange={(e) => setPersonaText(e.target.value)}
-                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed min-h-[700px]"
-                            rows={35}
+                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-gray-600 focus:border-blue-500 outline-none font-mono text-sm leading-relaxed resize-none"
+                            style={{ height: '60vh' }}
                             placeholder="Example:&#10;&#10;I'm a tech-focused investor who believes in disruption. I look for companies with innovative products and strong market potential. My strategy:&#10;&#10;• Risk Tolerance: Moderate-High&#10;• Focus: Technology sector, especially cloud and AI&#10;• Buy Signal: Strong revenue growth + positive sentiment&#10;• Sell Signal: Declining market share or negative news&#10;• Hold: Maintain positions in winners&#10;&#10;I trade with conviction but always consider fundamentals..."
                           />
                           <div className="flex gap-3 justify-end">
@@ -1294,10 +1296,38 @@ export default function UnicornAdmin() {
                           </div>
                         </div>
                       ) : (
-                        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-                          <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
-                            {aiDetail.user?.persona || aiDetail.user?.catchphrase || 'No persona defined'}
-                          </pre>
+                        <div className="space-y-3">
+                          {/* Custom Persona */}
+                          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                            <div className="text-xs font-bold text-blue-400 mb-2">CUSTOM PERSONA (ai_personality_prompt):</div>
+                            <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+                              {aiDetail.user?.persona || <span className="text-gray-500 italic">No custom persona - using default strategy guidelines below</span>}
+                            </pre>
+                          </div>
+                          
+                          {/* Default Strategy Guidelines */}
+                          <div className="bg-gray-900 p-4 rounded-lg border border-yellow-700">
+                            <div className="text-xs font-bold text-yellow-400 mb-2">DEFAULT STRATEGY GUIDELINES ({aiDetail.user?.strategy}):</div>
+                            <div className="text-sm text-gray-200 font-sans leading-relaxed">
+                              {aiDetail.user?.strategy === 'CONSERVATIVE' && 'The Boomer: ONLY invest in proven companies like Microsoft and Facebook. Small positions. Prefer holding over frequent trading. You lived through dot-com crash - never again!'}
+                              {aiDetail.user?.strategy === 'DIVERSIFIED' && 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.'}
+                              {aiDetail.user?.strategy === 'ALL_IN' && 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!'}
+                              {aiDetail.user?.strategy === 'HOLD_FOREVER' && 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌'}
+                              {aiDetail.user?.strategy === 'TECH_ONLY' && 'Silicon Brain: ONLY pure tech companies (Facebook, Microsoft, Dropbox). NO non-tech. Growth over everything. Code is eating the world.'}
+                              {aiDetail.user?.strategy === 'SAAS_ONLY' && 'Cloud Surfer: ONLY software-as-a-service businesses with recurring revenue. Dropbox, Microsoft yes. Hardware? NO WAY.'}
+                              {aiDetail.user?.strategy === 'MOMENTUM' && 'FOMO Master: You HATE missing gains! Buy stocks rising 2%+. Stock falling 2%+? Consider SELLING! Sitting on >40% cash is UNACCEPTABLE - you MUST be in the market!'}
+                              {aiDetail.user?.strategy === 'TREND_FOLLOW' && 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!'}
+                              {aiDetail.user?.strategy === 'CONTRARIAN' && 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.'}
+                              {aiDetail.user?.strategy === 'PERFECT_TIMING' && 'The Oracle: Buy low, sell high. Look for oversold opportunities (down 5%+). Exit overbought peaks (up 8%+). Precision timing wins.'}
+                            </div>
+                          </div>
+                          
+                          {/* Info note */}
+                          <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-700/50">
+                            <div className="text-xs text-blue-300">
+                              <strong>How it works:</strong> If Custom Persona is set, it replaces the Default Strategy Guidelines in the AI&apos;s trading prompt. Otherwise, the Default Guidelines are used. The full prompt also includes portfolio status, market data, strategy-specific rules, and trading limits.
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
