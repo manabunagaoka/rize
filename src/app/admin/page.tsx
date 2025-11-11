@@ -68,8 +68,6 @@ export default function UnicornAdmin() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [generatingPersona, setGeneratingPersona] = useState(false);
-  const [showGenerateInput, setShowGenerateInput] = useState(false);
-  const [generateDescription, setGenerateDescription] = useState('');
   const [generatedPersona, setGeneratedPersona] = useState<string>('');
   const [generatedSummary, setGeneratedSummary] = useState<string>('');
   const [batchProgress, setBatchProgress] = useState<{
@@ -120,7 +118,6 @@ export default function UnicornAdmin() {
         setEditingPersona(false);
         setGeneratedPersona('');
         setGeneratedSummary('');
-        setShowGenerateInput(false);
         loadAIDetail(userId);
         loadData();
       } else {
@@ -144,36 +141,17 @@ export default function UnicornAdmin() {
     }
   };
 
-  const startPersonaGeneration = () => {
-    // Pre-fill with existing persona data
+  const generatePersona = async () => {
+    // Auto-generate description from existing data
     const existingPersona = aiDetail?.user?.persona || aiDetail?.user?.catchphrase || '';
     const strategy = aiDetail?.user?.strategy || '';
     const nickname = aiDetail?.user?.nickname || 'AI Investor';
     
-    const defaultDescription = existingPersona || 
-      `${nickname} - ${strategy} strategy investor`;
-    
-    setGenerateDescription(defaultDescription);
-    setShowGenerateInput(true);
-    setGeneratedPersona('');
-    setGeneratedSummary('');
-  };
-
-  const generatePersona = async () => {
-    if (!generateDescription.trim()) {
-      setConfirmModal({
-        show: true,
-        title: 'Validation Error',
-        message: 'Please enter a description',
-        type: 'error',
-        aiData: null
-      });
-      return;
-    }
+    const description = existingPersona || `${nickname} - ${strategy} strategy investor`;
 
     setGeneratingPersona(true);
     console.log('[Persona Gen] Starting generation...', {
-      description: generateDescription,
+      description,
       nickname: aiDetail?.user?.nickname,
       strategy: aiDetail?.user?.strategy
     });
@@ -183,7 +161,7 @@ export default function UnicornAdmin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          description: generateDescription,
+          description: description,
           currentData: {
             nickname: aiDetail?.user?.nickname,
             strategy: aiDetail?.user?.strategy,
@@ -201,7 +179,6 @@ export default function UnicornAdmin() {
         
         setGeneratedPersona(data.persona || '');
         setGeneratedSummary(data.quickSummary || '');
-        setShowGenerateInput(false);
       } else {
         const errorData = await res.json();
         console.error('[Persona Gen] API Error:', errorData);
@@ -214,8 +191,7 @@ export default function UnicornAdmin() {
           aiData: null
         });
         
-        // Keep input visible on error
-        setShowGenerateInput(true);
+        // Reset state on error
         setGeneratedPersona('');
         setGeneratedSummary('');
       }
@@ -229,8 +205,7 @@ export default function UnicornAdmin() {
         aiData: null
       });
       
-      // Keep input visible on error
-      setShowGenerateInput(true);
+      // Reset state on error
       setGeneratedPersona('');
       setGeneratedSummary('');
     } finally {
@@ -244,13 +219,6 @@ export default function UnicornAdmin() {
     await savePersona(selectedAI, generatedPersona);
     
     // Reset generation state
-    setGeneratedPersona('');
-    setGeneratedSummary('');
-    setShowGenerateInput(false);
-  };
-
-  const editGenerationInput = () => {
-    setShowGenerateInput(true);
     setGeneratedPersona('');
     setGeneratedSummary('');
   };
@@ -1401,7 +1369,6 @@ export default function UnicornAdmin() {
                 <div className="space-y-6">
                   <div className="bg-gray-900 rounded-lg p-4">
                     <div className="flex items-center gap-4 mb-4">
-                      <span className="text-5xl">{aiDetail.user?.emoji || '🤖'}</span>
                       <div className="flex-1">
                         <h3 className="text-2xl font-bold">{aiDetail.user?.nickname || 'AI Investor'}</h3>
                         <p className="text-gray-400">{aiDetail.user?.strategy || 'N/A'}</p>
@@ -1413,10 +1380,10 @@ export default function UnicornAdmin() {
                     <div className="mt-4 mb-4 border-t border-gray-700 pt-4">
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="font-bold text-lg text-gray-300">AI Persona / Trading Guidelines</h4>
-                        {!editingPersona && !showGenerateInput && !generatedPersona && (
+                        {!editingPersona && !generatedPersona && !generatingPersona && (
                           <div className="flex gap-2">
                             <button 
-                              onClick={startPersonaGeneration}
+                              onClick={generatePersona}
                               className="text-sm bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium transition-colors"
                             >
                               Generate with AI
@@ -1430,6 +1397,12 @@ export default function UnicornAdmin() {
                             >
                               Edit Persona
                             </button>
+                          </div>
+                        )}
+                        {generatingPersona && (
+                          <div className="flex items-center gap-2 text-purple-400">
+                            <span className="inline-block w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></span>
+                            <span className="text-sm">Generating persona...</span>
                           </div>
                         )}
                       </div>
@@ -1457,44 +1430,6 @@ export default function UnicornAdmin() {
                               className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-green-900/50"
                             >
                               Save Persona
-                            </button>
-                          </div>
-                        </div>
-                      ) : showGenerateInput ? (
-                        <div className="space-y-4">
-                          <div className="text-sm text-gray-400">
-                            Provide a description of this AI investor. The system will generate an optimized persona based on your input.
-                          </div>
-                          <textarea
-                            value={generateDescription}
-                            onChange={(e) => setGenerateDescription(e.target.value)}
-                            className="w-full bg-gray-900 text-white p-4 rounded-lg border-2 border-purple-600 focus:border-purple-500 outline-none font-sans text-sm leading-relaxed resize-none"
-                            rows={6}
-                            placeholder="Example: Tech-focused investor with moderate risk tolerance. Prefers SaaS companies with recurring revenue. Makes data-driven decisions based on growth metrics and market sentiment."
-                          />
-                          <div className="flex gap-3 justify-end">
-                            <button
-                              onClick={() => {
-                                setShowGenerateInput(false);
-                                setGenerateDescription('');
-                              }}
-                              className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={generatePersona}
-                              disabled={generatingPersona || !generateDescription.trim()}
-                              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-purple-900/50 flex items-center gap-2"
-                            >
-                              {generatingPersona ? (
-                                <>
-                                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                  Generating...
-                                </>
-                              ) : (
-                                'Generate Persona'
-                              )}
                             </button>
                           </div>
                         </div>
@@ -1528,12 +1463,6 @@ export default function UnicornAdmin() {
                               className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
                             >
                               Cancel
-                            </button>
-                            <button
-                              onClick={editGenerationInput}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
-                            >
-                              Edit Input
                             </button>
                             <button
                               onClick={generatePersona}
