@@ -111,16 +111,17 @@ One bullet explaining how they define success and what drives MTK token value:
 - "Early mover: buys within 24 hours of listing"
 - "2-5% test positions across 15-20 companies"
 
-[VALUE_DRIVERS]
-What makes them invest - IMPORTANT: Write as plain text bullets, NOT as nested object:
+[COMPANY_TYPE_PREFERENCES]
+Split evaluation by the 3 company categories on platform. Use "Yes/No/Maybe" + brief criteria:
 
-FOR-PROFIT COMPANIES:
-- [e.g. "Revenue or customer traction mentioned in pitch"]
-- [e.g. "Subscription/recurring revenue model"]
+COMMERCIAL (For-profit companies, general market stocks):
+- [e.g. "YES - if subscription/SaaS model" OR "NO - only backs non-profits" OR "MAYBE - if tech sector"]
 
-NON-PROFIT/IMPACT ORGS:
-- [e.g. "Reach metrics: lives served, people helped"]
-- [e.g. "Founder's personal connection to cause in fun fact"]
+SOCIAL (Non-profits, impact orgs, B-corps):
+- [e.g. "YES - prioritizes reach metrics" OR "NO - financial ROI only" OR "MAYBE - if education/healthcare"]
+
+STUDENTS (Student-founded startups, any sector):
+- [e.g. "YES - loves early-stage scrappy founders" OR "NO - too risky" OR "MAYBE - if proven traction"]
 
 [GREEN_FLAGS]
 2-3 simple bullets (NOT numbered 0:, 1:, 2:) - what they look for:
@@ -141,17 +142,13 @@ NON-PROFIT/IMPACT ORGS:
 
 CRITICAL RULES:
 1. Keep [SECTION] tags EXACTLY as shown
-2. Use simple bullet format with dashes (-), NOT numbered arrays (0:, 1:, 2:)
-3. NO MENTION of voting, votes, or community engagement - platform has NO voting
-4. Handle ALL company types: general market, non-profits, student startups equally
-5. Make ROI_PHILOSOPHY clear - Financial/Impact/Blended/Opportunistic
-6. Differentiate FOR-PROFIT vs NON-PROFIT evaluation
-7. Be specific but concise - avoid "student-only" or "early-stage-only" unless that's their niche
-4. Be specific with thresholds, keywords, timing
-5. Make each investor's criteria RADICALLY different from others
-6. NO traditional VC metrics (MRR, Series A, burn rate) unless investor is pure capitalist
-7. Focus on: pitch quality, fun facts, founder traits, sector fit
-8. "${nickname}" personality must shine through all sections
+2. Use simple dash bullets (-), NOT numbered (0:, 1:, 2:)
+3. NO voting/votes mentions - platform has NO voting system
+4. [COMPANY_TYPE_PREFERENCES] section MUST have all 3 categories: COMMERCIAL, SOCIAL, STUDENTS
+5. Cloud Surfer example: COMMERCIAL=YES (SaaS only), SOCIAL=NO, STUDENTS=NO
+6. Make ROI_PHILOSOPHY clear: Financial/Impact/Blended/Opportunistic
+7. Be specific: Cloud Surfer = Financial ROI (subscription revenue drives token value)
+8. Each investor needs DIFFERENT preferences across the 3 company types
 
 Return valid JSON:
 {
@@ -169,16 +166,18 @@ Return valid JSON:
         messages: [
           { 
             role: 'system', 
-            content: `You are a persona generator for a multi-index token marketplace.
+            content: `You are a persona generator for a 3-category token marketplace: COMMERCIAL, SOCIAL, STUDENTS.
 
-CRITICAL RULES - MUST FOLLOW:
-1. NO "student" words unless investor ONLY does student index
-2. NO "votes" or "voting" - platform has NO voting system
-3. Use dash bullets (-), NOT numbers (0:, 1:, 2:)
-4. Cloud Surfer = Financial ROI (SaaS revenue focus)
-5. Diamond Hands = Blended ROI + NEVER sells
+MANDATORY RULES:
+1. [COMPANY_TYPE_PREFERENCES] section MUST have all 3: COMMERCIAL / SOCIAL / STUDENTS
+2. Each category needs YES/NO/MAYBE + brief reason
+3. NO "student" in summary/background UNLESS investor says STUDENTS=YES
+4. NO "votes" - platform has NO voting
+5. Use dash bullets (-), NOT (0:, 1:, 2:)
+6. Cloud Surfer: COMMERCIAL=YES (SaaS), SOCIAL=NO, STUDENTS=NO, Financial ROI
+7. Diamond Hands: COMMERCIAL=YES, SOCIAL=MAYBE, STUDENTS=MAYBE, Blended ROI, NEVER sells
 
-Return valid JSON only.`
+Return valid JSON.`
           },
           { role: 'user', content: prompt }
         ],
