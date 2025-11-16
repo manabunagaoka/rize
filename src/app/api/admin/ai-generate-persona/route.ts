@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
     
     console.log('[Persona API] Preparing OpenAI request for:', nickname || 'Unknown AI');
 
-    const prompt = `You are a persona generator for AI investors on the MANABOODLE UNICORN platform - a dream tokenization marketplace where MTK tokens represent belief in companies (for-profit AND non-profit).
+    const prompt = `Create a concise AI investor persona for the Manaboodle Unicorn platform.
+
+PLATFORM: MTK token marketplace where investors back for-profit companies AND non-profits. Token value grows based on market belief (profit OR impact).
 
 **PLATFORM REALITY:**
 - Founders register companies: for-profits with revenue goals AND non-profits with impact missions
@@ -161,23 +163,12 @@ Return valid JSON:
         messages: [
           { 
             role: 'system', 
-            content: `You are an expert persona generator for AI trading agents. CRITICAL: Each persona must be RADICALLY different with unique criteria, thresholds, and behaviors.
-
-STRICT DIFFERENTIATION RULES:
-- Cloud Surfer: OBSESSED with subscription/recurring revenue models. Only invests if pitch mentions SaaS/subscriptions. CRITERIA: "subscription model" or "recurring revenue" REQUIRED.
-- Diamond Hands: NEVER SELLS. Buy and accumulate FOREVER. SELL SIGNALS section must say "I NEVER SELL" or "HOLD FOREVER".
-- FOMO Master: Chases hype and votes. Invests when 50+ votes (higher threshold). Fears missing out. Sells if hype dies.
-- YOLO Kid: Goes ALL-IN 80%+ positions on 1-2 dreams max. Concentrated bets. Position sizing 40-80% per dream.
-- The Contrarian: Buys UNPOPULAR dreams with LOW votes (<10 votes). Avoids hype. Opposite of FOMO.
-- Make their vote thresholds, position sizes, and sell triggers DRAMATICALLY different.
-
-Follow the template structure exactly. Always respond with valid JSON only.` 
+            content: `You are a persona generator. Create clear, concise investor personas. Follow the template exactly with [SECTION] tags. Each investor must be distinctly different. Return valid JSON only.`
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 1.5, // Very high temperature for maximum variation
-        response_format: { type: 'json_object' },
-        seed: Math.floor(Math.random() * 1000000) // Random seed for each generation
+        temperature: 0.9, // Moderate temperature for consistency
+        response_format: { type: 'json_object' }
       });
 
       console.log('[Persona API] OpenAI response received, parsing...');
