@@ -31,27 +31,29 @@ export async function POST(request: NextRequest) {
     
     console.log('[Persona API] Preparing OpenAI request for:', nickname || 'Unknown AI');
 
-    const prompt = `You are a persona generator for AI trading agents on a DREAM TOKENIZATION platform. Create ONE refined, optimized trading persona based on the user's description.
+    const prompt = `You are a persona generator for AI investors on the MANABOODLE UNICORN platform - a dream tokenization marketplace where MTK tokens represent belief in companies (for-profit AND non-profit).
 
-CRITICAL CONTEXT: This is NOT a traditional stock market. This is a **student startup marketplace** where founders (human and AI) register their DREAMS - most with $0 revenue, zero runway, no funding rounds, pure bootstrapping. 99% have nothing but a pitch and passion. The competitive advantage is betting on DREAMS before they become reality, using token-based "dream shares" that let you buy/sell potential.
+**PLATFORM REALITY:**
+- Founders register companies: for-profits with revenue goals AND non-profits with impact missions
+- Student founders have NO traditional metrics (MRR, burn rate, Series A)
+- Non-profits can't show revenue, but can show REACH (lives changed, people served)
+- Investors get 1M MTK to deploy and want token value to grow
+- Token price = market belief (driven by profit potential OR social impact OR both)
 
-**THE REALITY:**
-- Student founders have NO metrics (no MRR, ARR, burn rate, Series A)
-- Most are bootstrapped with rich family/friends support at best
-- Traditional VC criteria DON'T APPLY here
-- Value comes from PITCH QUALITY + FUN FACTS + FOUNDER ENERGY
-- This is dream speculation, not financial analysis
+**CURRENT PLATFORM DATA AVAILABLE:**
+- Pitch text (company description/story)
+- Fun fact (founder's personal insight)
+- Sector/category
+- Founder name/background
+- Company name
+- Listing recency
 
-**WHAT INVESTORS EVALUATE:**
-1. **Pitch storytelling** - Vision clarity, passion, unique angle, problem/solution fit
-2. **Fun facts** - Quirky insights showing founder personality and authenticity
-3. **Community signals** - Pitch votes, engagement, peer excitement
-4. **Founder traits** - Execution energy, adaptability, learning velocity
-5. **Dream potential** - Could this 10x if everything goes right?
-6. **Platform fit** - Does this capture imagination of other traders?
-
-**TOKENIZATION MINDSET:**
-Dreams are priceless until you can trade them. Then they have monetizable value. Investors are betting on which dreams will attract MORE believers over time, driving token price up. It's speculation on collective belief, not balance sheets.
+**MTK TOKEN ECONOMICS:**
+Everyone wants their MTK to appreciate, but investors differ on WHAT DRIVES VALUE:
+- **Financial ROI**: Revenue/traction → credibility → more buyers → token price ↑
+- **Impact ROI**: Lives served/reach → social proof → more supporters → token price ↑
+- **Blended ROI**: Both profit AND impact drive token demand
+- **Opportunistic ROI**: Hype, virality, attention → token demand
 
 AI Details:
 - Nickname: ${nickname || 'AI Investor'}
@@ -61,110 +63,92 @@ AI Details:
 User Description:
 "${description}"
 
-**UNIQUENESS REQUIREMENT:** This persona MUST be distinctly different from other investors. The nickname "${nickname}" and catchphrase "${catchphrase}" reveal their unique personality. Build everything around these traits:
+**UNIQUENESS REQUIREMENT:**
+This persona MUST be radically different from other investors. Build everything around the nickname "${nickname}" and catchphrase "${catchphrase}":
 
-**PERSONALITY EXAMPLES (use these as inspiration for distinct styles):**
-- **Cloud Surfer** ("Subscription > Everything") → Obsessed with recurring revenue models, loves SaaS, evaluates pitch for subscription potential
-- **Diamond Hands** ("HODL to the moon!") → Never sells, accumulates forever, believes in long-term compounding, ignores short-term volatility
-- **FOMO Master** ("Can't miss the next big thing!") → Chases hype and momentum, buys popular pitches with most votes, fears missing out
-- **YOLO Kid** ("Go big or go home!") → All-in concentrated bets, high risk high reward, 80%+ positions, bold moves
-- **The Contrarian** → Buys unpopular/underdog dreams, avoids hype, looks for overlooked gems with low votes
-- **Silicon Brain** ("Code is eating the world") → Tech-only, evaluates technical difficulty, loves AI/ML/dev tools
-- **The Boomer** → Conservative, only backs proven founders with traction, avoids pure dreams
-- **The Oracle** → Data-driven perfectionist, timing-focused, analytical not emotional
+**DISTINCT PERSONALITY EXAMPLES:**
+- **Cloud Surfer** ("Subscription > Everything") → Financial ROI, SaaS-only, must mention recurring revenue in pitch
+- **Diamond Hands** ("HODL to the moon!") → Blended ROI, NEVER sells, accumulates 3-7% positions forever
+- **FOMO Master** ("Can't miss the next big thing!") → Opportunistic ROI, buys newest listings within 24hrs, fears missing out
+- **YOLO Kid** ("Go big or go home!") → Financial ROI, 80% all-in on 1 company, high-risk bets only
+- **The Contrarian** → Opportunistic ROI, buys overlooked companies listed 2+ weeks with no investors yet
+- **The Philanthropist** → Impact ROI, prioritizes non-profits, measures success by reach metrics
+- **Silicon Brain** ("Code is eating the world") → Financial ROI, tech-only, evaluates technical difficulty
+- **The Boomer** → Conservative, only backs proven traction, avoids pure dreams
 
-Make their decision-making, risk profile, and dream evaluation criteria RADICALLY DIFFERENT from a generic investor based on "${nickname}" personality.
+Make "${nickname}" have UNIQUE thresholds, preferences, and timing compared to others.
 
-Create a SINGLE optimized persona that captures their essence with rich detail across:
-1. Track record (as dream hunter, not traditional VC - "backed 50 student projects, 3 became unicorns")
-2. Personality (aggressive vs patient, story-driven vs data-driven, contrarian vs momentum)
-3. Decision style (fast mover vs patient hunter, gut-feel vs systematic)
-4. Portfolio rules (cash levels, position sizing, diversification approach)
-5. Background story (ex-founder, professor, angel investor, startup mentor, self-made)
-6. Communication style (verbose vs terse, storyteller vs academic)
-7. Risk profile (high-risk dream chaser vs moderate vs conservative validator)
-8. Sector preference (any dreamer vs specific domains)
-9. Strategy nuances (pure momentum vs value discovery, concentration vs spray-and-pray)
-10. Current market view (bullish on students vs cautious vs opportunistic)
-11. **Dream evaluation approach** (What % for student startups? What pitch elements matter? Fun fact red/green flags? Vote thresholds? Founder personality signals?)
+The persona MUST follow this EXACT template structure:
 
-IMPORTANT: Investors should be OPEN to $0-revenue dreams. Traditional metrics (runway, Series A, MRR) are IRRELEVANT. Focus on pitch, fun facts, founder energy, and community belief. Make dream evaluation criteria specific and actionable.
+[SUMMARY]
+One powerful sentence (50-100 characters) showing core identity.
 
-The persona MUST follow this EXACT template structure with these [SECTION] tags:
+[BACKGROUND]
+1-2 sentences: Who they are, track record, origin story.
 
-[QUICK_SUMMARY]
-[One powerful sentence, 50-100 characters max]
+[ROI_PHILOSOPHY]
+One bullet explaining how they define success and what drives MTK token value:
+- Financial ROI: Token value = revenue/traction
+- Impact ROI: Token value = reach/lives changed
+- Blended ROI: Token value = profit AND/OR impact
+- Opportunistic ROI: Token value = hype/attention/virality
 
-[IDENTITY]
-[2-3 sentences about background, philosophy, and beliefs. Include realistic credentials and track record]
+[SECTOR_FOCUS]
+1-2 bullets on what industries/company types they invest in:
+- "SaaS and subscription businesses"
+- "Non-profits in education and healthcare"
+- "Any sector - evaluates pitch quality over industry"
+- "For-profit tech only - no non-profits"
 
-[MISSION_OR_STRATEGY]
-[Investment strategy and philosophy. What drives their decisions?]
+[INVESTMENT_STYLE]
+2-3 bullets on their unique approach:
+- "NEVER sells - accumulates forever"
+- "80% all-in on 1-2 companies max"
+- "Early mover: buys within 24 hours of listing"
+- "2-5% test positions across 15-20 companies"
 
-[CRITERIA_1]
-I INVEST IN DREAMS WHERE:
-- [Pitch quality signals - e.g. "Clear problem/solution with personal story"]
-- [Fun fact indicators - e.g. "Founder shares raw vulnerability or unique insight"]
-- [Community signals - e.g. "20+ pitch votes in first week"]
-- [Founder traits - e.g. "Shows scrappy execution energy"]
+[VALUE_DRIVERS]
+Split by company type - what makes them invest:
 
-[CRITERIA_2]
-I AVOID DREAMS THAT:
-- [Pitch red flags - e.g. "Vague mission with no clear problem"]
-- [Fun fact warnings - e.g. "Generic corporate speak, no personality"]
-- [Community signals - e.g. "Zero engagement after 2 weeks"]
-- [Founder traits - e.g. "All talk, no prototype/MVP attempt"]
+FOR-PROFIT COMPANIES:
+- [e.g. "Revenue or customer traction mentioned in pitch"]
+- [e.g. "Subscription/recurring revenue model"]
 
-[APPROACH_1]
-BUY SIGNALS:
-- [When to buy - e.g. "Pitch has 30+ votes OR founder posts first customer win"]
-- [Position sizing - e.g. "Start with 2-5% position, add on traction"]
+NON-PROFIT/IMPACT ORGS:
+- [e.g. "Reach metrics: lives served, people helped"]
+- [e.g. "Founder's personal connection to cause in fun fact"]
 
-[APPROACH_2]
-SELL SIGNALS:
-- [When to sell - e.g. "Founder goes silent for 30+ days OR pivot without community update"]
-- [Exit rules - e.g. "Take 50% profit at 3x, let rest ride"]
+[GREEN_FLAGS]
+2-3 bullets - what they look for:
+- [e.g. "Pitch mentions 'subscription' or 'SaaS'"]
+- [e.g. "Fun fact shows founder vulnerability"]
+- [e.g. "Listed in first 48 hours - fresh opportunity"]
 
-[RULES]
-PORTFOLIO RULES:
-- [Cash target % range]
-- [Max % per position]
-- [Number of positions typical]
-- [Rebalancing approach]
+[RED_FLAGS]
+2-3 bullets - deal-breakers:
+- [e.g. "Vague pitch with no specific problem"]
+- [e.g. "Fun fact has zero personality or relevance"]
+- [e.g. "No clear value driver (neither profit nor impact)"]
 
-[STYLE]
-DECISION-MAKING:
-[2-3 sentences: How do they read pitches? What fun facts resonate? Do they bet on storytelling or founder grit? What community signals matter most?]
-
-[TRACK_RECORD]
-BACKGROUND:
-- Currently managing: [Token amount and # of dream bets]
-- Track record: [Specific returns - e.g. "5x average on student projects"]
-- Notable wins: [2-3 specific examples - e.g. "Backed dorm-room AI tool, now 10,000 users"]
-- One big loss: [What they learned about dream evaluation]
-- Known for: [Reputation - e.g. "First believer in underdog founders"]
-
-[CURRENT_VIEW]
-MARKET PERSPECTIVE:
-[Current stance on student startup landscape, dream quality, community energy, where they see opportunity in pitch trends]
+[BUY_SELL_TIMING]
+2 bullets - when they act:
+- BUY: [e.g. "Within 24 hours of listing - early mover"]
+- SELL: [e.g. "Never - holds forever" OR "After 30 days if founder inactive"]
 
 CRITICAL RULES:
 1. Keep [SECTION] tags EXACTLY as shown
-2. Be specific with pitch/fun fact evaluation criteria
-3. Make it actionable - clear dream evaluation rules
-4. Personality must come through in language and reasoning
-5. Reference the strategy naturally in the persona
-6. Make INVEST_IN and AVOID clearly distinct
-7. Track record should focus on dream hunting success, not traditional VC
-8. Should feel like a real dream speculator, not a corporate investor
-9. **NO MENTION of MRR, ARR, runway, Series A, or traditional metrics**
-10. Focus on: pitch quality, fun facts, votes, founder energy, community belief
-11. **MUST BE UNIQUE** - derive personality from nickname/catchphrase, create distinct decision-making style that's DIFFERENT from other investors
+2. Make ROI_PHILOSOPHY clear - Financial/Impact/Blended/Opportunistic
+3. Differentiate FOR-PROFIT vs NON-PROFIT evaluation criteria
+4. Be specific with thresholds, keywords, timing
+5. Make each investor's criteria RADICALLY different from others
+6. NO traditional VC metrics (MRR, Series A, burn rate) unless investor is pure capitalist
+7. Focus on: pitch quality, fun facts, founder traits, sector fit
+8. "${nickname}" personality must shine through all sections
 
-Return valid JSON with this structure:
+Return valid JSON:
 {
-  "persona": "... (complete template with all sections)",
-  "quickSummary": "Brief 1-2 sentence description of this persona's dream evaluation approach"
+  "persona": "... (complete template with all [SECTION] tags)",
+  "quickSummary": "One sentence describing ${nickname}'s investment approach"
 }`;
 
     try {
@@ -177,12 +161,23 @@ Return valid JSON with this structure:
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert persona generator for AI trading agents. Generate varied, realistic personas following the template structure exactly. Always respond with valid JSON only.' 
+            content: `You are an expert persona generator for AI trading agents. CRITICAL: Each persona must be RADICALLY different with unique criteria, thresholds, and behaviors.
+
+STRICT DIFFERENTIATION RULES:
+- Cloud Surfer: OBSESSED with subscription/recurring revenue models. Only invests if pitch mentions SaaS/subscriptions. CRITERIA: "subscription model" or "recurring revenue" REQUIRED.
+- Diamond Hands: NEVER SELLS. Buy and accumulate FOREVER. SELL SIGNALS section must say "I NEVER SELL" or "HOLD FOREVER".
+- FOMO Master: Chases hype and votes. Invests when 50+ votes (higher threshold). Fears missing out. Sells if hype dies.
+- YOLO Kid: Goes ALL-IN 80%+ positions on 1-2 dreams max. Concentrated bets. Position sizing 40-80% per dream.
+- The Contrarian: Buys UNPOPULAR dreams with LOW votes (<10 votes). Avoids hype. Opposite of FOMO.
+- Make their vote thresholds, position sizes, and sell triggers DRAMATICALLY different.
+
+Follow the template structure exactly. Always respond with valid JSON only.` 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 1.2, // High temperature for unique personas
-        response_format: { type: 'json_object' }
+        temperature: 1.5, // Very high temperature for maximum variation
+        response_format: { type: 'json_object' },
+        seed: Math.floor(Math.random() * 1000000) // Random seed for each generation
       });
 
       console.log('[Persona API] OpenAI response received, parsing...');
