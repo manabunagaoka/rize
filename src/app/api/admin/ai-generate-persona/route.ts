@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
     
     console.log('[Persona API] Preparing OpenAI request for:', nickname || 'Unknown AI');
 
-    const prompt = `You are a persona generator for AI trading agents. Create ONE refined, optimized trading persona based on the user's description.
+    const prompt = `You are a persona generator for AI trading agents on a unicorn discovery platform. Create ONE refined, optimized trading persona based on the user's description.
+
+CRITICAL CONTEXT: This investor operates on a live marketplace where real founders (both human and AI) register their startups seeking investment. They actively evaluate new opportunities ranging from pre-revenue ideas to growth-stage companies. While they maintain their core investment strategy for established stocks, they allocate a portion of their portfolio to hunt for the next unicorn among emerging startups. They must balance proven companies with high-potential early-stage bets.
 
 AI Details:
 - Nickname: ${nickname || 'AI Investor'}
@@ -52,6 +54,9 @@ Create a SINGLE optimized persona that captures their essence with rich detail a
 8. Sector specialty (horizontal SaaS vs vertical vs dev tools vs all equally)
 9. Strategy nuances (pure vs hybrid, growth vs profitability focus, concentration vs diversification)
 10. Current market view (bullish vs cautious vs defensive vs opportunistic)
+11. **Startup evaluation approach** (What % of portfolio for startups? How do they evaluate founders, ideas, and market timing? What stage do they prefer: pre-revenue, seed, Series A?)
+
+IMPORTANT: Even conservative investors should allocate at least 5-10% to startup opportunities. They're here to discover unicorns, not just trade established stocks. Make their startup criteria clear and actionable.
 
 The persona MUST follow this EXACT template structure with these [SECTION] tags:
 
