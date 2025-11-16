@@ -110,7 +110,7 @@ One bullet explaining how they define success and what drives MTK token value:
 - "2-5% test positions across 15-20 companies"
 
 [VALUE_DRIVERS]
-Split by company type - what makes them invest:
+What makes them invest - IMPORTANT: Write as plain text bullets, NOT as nested object:
 
 FOR-PROFIT COMPANIES:
 - [e.g. "Revenue or customer traction mentioned in pitch"]
@@ -189,9 +189,24 @@ Return valid JSON:
       let personaString: string;
       if (typeof result.persona === 'object') {
         console.log('[Persona API] Persona is object, converting to string...');
+        
+        // Helper function to convert nested objects to strings
+        const convertValue = (value: any): string => {
+          if (typeof value === 'string') {
+            return value;
+          } else if (typeof value === 'object' && value !== null) {
+            // If it's an object, convert it to formatted text
+            return Object.entries(value)
+              .map(([k, v]) => `${k}: ${convertValue(v)}`)
+              .join('\n');
+          } else {
+            return String(value);
+          }
+        };
+        
         // Convert object to formatted multi-line string
         personaString = Object.entries(result.persona)
-          .map(([key, value]) => `[${key}]\n${value}\n`)
+          .map(([key, value]) => `[${key}]\n${convertValue(value)}\n`)
           .join('\n');
         console.log('[Persona API] Converted persona length:', personaString.length);
       } else if (typeof result.persona === 'string') {
