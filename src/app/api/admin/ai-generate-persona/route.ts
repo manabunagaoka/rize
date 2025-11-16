@@ -169,11 +169,20 @@ Return valid JSON:
         messages: [
           { 
             role: 'system', 
-            content: `You are a persona generator. Create clear, concise investor personas. Follow the template exactly with [SECTION] tags. Each investor must be distinctly different. Return valid JSON only.`
+            content: `You are a persona generator for a multi-index token marketplace.
+
+CRITICAL RULES - MUST FOLLOW:
+1. NO "student" words unless investor ONLY does student index
+2. NO "votes" or "voting" - platform has NO voting system
+3. Use dash bullets (-), NOT numbers (0:, 1:, 2:)
+4. Cloud Surfer = Financial ROI (SaaS revenue focus)
+5. Diamond Hands = Blended ROI + NEVER sells
+
+Return valid JSON only.`
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.9, // Moderate temperature for consistency
+        temperature: 0.7, // Lower for instruction following
         response_format: { type: 'json_object' }
       });
 
