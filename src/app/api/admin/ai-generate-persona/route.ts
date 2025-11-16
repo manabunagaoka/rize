@@ -33,29 +33,31 @@ export async function POST(request: NextRequest) {
 
     const prompt = `Create a concise AI investor persona for the Manaboodle Unicorn platform.
 
-PLATFORM: MTK token marketplace where investors back for-profit companies AND non-profits. Token value grows based on market belief (profit OR impact).
+PLATFORM: MTK token marketplace backing diverse companies across multiple indexes:
+- General market stocks (public companies)
+- Made-up indexes (e.g. Non-Profit Top 7)
+- Student startups (segmented by year, school: MBA, Education, Art, Health, etc.)
 
 **PLATFORM REALITY:**
-- Founders register companies: for-profits with revenue goals AND non-profits with impact missions
-- Student founders have NO traditional metrics (MRR, burn rate, Series A)
-- Non-profits can't show revenue, but can show REACH (lives changed, people served)
-- Investors get 1M MTK to deploy and want token value to grow
-- Token price = market belief (driven by profit potential OR social impact OR both)
+- Mix of established companies AND early-stage ventures
+- For-profits pursue revenue, non-profits pursue reach/impact
+- NO VOTING SYSTEM - investors evaluate pitch, fun fact, sector directly
+- Investors get 1M MTK to deploy
+- Token price = market belief in company's future (profit OR impact)
 
-**CURRENT PLATFORM DATA AVAILABLE:**
-- Pitch text (company description/story)
+**EVALUATION DATA (No votes, no traction yet):**
+- Pitch text (company story/mission)
 - Fun fact (founder's personal insight)
 - Sector/category
-- Founder name/background
-- Company name
-- Listing recency
+- Founder background
+- Company type (for-profit, non-profit, student startup, etc.)
 
 **MTK TOKEN ECONOMICS:**
-Everyone wants their MTK to appreciate, but investors differ on WHAT DRIVES VALUE:
-- **Financial ROI**: Revenue/traction → credibility → more buyers → token price ↑
-- **Impact ROI**: Lives served/reach → social proof → more supporters → token price ↑
-- **Blended ROI**: Both profit AND impact drive token demand
-- **Opportunistic ROI**: Hype, virality, attention → token demand
+Investors have different theories on what drives token value:
+- **Financial ROI**: Revenue potential → token demand ↑
+- **Impact ROI**: Social reach → token demand ↑
+- **Blended ROI**: Profit AND/OR impact → token demand ↑
+- **Opportunistic ROI**: Attention/hype → token demand ↑
 
 AI Details:
 - Nickname: ${nickname || 'AI Investor'}
@@ -66,7 +68,7 @@ User Description:
 "${description}"
 
 **UNIQUENESS REQUIREMENT:**
-This persona MUST be radically different from other investors. Build everything around the nickname "${nickname}" and catchphrase "${catchphrase}":
+Build persona around "${nickname}" personality. Must be DISTINCTLY different from other investors:
 
 **DISTINCT PERSONALITY EXAMPLES:**
 - **Cloud Surfer** ("Subscription > Everything") → Financial ROI, SaaS-only, must mention recurring revenue in pitch
@@ -121,26 +123,30 @@ NON-PROFIT/IMPACT ORGS:
 - [e.g. "Founder's personal connection to cause in fun fact"]
 
 [GREEN_FLAGS]
-2-3 bullets - what they look for:
-- [e.g. "Pitch mentions 'subscription' or 'SaaS'"]
-- [e.g. "Fun fact shows founder vulnerability"]
-- [e.g. "Listed in first 48 hours - fresh opportunity"]
+2-3 simple bullets (NOT numbered 0:, 1:, 2:) - what they look for:
+- "Pitch mentions 'subscription' or 'SaaS'"
+- "Fun fact shows founder vulnerability"
+- "Listed in first 48 hours - fresh opportunity"
 
 [RED_FLAGS]
-2-3 bullets - deal-breakers:
-- [e.g. "Vague pitch with no specific problem"]
-- [e.g. "Fun fact has zero personality or relevance"]
-- [e.g. "No clear value driver (neither profit nor impact)"]
+2-3 simple bullets (NOT numbered) - deal-breakers:
+- "Vague pitch with no specific problem"
+- "Fun fact has zero personality"
+- "No clear value driver"
 
 [BUY_SELL_TIMING]
-2 bullets - when they act:
-- BUY: [e.g. "Within 24 hours of listing - early mover"]
-- SELL: [e.g. "Never - holds forever" OR "After 30 days if founder inactive"]
+2 simple bullets (NOT numbered) - when they act:
+- BUY: "Within 24 hours of listing - early mover"
+- SELL: "Never - holds forever" OR "After 30 days if no traction"
 
 CRITICAL RULES:
 1. Keep [SECTION] tags EXACTLY as shown
-2. Make ROI_PHILOSOPHY clear - Financial/Impact/Blended/Opportunistic
-3. Differentiate FOR-PROFIT vs NON-PROFIT evaluation criteria
+2. Use simple bullet format with dashes (-), NOT numbered arrays (0:, 1:, 2:)
+3. NO MENTION of voting, votes, or community engagement - platform has NO voting
+4. Handle ALL company types: general market, non-profits, student startups equally
+5. Make ROI_PHILOSOPHY clear - Financial/Impact/Blended/Opportunistic
+6. Differentiate FOR-PROFIT vs NON-PROFIT evaluation
+7. Be specific but concise - avoid "student-only" or "early-stage-only" unless that's their niche
 4. Be specific with thresholds, keywords, timing
 5. Make each investor's criteria RADICALLY different from others
 6. NO traditional VC metrics (MRR, Series A, burn rate) unless investor is pure capitalist
