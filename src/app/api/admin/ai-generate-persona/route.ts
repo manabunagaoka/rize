@@ -61,6 +61,20 @@ AI Details:
 User Description:
 "${description}"
 
+**UNIQUENESS REQUIREMENT:** This persona MUST be distinctly different from other investors. The nickname "${nickname}" and catchphrase "${catchphrase}" reveal their unique personality. Build everything around these traits:
+
+**PERSONALITY EXAMPLES (use these as inspiration for distinct styles):**
+- **Cloud Surfer** ("Subscription > Everything") → Obsessed with recurring revenue models, loves SaaS, evaluates pitch for subscription potential
+- **Diamond Hands** ("HODL to the moon!") → Never sells, accumulates forever, believes in long-term compounding, ignores short-term volatility
+- **FOMO Master** ("Can't miss the next big thing!") → Chases hype and momentum, buys popular pitches with most votes, fears missing out
+- **YOLO Kid** ("Go big or go home!") → All-in concentrated bets, high risk high reward, 80%+ positions, bold moves
+- **The Contrarian** → Buys unpopular/underdog dreams, avoids hype, looks for overlooked gems with low votes
+- **Silicon Brain** ("Code is eating the world") → Tech-only, evaluates technical difficulty, loves AI/ML/dev tools
+- **The Boomer** → Conservative, only backs proven founders with traction, avoids pure dreams
+- **The Oracle** → Data-driven perfectionist, timing-focused, analytical not emotional
+
+Make their decision-making, risk profile, and dream evaluation criteria RADICALLY DIFFERENT from a generic investor based on "${nickname}" personality.
+
 Create a SINGLE optimized persona that captures their essence with rich detail across:
 1. Track record (as dream hunter, not traditional VC - "backed 50 student projects, 3 became unicorns")
 2. Personality (aggressive vs patient, story-driven vs data-driven, contrarian vs momentum)
@@ -145,6 +159,7 @@ CRITICAL RULES:
 8. Should feel like a real dream speculator, not a corporate investor
 9. **NO MENTION of MRR, ARR, runway, Series A, or traditional metrics**
 10. Focus on: pitch quality, fun facts, votes, founder energy, community belief
+11. **MUST BE UNIQUE** - derive personality from nickname/catchphrase, create distinct decision-making style that's DIFFERENT from other investors
 
 Return valid JSON with this structure:
 {
@@ -166,7 +181,7 @@ Return valid JSON with this structure:
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.8, // Higher for more variation
+        temperature: 1.2, // High temperature for unique personas
         response_format: { type: 'json_object' }
       });
 
