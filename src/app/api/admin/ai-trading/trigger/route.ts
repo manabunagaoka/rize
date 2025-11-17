@@ -659,7 +659,10 @@ export async function POST(request: NextRequest) {
           execution: result.execution
         });
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Only delay for manual testing, not for cron (to avoid timeout)
+        if (userId) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       } catch (error) {
         console.error(`Error processing ${ai.ai_nickname}:`, error);
         results.push({
