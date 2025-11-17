@@ -354,7 +354,10 @@ export default function UnicornAdmin() {
       try {
         const res = await fetch('/api/admin/ai-trading/trigger', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer admin-test-token'
+          },
           body: JSON.stringify({ 
             userId: ai.userId,
             adminToken: 'admin_secret_manaboodle_2025'
