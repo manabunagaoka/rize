@@ -150,6 +150,51 @@ CRITICAL RULES:
 7. Be specific: Cloud Surfer = Financial ROI (subscription revenue drives token value)
 8. Each investor needs DIFFERENT preferences across the 3 company types
 
+CORRECT FORMAT EXAMPLE (Cloud Surfer):
+
+[SUMMARY]
+Cloud Surfer invests exclusively in SaaS companies with subscription models.
+
+[BACKGROUND]
+Former product manager at Dropbox. Backs 15-20 SaaS companies. Believes recurring revenue = sustainable token value.
+
+[ROI_PHILOSOPHY]
+Financial ROI: Token value = subscription revenue growth
+
+[SECTOR_FOCUS]
+- SaaS and subscription-based businesses ONLY
+- No non-profits, no student startups
+
+[INVESTMENT_STYLE]
+- 2-5% positions across 15 companies
+- Holds long-term (2+ years)
+- Diversified SaaS portfolio
+
+[COMPANY_TYPE_PREFERENCES]
+
+COMMERCIAL (For-profit companies, general market stocks):
+- YES - SaaS with subscription/recurring revenue model required
+
+SOCIAL (Non-profits, impact orgs, B-corps):
+- NO - Focuses on financial ROI, not social impact
+
+STUDENTS (Student-founded startups, any sector):
+- NO - Prefers established SaaS companies with proven models
+
+[GREEN_FLAGS]
+- Pitch explicitly mentions "subscription" or "recurring revenue"
+- Founder has prior SaaS experience
+- Clear pricing tiers or membership model described
+
+[RED_FLAGS]
+- One-time payment model (not subscription)
+- No mention of recurring revenue
+- Non-tech or non-SaaS sector
+
+[BUY_SELL_TIMING]
+- BUY: Within first week of listing if SaaS model confirmed
+- SELL: After 6 months if no subscription traction shown
+
 Return valid JSON:
 {
   "persona": "... (complete template with all [SECTION] tags)",
@@ -166,16 +211,14 @@ Return valid JSON:
         messages: [
           { 
             role: 'system', 
-            content: `You are a persona generator for a 3-category token marketplace: COMMERCIAL, SOCIAL, STUDENTS.
+            content: `You are a persona generator. Follow the EXACT format shown in the example.
 
-MANDATORY RULES:
-1. [COMPANY_TYPE_PREFERENCES] section MUST have all 3: COMMERCIAL / SOCIAL / STUDENTS
-2. Each category needs YES/NO/MAYBE + brief reason
-3. NO "student" in summary/background UNLESS investor says STUDENTS=YES
-4. NO "votes" - platform has NO voting
-5. Use dash bullets (-), NOT (0:, 1:, 2:)
-6. Cloud Surfer: COMMERCIAL=YES (SaaS), SOCIAL=NO, STUDENTS=NO, Financial ROI
-7. Diamond Hands: COMMERCIAL=YES, SOCIAL=MAYBE, STUDENTS=MAYBE, Blended ROI, NEVER sells
+ABSOLUTE REQUIREMENTS:
+1. Use dash bullets (-) like "- SaaS companies ONLY", NOT "0: SaaS companies"
+2. NO "student" in summary/background unless STUDENTS=YES in preferences
+3. NO "votes", "voting", "community engagement", "traction"
+4. All 3 categories required: COMMERCIAL / SOCIAL / STUDENTS with YES/NO/MAYBE
+5. Match the example format EXACTLY - simple clean bullets
 
 Return valid JSON.`
           },
