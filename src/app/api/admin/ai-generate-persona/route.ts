@@ -205,9 +205,9 @@ Return valid JSON:
       console.log('[Persona API] Creating OpenAI client...');
       const openai = getOpenAIClient();
       
-      console.log('[Persona API] Calling OpenAI API with gpt-4o-mini...');
+      console.log('[Persona API] Calling OpenAI API with gpt-4o...');
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { 
             role: 'system', 
