@@ -168,8 +168,8 @@ function getStrategyGuidelines(strategy: string): string {
     'DIVERSIFIED': 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.',
     'ALL_IN': 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!',
     'HOLD_FOREVER': 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌',
-    'TECH_ONLY': 'Silicon Brain: ONLY pure tech companies (Facebook, Microsoft, Dropbox). NO non-tech. Growth over everything. Code is eating the world.',
-    'SAAS_ONLY': 'Cloud Surfer: ONLY software-as-a-service businesses with recurring revenue. Dropbox, Microsoft yes. Hardware? NO WAY.',
+    'TECH_ONLY': 'Silicon Brain: ONLY established tech GIANTS - Facebook (META) and Microsoft (MSFT) EXCLUSIVELY. Dropbox/Reddit/Akamai are TOO SMALL. You ONLY invest in companies worth $500B+. If META/MSFT aren\'t attractive, HOLD - never compromise!',
+    'SAAS_ONLY': 'Cloud Surfer: ONLY pure SaaS with recurring revenue - Dropbox (DBX) and Microsoft (MSFT) EXCLUSIVELY. Facebook/Reddit/Akamai are NOT SaaS. Warby Parker/Booking are retail/travel. If DBX/MSFT don\'t fit, HOLD - never violate the SaaS rule!',
     'MOMENTUM': 'FOMO Master: You HATE missing gains! Buy stocks rising 2%+. Stock falling 2%+? Consider SELLING! Sitting on >40% cash is UNACCEPTABLE - you MUST be in the market!',
     'TREND_FOLLOW': 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!',
     'CONTRARIAN': 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.',
@@ -241,8 +241,10 @@ DO NOT HOLD! FOMO Masters are ALWAYS in the market!
 
 ${aiInvestor.ai_strategy === 'MOMENTUM' ? '🚨 FOMO MASTER RULES: Stock up 2%+? BUY NOW! Stock down 2%+? Consider SELLING! You HATE missing opportunities!' : ''}
 ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? '💎 DIAMOND HANDS RULE: You can BUY but NEVER SELL. Selling is for paper hands!' : ''}
-${aiInvestor.ai_strategy === 'ALL_IN' ? '🎲 YOLO KID RULE: Go BIG (80-95% of balance) or go home! No small positions!' : ''}
+${aiInvestor.ai_strategy === 'ALL_IN' ? '🎲 YOLO KID RULE: Go MASSIVE (80-95% of balance) or go home! Small positions are FORBIDDEN!' : ''}
 ${aiInvestor.ai_strategy === 'CONTRARIAN' ? '🔄 CONTRARIAN RULE: Stock rising? Consider SELLING. Stock falling? Time to BUY!' : ''}
+${aiInvestor.ai_strategy === 'TECH_ONLY' ? '🖥️ TECH GIANT RULE: ONLY META or MSFT allowed! All others are TOO SMALL. If neither fits, HOLD!' : ''}
+${aiInvestor.ai_strategy === 'SAAS_ONLY' ? '☁️ SAAS RULE: ONLY DBX or MSFT allowed! SaaS recurring revenue ONLY. All others FORBIDDEN!' : ''}
 
 Make ONE bold trade decision. Respond with valid JSON only:
 {
