@@ -164,12 +164,12 @@ function getStrategyLimits(strategy: string, availableTokens: number) {
 
 function getStrategyGuidelines(strategy: string): string {
   const guidelines: Record<string, string> = {
-    'CONSERVATIVE': 'The Boomer: ONLY invest in established, proven companies. Prefer companies with category=\"Tech Giant\" or other mature categories. Avoid startups and high-risk plays. Small positions. Prefer holding over frequent trading. You lived through dot-com crash - never again!',
+    'CONSERVATIVE': 'The Boomer: ONLY invest in established, proven companies. Prefer companies with strong fundamentals and track records. Avoid risky startups. Small positions. Prefer holding over frequent trading. You lived through dot-com crash - never again!',
     'DIVERSIFIED': 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.',
     'ALL_IN': 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!',
     'HOLD_FOREVER': 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌',
-    'TECH_ONLY': 'Silicon Brain: ONLY companies categorized as "Tech Giant" (market cap $500B+). NO mid-size tech, NO non-tech. Filter companies by category="Tech Giant" ONLY. If no Tech Giants are attractive, HOLD - never compromise your standards!',
-    'SAAS_ONLY': 'Cloud Surfer: ONLY companies categorized as "SaaS" (software-as-a-service with recurring revenue). Filter companies by category="SaaS" ONLY. Social media/e-commerce/infrastructure are NOT SaaS. If no SaaS companies fit, HOLD - never violate the SaaS rule!',
+    'TECH_ONLY': 'Silicon Brain: ONLY companies categorized as "Enterprise/B2B" (business software, enterprise tech). NO consumer products, NO social impact. Filter companies by category="Enterprise/B2B" ONLY. If no Enterprise/B2B companies are attractive, HOLD - never compromise your standards!',
+    'SAAS_ONLY': 'Cloud Surfer: ONLY companies categorized as "Enterprise/B2B" (cloud software, SaaS with recurring revenue). Filter companies by category="Enterprise/B2B" ONLY. Consumer/social impact are NOT enterprise SaaS. If no Enterprise/B2B companies fit, HOLD - never violate the B2B rule!',
     'MOMENTUM': 'FOMO Master: You HATE missing gains! Buy stocks rising 2%+. Stock falling 2%+? Consider SELLING! Sitting on >40% cash is UNACCEPTABLE - you MUST be in the market!',
     'TREND_FOLLOW': 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!',
     'CONTRARIAN': 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.',
@@ -243,8 +243,8 @@ ${aiInvestor.ai_strategy === 'MOMENTUM' ? '🚨 FOMO MASTER RULES: Stock up 2%+?
 ${aiInvestor.ai_strategy === 'HOLD_FOREVER' ? '💎 DIAMOND HANDS RULE: You can BUY but NEVER SELL. Selling is for paper hands!' : ''}
 ${aiInvestor.ai_strategy === 'ALL_IN' ? '🎲 YOLO KID RULE: Go MASSIVE (80-95% of balance) or go home! Small positions are FORBIDDEN!' : ''}
 ${aiInvestor.ai_strategy === 'CONTRARIAN' ? '🔄 CONTRARIAN RULE: Stock rising? Consider SELLING. Stock falling? Time to BUY!' : ''}
-${aiInvestor.ai_strategy === 'TECH_ONLY' ? '🖥️ TECH GIANT RULE: ONLY companies with category="Tech Giant" allowed! Filter by category field. All others are TOO SMALL or wrong category. If no Tech Giants fit, HOLD!' : ''}
-${aiInvestor.ai_strategy === 'SAAS_ONLY' ? '☁️ SAAS RULE: ONLY companies with category="SaaS" allowed! Filter by category field. All other categories FORBIDDEN!' : ''}
+${aiInvestor.ai_strategy === 'TECH_ONLY' ? '🖥️ ENTERPRISE TECH RULE: ONLY companies with category="Enterprise/B2B" allowed! Filter by category field. Consumer and Social Impact are FORBIDDEN!' : ''}
+${aiInvestor.ai_strategy === 'SAAS_ONLY' ? '☁️ ENTERPRISE B2B RULE: ONLY companies with category="Enterprise/B2B" allowed! Filter by category field. Consumer and Social Impact categories FORBIDDEN!' : ''}
 
 Make ONE bold trade decision. Respond with valid JSON only:
 {
