@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // 60 seconds for Pro plan
 
 /**
  * Vercel Cron endpoint for automated AI trading
  * Runs twice daily:
- * - 2:30pm UTC (9:30am EST) - 1 hour after market open
- * - 8:30pm UTC (3:30pm EST) - 30 min before market close
+ * - 9:30am EST (14:30 UTC) - 1 hour after market open  
+ * - 3:30pm EST (20:30 UTC) - 30 min before market close
  */
 export async function GET(request: NextRequest) {
   try {
