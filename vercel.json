@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/admin/ai-trading/cron",
-      "schedule": "12 0 * * *"
+      "schedule": "30 0 * * *"
     }
   ],
   "buildCommand": "next build",
