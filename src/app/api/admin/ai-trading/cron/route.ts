@@ -34,6 +34,12 @@ export async function GET(request: NextRequest) {
       body: JSON.stringify({})
     });
 
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('[AI Trading Cron] Trigger failed:', response.status, text);
+      throw new Error(`Trigger endpoint failed: ${response.status} - ${text.substring(0, 200)}`);
+    }
+
     const data = await response.json();
 
     console.log('[AI Trading Cron] Completed:', {

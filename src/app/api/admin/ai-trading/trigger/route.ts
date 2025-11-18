@@ -3,8 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import { fetchPriceWithCache } from '@/lib/price-cache';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // HM7 legendary pitches (Harvard-founded companies)
 const HM7_PITCHES = [
