@@ -7,15 +7,22 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-// HM7 legendary pitches (Harvard-founded companies)
-const HM7_PITCHES = [
-  { id: 1, name: 'Facebook', ticker: 'META', founder: 'Mark Zuckerberg' },
+// HM14 - Harvard Magnificent 14 (100% Harvard-verified founders)
+const HM14_PITCHES = [
+  { id: 1, name: 'Meta', ticker: 'META', founder: 'Mark Zuckerberg' },
   { id: 2, name: 'Microsoft', ticker: 'MSFT', founder: 'Bill Gates' },
-  { id: 3, name: 'Dropbox', ticker: 'DBX', founder: 'Drew Houston' },
-  { id: 4, name: 'Akamai', ticker: 'AKAM', founder: 'Tom Leighton' },
-  { id: 5, name: 'Reddit', ticker: 'RDDT', founder: 'Steve Huffman' },
-  { id: 6, name: 'Warby Parker', ticker: 'WRBY', founder: 'Neil Blumenthal' },
-  { id: 7, name: 'Booking.com', ticker: 'BKNG', founder: 'Geert-Jan Bruinsma' },
+  { id: 3, name: 'Airbnb', ticker: 'ABNB', founder: 'Nathan Blecharczyk' },
+  { id: 4, name: 'Cloudflare', ticker: 'NET', founder: 'Michelle Zatlyn' },
+  { id: 5, name: 'Grab', ticker: 'GRAB', founder: 'Anthony Tan' },
+  { id: 6, name: 'Moderna', ticker: 'MRNA', founder: 'Harvard faculty' },
+  { id: 7, name: 'Klaviyo', ticker: 'KVYO', founder: 'Andrew Bialecki' },
+  { id: 8, name: 'Affirm', ticker: 'AFRM', founder: 'Alex Rampell' },
+  { id: 9, name: 'Peloton', ticker: 'PTON', founder: 'John Foley' },
+  { id: 10, name: 'Asana', ticker: 'ASAN', founder: 'Justin Rosenstein' },
+  { id: 11, name: 'Lyft', ticker: 'LYFT', founder: 'Logan Green' },
+  { id: 12, name: 'ThredUp', ticker: 'TDUP', founder: 'James Reinhart' },
+  { id: 13, name: 'Nextdoor', ticker: 'KIND', founder: 'Nirav Tolia' },
+  { id: 14, name: 'Rent the Runway', ticker: 'RENT', founder: 'Jennifer Hyman' },
 ];
 
 interface AITradeDecision {
@@ -83,14 +90,25 @@ async function getPitchData(supabase: any) {
   
   // Fetch live prices
   const enrichedPitches = await Promise.all(data.map(async (pitch: any) => {
-    let livePrice = pitch.current_price || 100;
+    let livePrice = pitch.current_price; // Start with view's price
     
     if (pitch.ticker && process.env.STOCK_API_KEY) {
       try {
-        livePrice = await fetchPriceWithCache(pitch.ticker, pitch.pitch_id, process.env.STOCK_API_KEY);
+        const apiPrice = await fetchPriceWithCache(pitch.ticker, pitch.pitch_id, process.env.STOCK_API_KEY);
+        if (apiPrice && apiPrice > 0) {
+          livePrice = apiPrice; // Only override if API returns valid price
+        }
       } catch (error) {
-        console.error(`Error fetching price for ${pitch.ticker}:`, error);
+        console.error(`Error fetching price for ${pitch.ticker}, using view price:`, error);
+        // Keep livePrice as pitch.current_price (from view)
       }
+    }
+    
+    // Final safety check: if somehow still no price, throw error
+    if (!livePrice || livePrice <= 0) {
+      const errorMsg = `CRITICAL ERROR: No valid price for ${pitch.ticker} (${pitch.company_name}). View had: ${pitch.current_price}, API returned: ${livePrice}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
     
     return {
@@ -168,8 +186,8 @@ function getStrategyGuidelines(strategy: string): string {
     'DIVERSIFIED': 'Steady Eddie: MUST spread investments across at least 4 different companies. Balance growth vs stability. Regular rebalancing. Never go all-in on one stock.',
     'ALL_IN': 'YOLO Kid: Pick ONE stock you believe in and BET BIG (80-95%). High risk = high reward. Fortune favors the bold! No half measures!',
     'HOLD_FOREVER': 'Diamond Hands: Buy quality and NEVER EVER SELL. Long-term value investing. Ignore ALL short-term volatility. Paper hands lose, diamond hands WIN. 💎🙌',
-    'TECH_ONLY': 'Silicon Brain: ONLY companies categorized as "Enterprise/B2B" (business software, enterprise tech). NO consumer products, NO social impact. Filter companies by category="Enterprise/B2B" ONLY. If no Enterprise/B2B companies are attractive, HOLD - never compromise your standards!',
-    'SAAS_ONLY': 'Cloud Surfer: ONLY companies categorized as "Enterprise/B2B" (cloud software, SaaS with recurring revenue). Filter companies by category="Enterprise/B2B" ONLY. Consumer/social impact are NOT enterprise SaaS. If no Enterprise/B2B companies fit, HOLD - never violate the B2B rule!',
+    'TECH_ONLY': 'Silicon Brain: ONLY companies categorized as "Enterprise" (business software, enterprise tech). NO consumer products, NO social impact. Filter companies by category="Enterprise" ONLY. If no Enterprise companies are attractive, HOLD - never compromise your standards!',
+    'SAAS_ONLY': 'Cloud Surfer: ONLY companies categorized as "Enterprise" (cloud software, SaaS with recurring revenue). Filter companies by category="Enterprise" ONLY. Consumer/social impact are NOT enterprise SaaS. If no Enterprise companies fit, HOLD - never violate the B2B rule!',
     'MOMENTUM': 'FOMO Master: You HATE missing gains! Buy stocks rising 2%+. Stock falling 2%+? Consider SELLING! Sitting on >40% cash is UNACCEPTABLE - you MUST be in the market!',
     'TREND_FOLLOW': 'Hype Train: Ride trends. Buy stocks with positive momentum. Sell losers quickly. Follow the crowd to profits!',
     'CONTRARIAN': 'The Contrarian: Buy when others panic-sell (falling stocks). Sell when others FOMO-buy (rising stocks). Go against the herd ALWAYS.',
@@ -316,7 +334,7 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
   }
 
   if (decision.action === 'BUY' && decision.shares) {
-    const pitch = HM7_PITCHES.find(p => p.id === decision.pitch_id);
+    const pitch = HM14_PITCHES.find(p => p.id === decision.pitch_id);
     const { data: priceData } = await supabase
       .from('pitch_market_data')
       .select('current_price')
@@ -437,7 +455,7 @@ async function executeTrade(supabase: any, aiInvestor: any, decision: AITradeDec
   }
 
   if (decision.action === 'SELL' && decision.shares) {
-    const pitch = HM7_PITCHES.find(p => p.id === decision.pitch_id);
+    const pitch = HM14_PITCHES.find(p => p.id === decision.pitch_id);
     
     const { data: existingInvestment } = await supabase
       .from('user_investments')
@@ -657,7 +675,7 @@ export async function POST(request: NextRequest) {
           investor: ai.ai_nickname,
           decision: {
             ...decision,
-            ticker: HM7_PITCHES.find(p => p.id === decision.pitch_id)?.ticker
+            ticker: HM14_PITCHES.find(p => p.id === decision.pitch_id)?.ticker
           },
           result,
           execution: result.execution
