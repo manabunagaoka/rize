@@ -6,8 +6,8 @@ import PitchCard from '@/components/PitchCard';
 import TradeLoadingOverlay from '@/components/TradeLoadingOverlay';
 import Link from 'next/link';
 
-// HM14 - Harvard Magnificent 14 (100% Harvard-Verified Founders)
-const SUCCESS_STORIES = [
+// HM7 - Harvard Magnificent 7 (Original Index)
+const HM7_STORIES = [
   { id: 1, name: 'Meta Platforms, Inc.', founder: 'Mark Zuckerberg', year: '2004', valuation: '$1.5T', marketCap: 1510000000000, ticker: 'META',
     pitch: 'Connects billions of people through social networking, messaging, and immersive digital platforms.',
     funFact: 'Mark Zuckerberg built the first version in his Harvard dorm in 2004.',
@@ -35,7 +35,11 @@ const SUCCESS_STORIES = [
   { id: 7, name: 'Klaviyo, Inc.', founder: 'Andrew Bialecki', year: '2012', valuation: '$8.2B', marketCap: 8200000000, ticker: 'KVYO',
     pitch: 'AI-first CRM platform that helps e-commerce businesses drive growth by unifying customer data and marketing automation.',
     funFact: 'Klaviyo\'s name comes from the Spanish word "clavija" (mountaineering pin), reflecting their goal to support brands as they climb to success.',
-    color: 'from-amber-500 to-amber-600' },
+    color: 'from-amber-500 to-amber-600' }
+];
+
+// HM7 2.0 - Next Generation Harvard Companies
+const HM7_V2_STORIES = [
   { id: 8, name: 'Affirm Holdings', founder: 'Alex Rampell', year: '2012', valuation: '$10.3B', marketCap: 10300000000, ticker: 'AFRM',
     pitch: 'Provides flexible "buy now, pay later" financing to consumers at point of sale.',
     funFact: 'Affirm\'s founders previously built successful companies including PayPal.',
@@ -65,6 +69,8 @@ const SUCCESS_STORIES = [
     funFact: 'Jennifer Hyman pitched the idea to designers before prototyping a website.',
     color: 'from-rose-500 to-rose-600' }
 ];
+
+const SUCCESS_STORIES = [...HM7_STORIES, ...HM7_V2_STORIES];
 
 export default function HM7Page() {
   const [loading, setLoading] = useState(true);
@@ -163,51 +169,80 @@ export default function HM7Page() {
         <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-              HM14 Index
+              Harvard Index
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-4">
-              Harvard Magnificent 14 - 100% Harvard-Verified Founders
+              100% Harvard-Verified Founders - $5+ Trillion Market Value
             </p>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              From dorm rooms to $5+ trillion in market value. These 14 Harvard-founded companies represent the best of innovation, entrepreneurship, and impact.
+              From dorm rooms to global empires. These Harvard-founded companies represent the best of innovation, entrepreneurship, and impact.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Pitch Cards */}
-      <div className="container mx-auto px-4 pb-20">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {storiesWithLiveData.map((story, index) => (
-            <PitchCard
-              key={`${story.id}-${refreshKey}`}
-              story={story}
-              isAuthenticated={!!user}
-              rank={index + 1}
-              onTradeComplete={handleTradeComplete}
-            />
-          ))}
-        </div>
-
-        {/* Additional Info */}
-        <div className="max-w-4xl mx-auto mt-12 bg-gray-800/30 border border-gray-700 rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-4">About the HM14 Index</h2>
-          <p className="text-gray-400 mb-4">
-            The Harvard Magnificent 14 (HM14) Index tracks companies founded by Harvard alumni - from undergrads to MBA students to faculty. 
-            From Mark Zuckerberg&apos;s Meta to Bill Gates&apos; Microsoft, these 14 companies represent 
-            over $5.2 trillion in combined market value.
-          </p>
-          <p className="text-gray-400 mb-4">
-            <strong className="text-white">Trade with real stock prices:</strong> All prices are live from 
-            the stock market via Finnhub API. When you invest in META, you&apos;re trading at the real 
-            Meta Platforms stock price.
-          </p>
-          <p className="text-gray-400">
-            Invest your Manaboodle Tokens (MTK) in these companies and compete against 10 AI investors to build 
-            the winning portfolio. Every company is 100% Harvard-verified with real founders who attended Harvard.
-          </p>
+      {/* HM7 - Original Index */}
+      <div className="container mx-auto px-4 pb-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">HM7 Index</h2>
+            <p className="text-gray-400">The original Harvard Magnificent 7 - Tech giants and industry leaders</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {HM7_STORIES.map((story, index) => (
+              <PitchCard
+                key={`hm7-${story.id}-${refreshKey}`}
+                story={story}
+                isAuthenticated={!!user}
+                rank={index + 1}
+                onTradeComplete={handleTradeComplete}
+              />
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* HM7 2.0 - Next Generation */}
+      <div className="container mx-auto px-4 pb-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">HM7 2.0 Index</h2>
+            <p className="text-gray-400">Next generation of Harvard innovation - Consumer, fintech, and emerging leaders</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {HM7_V2_STORIES.map((story, index) => (
+              <PitchCard
+                key={`hm7v2-${story.id}-${refreshKey}`}
+                story={story}
+                isAuthenticated={!!user}
+                rank={index + 8}
+                onTradeComplete={handleTradeComplete}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+        {/* Additional Info */}
+        <div className="container mx-auto px-4 pb-20">
+          <div className="max-w-4xl mx-auto bg-gray-800/30 border border-gray-700 rounded-xl p-8">
+            <h2 className="text-2xl font-bold text-white mb-4">About the Harvard Indexes</h2>
+            <p className="text-gray-400 mb-4">
+              The Harvard indexes track companies founded by Harvard alumni - from undergrads to MBA students to faculty. 
+              HM7 features the original tech giants like Meta and Microsoft, while HM7 2.0 showcases the next generation 
+              of Harvard innovation. Combined, these 14 companies represent over $5.2 trillion in market value.
+            </p>
+            <p className="text-gray-400 mb-4">
+              <strong className="text-white">Trade with real stock prices:</strong> All prices are live from 
+              the stock market via Finnhub API. When you invest in META, you&apos;re trading at the real 
+              Meta Platforms stock price.
+            </p>
+            <p className="text-gray-400">
+              Invest your Manaboodle Tokens (MTK) in these companies and compete against 10 AI investors to build 
+              the winning portfolio. Every company is 100% Harvard-verified with real founders who attended Harvard.
+            </p>
+          </div>
+        </div>
 
       {/* Trade Loading Overlay */}
       <TradeLoadingOverlay isVisible={showTradeLoading} message="Processing your trade" />
