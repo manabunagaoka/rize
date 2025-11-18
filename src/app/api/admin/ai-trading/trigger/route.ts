@@ -584,7 +584,8 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_KEY!
     );
 
-    const { userId } = body; // If provided, test single AI
+    const { userId, source } = body; // If provided, test single AI
+    const triggeredBy = source || 'manual'; // Default to manual if not specified
     
     // CRITICAL: Log what we're about to do
     console.log('[AI Trading Trigger] Requested userId:', userId);
@@ -648,7 +649,7 @@ export async function POST(request: NextRequest) {
         
         console.log(`[AI Trading] ${ai.ai_nickname} result: ${result.success ? 'SUCCESS' : 'FAILED'} - ${result.message}`);
         
-        await logTrade(supabase, ai, prompt, rawResponse, decision, result, 'manual');
+        await logTrade(supabase, ai, prompt, rawResponse, decision, result, triggeredBy);
         
         results.push({
           investor: ai.ai_nickname,

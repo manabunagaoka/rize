@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer admin-cron-token'
       },
-      body: JSON.stringify({})
+      body: JSON.stringify({ source: 'cron' })
     });
 
     if (!response.ok) {
