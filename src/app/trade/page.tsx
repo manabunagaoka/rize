@@ -79,17 +79,17 @@ export default async function TradePage() {
               <div className="mb-4">
                 <h2 className="text-3xl font-bold mb-2">HM7</h2>
                 <p className="text-green-300 font-semibold mb-1">Harvard Magnificent 7</p>
-                <p className="text-gray-300 text-sm">Trade Harvard&apos;s legendary unicorns</p>
+                <p className="text-gray-300 text-sm">Tech giants and industry leaders</p>
               </div>
 
               <div className="space-y-2 mb-6 text-sm text-gray-300">
                 <div className="flex items-center gap-2">
                   <span className="text-green-400">•</span>
-                  <span>Facebook, Microsoft, Dropbox, Akamai</span>
+                  <span>Meta, Microsoft, Airbnb, Cloudflare</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-green-400">•</span>
-                  <span>Reddit, Warby Parker, Booking.com</span>
+                  <span>Grab, Moderna, Klaviyo</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-green-400">•</span>
@@ -98,6 +98,45 @@ export default async function TradePage() {
               </div>
 
               <div className="flex items-center text-green-400 font-semibold group-hover:gap-3 gap-2 transition-all">
+                <span>Trade Now</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </Link>
+
+          {/* HM7 2.0 - Next Generation */}
+          <Link href="/hm7" className="group">
+            <div className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-2 border-blue-500/50 rounded-2xl p-8 hover:border-blue-400 transition-all hover:shadow-xl hover:shadow-blue-500/20 relative overflow-hidden">
+              <div className="absolute top-4 right-4">
+                <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  Live Trading
+                </span>
+              </div>
+              
+              <div className="mb-4">
+                <h2 className="text-3xl font-bold mb-2">HM7 2.0</h2>
+                <p className="text-blue-300 font-semibold mb-1">Next Generation</p>
+                <p className="text-gray-300 text-sm">Consumer, fintech, and emerging leaders</p>
+              </div>
+
+              <div className="space-y-2 mb-6 text-sm text-gray-300">
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Affirm, Peloton, Asana, Lyft</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>ThredUp, Nextdoor, Rent the Runway</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-400">•</span>
+                  <span>Real-time prices • Buy & Sell 24/7</span>
+                </div>
+              </div>
+
+              <div className="flex items-center text-blue-400 font-semibold group-hover:gap-3 gap-2 transition-all">
                 <span>Trade Now</span>
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
