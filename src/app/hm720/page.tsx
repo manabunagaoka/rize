@@ -92,11 +92,9 @@ export default function HM720Page() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/verify', {
-        credentials: 'include',
-        cache: 'no-store'
+      const response = await fetch('/api/auth/check', {
+        credentials: 'include'
       });
-      
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
