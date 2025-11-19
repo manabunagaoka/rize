@@ -140,12 +140,20 @@ export default function HM720Page() {
             <p className="text-gray-400 max-w-2xl mx-auto mb-6">
               The next wave of Harvard innovation: From Affirm and Peloton to emerging consumer brands. Shaping the future of technology and lifestyle.
             </p>
-            <Link href="/hm7" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-lg transition">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-              </svg>
-              <span>View HM7 Index</span>
-            </Link>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link href="/trade" className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                </svg>
+                <span>Back to Trade</span>
+              </Link>
+              <Link href="/hm7" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-lg transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                </svg>
+                <span>View HM7 Index</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

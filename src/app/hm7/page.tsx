@@ -38,39 +38,7 @@ const HM7_STORIES = [
     color: 'from-amber-500 to-amber-600' }
 ];
 
-// HM7 2.0 - Next Generation Harvard Companies
-const HM7_V2_STORIES = [
-  { id: 8, name: 'Affirm Holdings', founder: 'Alex Rampell', year: '2012', valuation: '$10.3B', marketCap: 10300000000, ticker: 'AFRM',
-    pitch: 'Provides flexible "buy now, pay later" financing to consumers at point of sale.',
-    funFact: 'Affirm\'s founders previously built successful companies including PayPal.',
-    color: 'from-violet-500 to-violet-600' },
-  { id: 9, name: 'Peloton Interactive', founder: 'John Foley', year: '2012', valuation: '$3.1B', marketCap: 3100000000, ticker: 'PTON',
-    pitch: 'Combines fitness equipment, live and on-demand classes for immersive home workouts.',
-    funFact: 'The company\'s first bike was delivered to customers by Peloton employees personally.',
-    color: 'from-orange-500 to-orange-600' },
-  { id: 10, name: 'Asana, Inc.', founder: 'Justin Rosenstein', year: '2008', valuation: '$4.7B', marketCap: 4700000000, ticker: 'ASAN',
-    pitch: 'Simplifies work management for teams with tasks, projects, and workflow automation.',
-    funFact: 'Co-founder Justin Rosenstein also helped create Facebook\'s "Like" button.',
-    color: 'from-purple-500 to-purple-600' },
-  { id: 11, name: 'Lyft, Inc.', founder: 'Logan Green', year: '2012', valuation: '$3.8B', marketCap: 3800000000, ticker: 'LYFT',
-    pitch: 'Offers on-demand shared rides and transportation services in the U.S.',
-    funFact: 'Lyft started as Zimride, a rideshare platform for college students.',
-    color: 'from-fuchsia-500 to-fuchsia-600' },
-  { id: 12, name: 'ThredUp, Inc.', founder: 'James Reinhart', year: '2009', valuation: '$1.0B', marketCap: 1000000000, ticker: 'TDUP',
-    pitch: 'Enables users to buy and sell secondhand clothing in an online thrift store.',
-    funFact: 'ThredUp started when its co-founder wanted a way to clean out his closet.',
-    color: 'from-teal-500 to-teal-600' },
-  { id: 13, name: 'Nextdoor Holdings', founder: 'Nirav Tolia', year: '2010', valuation: '$800M', marketCap: 800000000, ticker: 'KIND',
-    pitch: 'Connects neighbors and local communities using a private social network.',
-    funFact: 'Nextdoor\'s founders launched the platform from a San Francisco apartment.',
-    color: 'from-lime-500 to-lime-600' },
-  { id: 14, name: 'Rent the Runway', founder: 'Jennifer Hyman', year: '2009', valuation: '$530M', marketCap: 530000000, ticker: 'RENT',
-    pitch: 'Provides designer clothing and accessories for rent to women nationwide.',
-    funFact: 'Jennifer Hyman pitched the idea to designers before prototyping a website.',
-    color: 'from-rose-500 to-rose-600' }
-];
-
-const SUCCESS_STORIES = [...HM7_STORIES, ...HM7_V2_STORIES];
+const SUCCESS_STORIES = HM7_STORIES;
 
 export default function HM7Page() {
   const [loading, setLoading] = useState(true);
@@ -165,33 +133,43 @@ export default function HM7Page() {
       
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10" />
         <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-              Harvard Index
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 text-transparent bg-clip-text">
+              HM7 Index
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-4">
-              100% Harvard-Verified Founders - $5+ Trillion Market Value
+              Harvard Magnificent 7 - Tech Giants & Industry Leaders
             </p>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              From dorm rooms to global empires. These Harvard-founded companies represent the best of innovation, entrepreneurship, and impact.
+            <p className="text-gray-400 max-w-2xl mx-auto mb-6">
+              The original seven: From Meta and Microsoft to emerging tech leaders. Combined market value: $5.2+ trillion.
             </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link href="/trade" className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                </svg>
+                <span>Back to Trade</span>
+              </Link>
+              <Link href="/hm720" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition">
+                <span>View HM7 2.0 Index</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* HM7 - Original Index */}
-      <div className="container mx-auto px-4 pb-8">
+      {/* HM7 Companies */}
+      <div className="container mx-auto px-4 pb-20">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">HM7 Index</h2>
-            <p className="text-gray-400">The original Harvard Magnificent 7 - Tech giants and industry leaders</p>
-          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {HM7_STORIES.map((story, index) => (
+            {storiesWithLiveData.map((story, index) => (
               <PitchCard
-                key={`hm7-${story.id}-${refreshKey}`}
+                key={`${story.id}-${refreshKey}`}
                 story={story}
                 isAuthenticated={!!user}
                 rank={index + 1}
@@ -202,35 +180,14 @@ export default function HM7Page() {
         </div>
       </div>
 
-      {/* HM7 2.0 - Next Generation */}
-      <div className="container mx-auto px-4 pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">HM7 2.0 Index</h2>
-            <p className="text-gray-400">Next generation of Harvard innovation - Consumer, fintech, and emerging leaders</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {HM7_V2_STORIES.map((story, index) => (
-              <PitchCard
-                key={`hm7v2-${story.id}-${refreshKey}`}
-                story={story}
-                isAuthenticated={!!user}
-                rank={index + 8}
-                onTradeComplete={handleTradeComplete}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
         {/* Additional Info */}
         <div className="container mx-auto px-4 pb-20">
           <div className="max-w-4xl mx-auto bg-gray-800/30 border border-gray-700 rounded-xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-4">About the Harvard Indexes</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">About the HM7 Index</h2>
             <p className="text-gray-400 mb-4">
-              The Harvard indexes track companies founded by Harvard alumni - from undergrads to MBA students to faculty. 
-              HM7 features the original tech giants like Meta and Microsoft, while HM7 2.0 showcases the next generation 
-              of Harvard innovation. Combined, these 14 companies represent over $5.2 trillion in market value.
+              The Harvard Magnificent 7 (HM7) Index tracks the original tech giants and industry leaders founded by Harvard alumni. 
+              From Mark Zuckerberg&apos;s Meta to Bill Gates&apos; Microsoft, these 7 companies represent 
+              the foundation of Harvard&apos;s entrepreneurial legacy with over $5.2 trillion in combined market value.
             </p>
             <p className="text-gray-400 mb-4">
               <strong className="text-white">Trade with real stock prices:</strong> All prices are live from 
